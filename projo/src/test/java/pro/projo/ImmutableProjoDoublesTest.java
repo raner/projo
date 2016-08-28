@@ -23,6 +23,14 @@ public class ImmutableProjoDoublesTest
         Number imaginary();
     }
 
+    static interface ComplexPerson
+    {
+        Factory<ComplexPerson, Complex, Person> FACTORY = creates(ComplexPerson.class)
+            .with(ComplexPerson::complex, ComplexPerson::person);
+        Complex complex();
+        Person person();
+    }
+
     @Test
     public void testCreatePerson()
     {
@@ -49,5 +57,17 @@ public class ImmutableProjoDoublesTest
     {
         Complex complex = Complex.FACTORY.create(Math.PI, Math.E);
         assertNotNull(complex);
+    }
+
+    @Test
+    public void testComplexPerson()
+    {
+        Complex complex = Complex.FACTORY.create(Math.PI, Math.E);
+        Person person = Person.FACTORY.create("John", "Doe");
+        ComplexPerson complexPerson = ComplexPerson.FACTORY.create(complex, person);
+        assertEquals(Math.PI, complexPerson.complex().real());
+        assertEquals(Math.E, complexPerson.complex().imaginary());
+        assertEquals("John", complexPerson.person().firstName());
+        assertEquals("Doe", complexPerson.person().lastName());
     }
 }
