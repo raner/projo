@@ -10,11 +10,12 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class ImmutableInvocationHandler<_Artifact_> implements InvocationHandler
+public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
 {
-    Map<Method, Object> state = new HashMap<>();
+    PropertyMatcher matcher = new PropertyMatcher();
+    Map<String, Object> state = new HashMap<>();
     Stack<Object> initializationStack = new Stack<>();
-    BiFunction<Method, Object[], Object> invoker = (method, arguments) -> state.put(method, initializationStack.pop());
+    BiFunction<Method, Object[], Object> invoker = this::initializationInvoker;
 
     public class Initializer
     {
@@ -52,11 +53,39 @@ public class ImmutableInvocationHandler<_Artifact_> implements InvocationHandler
                 {
                     throw new IllegalStateException();
                 }
-                invoker = (method, arguments) -> state.get(method);
+                invoker = ProjoInvocationHandler.this::regularInvoker;
                 initializationStack = null;
                 return instance;
             }
         }
+    }
+
+    private Object initializationInvoker(Method method, @SuppressWarnings("unused") Object... arguments)
+    {
+        return state.put(matcher.propertyName(method.getName()), initializationStack.pop());
+    }
+
+    private Object regularInvoker(Method method, Object... arguments)
+    {
+        if (setter(method, arguments))
+        {
+            return state.put(matcher.propertyName(method.getName()), arguments[0]);
+        }
+        if (getter(method, arguments))
+        {
+            return state.get(matcher.propertyName(method.getName()));
+        }
+        throw new NoSuchMethodError(String.valueOf(method));
+    }
+
+    private boolean getter(@SuppressWarnings("unused") Method method, Object... arguments)
+    {
+        return arguments == null || arguments.length == 0;
+    }
+
+    private boolean setter(@SuppressWarnings("unused") Method method, Object... arguments)
+    {
+        return arguments != null && arguments.length == 1;
     }
 
     public Initializer initialize(_Artifact_ artifact)
