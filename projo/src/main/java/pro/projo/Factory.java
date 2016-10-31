@@ -13,9 +13,14 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.doubles;
+package pro.projo;
 
-public interface Factory<_Artifact_, _First_, _Second_> extends pro.projo.Factory
+/**
+ * The {@link Factory} interface is a marker interface that is implemented by all Projo factories.
+ *
+ * @author Mirko Raner
+ */
+public interface Factory
 {
-    _Artifact_ create(_First_ argument1, _Second_ argument2);
+    // This is a marker interface
 }

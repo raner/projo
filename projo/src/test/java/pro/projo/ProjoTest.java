@@ -13,9 +13,38 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.doubles;
+package pro.projo;
 
-public interface Factory<_Artifact_, _First_, _Second_> extends pro.projo.Factory
+import org.junit.Test;
+import pro.projo.doubles.Factory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static pro.projo.Projo.creates;
+
+public class ProjoTest
 {
-    _Artifact_ create(_First_ argument1, _Second_ argument2);
+    static interface Interval
+    {
+        Factory<Interval, Double, Double> FACTORY = creates(Interval.class).with(Interval::begin, Interval::end);
+        Double begin();
+        Double end();
+    }
+
+    static interface NoFactory
+    {
+        void setInteger(int value);
+        int getInteger();
+    }
+
+    @Test
+    public void testGetFactory()
+    {
+        assertEquals(Interval.FACTORY, Projo.getFactory(Interval.class));
+    }
+
+    @Test
+    public void testGetFactoryReturnsNull()
+    {
+        assertNull(Projo.getFactory(NoFactory.class));
+    }
 }
