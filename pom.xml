@@ -32,6 +32,7 @@
 
  <modules>
   <module>projo</module>
+  <module>projo-jax-rs</module>
  </modules>
 
  <build>
