@@ -12,10 +12,24 @@ import java.util.function.Function;
 
 public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
 {
-    PropertyMatcher matcher = new PropertyMatcher();
-    Map<String, Object> state = new HashMap<>();
+    private static Map<Class<?>, Object> DEFAULTS = new HashMap<>();
+    private static PropertyMatcher matcher = new PropertyMatcher();
+
+    private Map<String, Object> state = new HashMap<>();
     Stack<Object> initializationStack = new Stack<>();
     BiFunction<Method, Object[], Object> invoker = this::initializationInvoker;
+
+    static
+    {
+        DEFAULTS.put(int.class, 0);
+        DEFAULTS.put(long.class, 0L);
+        DEFAULTS.put(float.class, 0F);
+        DEFAULTS.put(double.class, 0D);
+        DEFAULTS.put(byte.class, (byte)0);
+        DEFAULTS.put(short.class, (short)0);
+        DEFAULTS.put(boolean.class, false);
+        DEFAULTS.put(char.class, '\0');
+    }
 
     public class Initializer
     {
@@ -62,7 +76,11 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
 
     private Object initializationInvoker(Method method, @SuppressWarnings("unused") Object... arguments)
     {
-        return state.put(matcher.propertyName(method.getName()), initializationStack.pop());
+        state.put(matcher.propertyName(method.getName()), initializationStack.pop());
+
+        // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
+        //
+        return DEFAULTS.get(method.getReturnType());
     }
 
     private Object regularInvoker(Method method, Object... arguments)

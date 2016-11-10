@@ -40,12 +40,32 @@ public class Projo
             this.type = type;
         }
 
+        public <_First_> pro.projo.singles.Factory<_Artifact_, _First_> with(Function<_Artifact_, _First_> first)
+        {
+            @SuppressWarnings("synthetic-access")
+            pro.projo.singles.Factory<_Artifact_, _First_> factory = (argument1) ->
+            {
+                return initialize(type).members(first).with(argument1);
+            };
+            return factory;
+        }
+
         public <_First_, _Second_> pro.projo.doubles.Factory<_Artifact_, _First_, _Second_> with(Function<_Artifact_, _First_> first, Function<_Artifact_, _Second_> second)
         {
             @SuppressWarnings("synthetic-access")
             pro.projo.doubles.Factory<_Artifact_, _First_, _Second_> factory = (argument1, argument2) ->
             {
                 return initialize(type).members(first, second).with(argument1, argument2);
+            };
+            return factory;
+        }
+
+        public <_First_, _Second_, _Third_> pro.projo.triples.Factory<_Artifact_, _First_, _Second_, _Third_> with(Function<_Artifact_, _First_> first, Function<_Artifact_, _Second_> second, Function<_Artifact_, _Third_> third)
+        {
+            @SuppressWarnings("synthetic-access")
+            pro.projo.triples.Factory<_Artifact_, _First_, _Second_, _Third_> factory = (argument1, argument2, argument3) ->
+            {
+                return initialize(type).members(first, second, third).with(argument1, argument2, argument3);
             };
             return factory;
         }
