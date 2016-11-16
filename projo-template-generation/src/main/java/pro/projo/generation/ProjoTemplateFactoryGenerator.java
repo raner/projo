@@ -13,25 +13,31 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.template.annotation;
+package pro.projo.generation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.util.Collection;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.io.StringWriter;
+import java.util.Map;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
 /**
-* The {@link Template} annotations marks template classes that are used for Projo's internal code generation.
+* The {@link ProjoTemplateFactoryGenerator} uses the Apache Velocity template engine to generate a Projo factory interface
+* from a template and a set of parameters.
 *
 * @author Mirko Raner
 **/
-@Target(TYPE)
-@Retention(RUNTIME) 
-public @interface Template
+public class ProjoTemplateFactoryGenerator
 {
-    /**
-    * @return the {@link Configuration}s for the {@link Template}
-    **/
-    Class<? extends Collection<? extends Configuration>> input();
+    public String generate(String templateName, Map<String, String> parameters)
+    {
+        VelocityEngine engine = new VelocityEngine();
+        VelocityContext context = new VelocityContext();
+        parameters.forEach(context::put);
+        engine.init();
+        Template template = engine.getTemplate(templateName);
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+        return writer.toString();
+    }
 }

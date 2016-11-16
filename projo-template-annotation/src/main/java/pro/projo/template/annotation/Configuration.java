@@ -15,23 +15,18 @@
 //                                                                          //
 package pro.projo.template.annotation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.util.Collection;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.util.Map;
 
 /**
-* The {@link Template} annotations marks template classes that are used for Projo's internal code generation.
+* The {@link Configuration} interface describes the fully-qualified class name and the input
+* parameters for an individual template invocation. A template can be invoke multiple times
+* with different configurations.
 *
 * @author Mirko Raner
 **/
-@Target(TYPE)
-@Retention(RUNTIME) 
-public @interface Template
+public interface Configuration
 {
-    /**
-    * @return the {@link Configuration}s for the {@link Template}
-    **/
-    Class<? extends Collection<? extends Configuration>> input();
+    String fullyQualifiedClassName();
+
+    Map<String, String> parameters();
 }
