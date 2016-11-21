@@ -19,10 +19,14 @@
    <version>0.0.1-SNAPSHOT</version>
   </dependency>
   <dependency>
-   <groupId>junit</groupId>
-   <artifactId>junit</artifactId>
-   <version>4.12</version>
-   <scope>test</scope>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-template-configuration</artifactId>
+   <version>0.0.1-SNAPSHOT</version>
+  </dependency>
+  <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-template-generation</artifactId>
+   <version>0.0.1-SNAPSHOT</version>
   </dependency>
  </dependencies>
 

@@ -15,8 +15,8 @@
 //                                                                          //
 package pro.projo.$template;
 
-import pro.projo.internal.ProjoFactoryTemplateConfiguration;
 import pro.projo.template.annotation.Template;
+import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
 
 /**
 *#*

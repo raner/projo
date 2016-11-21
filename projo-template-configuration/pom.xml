@@ -20,9 +20,8 @@
  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
  <modelVersion>4.0.0</modelVersion>
- <artifactId>projo-template-generation</artifactId>
- <name>Projo Template Generation</name>
- <packaging>jar</packaging>
+ <artifactId>projo-template-configuration</artifactId>
+ <name>Projo Template Configuration</name>
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
@@ -35,31 +34,6 @@
    <artifactId>projo-template-annotation</artifactId>
    <version>0.0.1-SNAPSHOT</version>
   </dependency>
-  <dependency>
-   <groupId>org.apache.velocity</groupId>
-   <artifactId>velocity</artifactId>
-   <version>1.7</version>
-  </dependency>
-  <dependency>
-   <groupId>commons-io</groupId>
-   <artifactId>commons-io</artifactId>
-   <version>2.5</version>
-   <scope>test</scope>
-  </dependency>
  </dependencies>
-
- <build>
-  <plugins>
-   <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-compiler-plugin</artifactId>
-    <configuration>
-     <source>1.8</source>
-     <target>1.8</target>
-     <compilerArgument>-proc:none</compilerArgument>
-    </configuration>
-   </plugin>
-  </plugins>
- </build>
 
 </project>
