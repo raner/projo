@@ -14,10 +14,10 @@
 // limitations under the License.                                           //
 //                                                                          //
 package pro.projo.$template;
-
+/*#*/
 import pro.projo.template.annotation.Template;
 import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
-
+/*#*/
 /**
 *#*
 * The {@link pro.projo.$template.Factory} interface is the Velocity template for Projo's variadic factory interfaces.

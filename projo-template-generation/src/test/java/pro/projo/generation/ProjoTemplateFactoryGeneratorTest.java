@@ -17,9 +17,13 @@ package pro.projo.generation;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.runtime.parser.ParseException;
 import org.junit.Test;
 import static java.lang.System.lineSeparator;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -34,6 +38,52 @@ import static org.junit.Assert.assertEquals;
 **/
 public class ProjoTemplateFactoryGeneratorTest
 {
+    @Test
+    public void testSinglesFactoryTemplateWriter() throws IOException, ParseException
+    {
+        ProjoTemplateFactoryGenerator generator = new ProjoTemplateFactoryGenerator();
+        String[][] variables =
+        {
+            {"template", "singles"},
+            {"n", "1"},
+            {"s", ""},
+            {"First", "_First_"},
+            {"AdditionalTypeParameters", "_First_"},
+            {"additionalTypeParameterDocumentation", "@param <_First_> the type of the first field"},
+            {"additionalMethodParameterDocumentation", "@param first the first parameter"},
+            {"argumentAndAdditionalParameters", "first"}
+        };
+        Map<String, String> parameters = Stream.of(variables).collect(toMap(key -> key[0], value -> value[1]));
+        String expected = FileUtils.readFileToString(new File("src/test/resources/pro/projo/singles/Factory.expected.java"), UTF_8);
+        StringWriter actual = new StringWriter();
+        StringReader reader = new StringReader(FileUtils.readFileToString(new File("src/test/resources/pro/projo/$template/Factory.java"), UTF_8));
+        Template template = generator.getTemplate(reader, "Factory");
+        generator.generate(template, parameters, actual);
+        assertEquals(expected, actual.toString());
+    }
+
+    @Test
+    public void testSinglesFactoryWriter() throws IOException
+    {
+        ProjoTemplateFactoryGenerator generator = new ProjoTemplateFactoryGenerator();
+        String[][] variables =
+        {
+            {"template", "singles"},
+            {"n", "1"},
+            {"s", ""},
+            {"First", "_First_"},
+            {"AdditionalTypeParameters", "_First_"},
+            {"additionalTypeParameterDocumentation", "@param <_First_> the type of the first field"},
+            {"additionalMethodParameterDocumentation", "@param first the first parameter"},
+            {"argumentAndAdditionalParameters", "first"}
+        };
+        Map<String, String> parameters = Stream.of(variables).collect(toMap(key -> key[0], value -> value[1]));
+        String expected = FileUtils.readFileToString(new File("src/test/resources/pro/projo/singles/Factory.expected.java"), UTF_8);
+        StringWriter actual = new StringWriter();
+        generator.generate("src/test/resources/pro/projo/$template/Factory.java", parameters, actual);
+        assertEquals(expected, actual.toString());
+    }
+
     @Test
     public void testSinglesFactory() throws IOException
     {
