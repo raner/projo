@@ -77,3 +77,40 @@ are present, that does not necessarily mean they were implemented correctly and 
 
 **Projo** completely removes the need for developers to ever again implement a getter, setter, hashCode, equals or toString
 method.
+
+Still got questions? Please continue reading...
+
+## FAQ
+
+### How does Projo relate to Project Lombok?
+Project Lombok uses compile-time code generation to splice getters, setters, equals, etc., into your class files when you
+compile your sources. Generating code at compile time can be tricky and requires some hacks to get IDEs to recognize the
+generated code. Projo, on the other hand, does not use compile-time code generation, it uses runtime code-generation, so your
+class files will always directly correspond to the code that you wrote, and no hacky IDE integration is required. The
+downside of Projo (if you want to call it that), is that you need to change your code from using ```new Pojo()``` to
+```create(Pojo.class)```, as shown above. Is Projo better than Lombok, or vice versa? No, not really either way, they are
+just different approaches to the same problem. Your mileage may vary.
+
+**Disclaimer:** Projo itself is built using compile-time code generation (for example, to generate factory interfaces with
+varying numbers of parameters). As a user of Projo, however, you will not notice that at all, and at your own project's
+compile time no Projo code generation will take place.
+
+### Does Projo support immutable objects?
+Yes, Projo does support immutable objects. As immutable objects need to be fully initialized when they are created this
+requires the use of a factory or a builder (the latter not being supported yet). To use a factory, simply add a static
+factory field to your Projo interface:
+```java
+import pro.projo.doubles.Factory;
+import static pro.projo.Projo.creates;
+
+interface Person
+{
+    Factory<Person, String, String> FACTORY = creates(Person.class).with(Person::firstName, Person::lastName);
+    String firstName();
+    String lastName();
+}
+```
+To create an object, you can then simply use the factory:
+```java
+    Person person = Person.FACTORY.create("John", "Doe");
+```
