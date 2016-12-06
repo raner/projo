@@ -15,7 +15,9 @@
 //                                                                          //
 package pro.projo.jaxrs.tests.addressbook;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.servlet.ServletException;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -56,17 +58,18 @@ public class AddressBookIntegrationTest
     * @param arguments command line arguments (currently ignored)
     * @throws ServletException if there was a problem with the Jersey servlet container
     * @throws LifecycleException if there was a problem with the Tomcat server
+    * @throws IOException if the server had problems accessing the local file system
     **/
-    public static void main(String[] arguments) throws ServletException, LifecycleException
+    public static void main(String[] arguments) throws ServletException, LifecycleException, IOException
     {
         startServer();
         server.getServer().await();
     }
 
     @BeforeClass
-    public static void startServer() throws ServletException, LifecycleException
+    public static void startServer() throws ServletException, LifecycleException, IOException
     {
-        String webappDirLocation = "WebContent/";
+        Path webAppDirectory = Files.createTempDirectory(null);
         server = new Tomcat();
         String webPort = System.getenv("PORT");
         if (webPort == null || webPort.isEmpty())
@@ -74,7 +77,7 @@ public class AddressBookIntegrationTest
             webPort = "8080";
         }
         server.setPort(Integer.valueOf(webPort));
-        Context context = server.addWebapp("", new File(webappDirLocation).getAbsolutePath());
+        Context context = server.addWebapp("", webAppDirectory.toString());
         Tomcat.addServlet(context, SERVLET_NAME, new ServletContainer(new AddressBookConfiguration()));
         context.addServletMappingDecoded("/*", SERVLET_NAME);
         server.start();
