@@ -114,3 +114,13 @@ To create an object, you can then simply use the factory:
 ```java
     Person person = Person.FACTORY.create("John", "Doe");
 ```
+
+### Will Projo work with my JAX-RS application?
+Yes, Projo provides integration support for JAX-RS and Projo objects can be serialized and deserialized just like
+any other project. To enable the integration, simply put the ```projo-jax-rs``` JAR on your runtime classpath (it is
+not needed at compile time). The integration uses auto-discovery to modify your JAX-RS serialization and deserialization
+so that it becomes Projo-aware. Instead of trying to ```new``` up an interface, the deserializer will correctly use
+the Projo library to instantiate new objects.
+
+Currently, Projo only supports Jersey as the JAX-RS provider, in conjunction with the MOXy marshaller. Eventually, other
+JAX-RS implementations (such as CXF) and other marshallers (such as Jackson) will be supported as well.
