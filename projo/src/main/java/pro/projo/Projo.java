@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,12 +16,10 @@
 package pro.projo;
 
 import java.lang.reflect.Field;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import pro.projo.internal.ProjoInvocationHandler;
+import pro.projo.internal.Prototype;
 import static java.lang.reflect.Modifier.isStatic;
-import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
  * The {@link Projo} class provides static methods for creating Projo objects, as well as other
@@ -31,54 +29,65 @@ import static java.lang.reflect.Proxy.newProxyInstance;
  */
 public class Projo
 {
-    public static class Intermediate<_Artifact_>
-    {
-        private Class<_Artifact_> type;
+    /**
+    * The {@link Intermediate} interface provides access to all generated Projo factories.
+    * It is the union of all generated intermediate interfaces.
+    *
+    * @param <_Artifact_> the artifact type
+    **/
+    public static interface Intermediate<_Artifact_> extends
+        pro.projo.singles.Intermediate<_Artifact_>,
+        pro.projo.doubles.Intermediate<_Artifact_>,
+        pro.projo.triples.Intermediate<_Artifact_>,
+        pro.projo.quadruples.Intermediate<_Artifact_>,
+        pro.projo.quintuples.Intermediate<_Artifact_>,
+        pro.projo.sextuples.Intermediate<_Artifact_>,
+        pro.projo.septuples.Intermediate<_Artifact_>,
+        pro.projo.octuples.Intermediate<_Artifact_>,
+        pro.projo.nonuples.Intermediate<_Artifact_>,
+        pro.projo.decuples.Intermediate<_Artifact_>,
+        pro.projo.undecuples.Intermediate<_Artifact_>,
+        pro.projo.duodecuples.Intermediate<_Artifact_>,
+        pro.projo.tredecuples.Intermediate<_Artifact_>,
+        pro.projo.quattuordecuples.Intermediate<_Artifact_>,
+        pro.projo.quindecuples.Intermediate<_Artifact_>,
+        pro.projo.sexdecuples.Intermediate<_Artifact_>,
+        pro.projo.septendecuples.Intermediate<_Artifact_>,
+        pro.projo.octodecuples.Intermediate<_Artifact_>,
+        pro.projo.novemdecuples.Intermediate<_Artifact_>,
+        pro.projo.vigintuples.Intermediate<_Artifact_>,
+        pro.projo.unvigintuples.Intermediate<_Artifact_>,
+        pro.projo.duovigintuples.Intermediate<_Artifact_>,
+        pro.projo.trevigintuples.Intermediate<_Artifact_>,
+        pro.projo.quattuorvigintuples.Intermediate<_Artifact_>,
+        pro.projo.quinvigintuples.Intermediate<_Artifact_>,
+        pro.projo.sexvigintuples.Intermediate<_Artifact_>,
+        pro.projo.septenvigintuples.Intermediate<_Artifact_>,
+        pro.projo.octovigintuples.Intermediate<_Artifact_>,
+        pro.projo.novemvigintuples.Intermediate<_Artifact_>,
+        pro.projo.trigintuples.Intermediate<_Artifact_> { /**/ }
 
-        public Intermediate(Class<_Artifact_> type)
-        {
-            this.type = type;
-        }
-
-        public <_First_> pro.projo.singles.Factory<_Artifact_, _First_> with(Function<_Artifact_, _First_> first)
-        {
-            @SuppressWarnings("synthetic-access")
-            pro.projo.singles.Factory<_Artifact_, _First_> factory = (argument1) ->
-            {
-                return initialize(type).members(first).with(argument1);
-            };
-            return factory;
-        }
-
-        public <_First_, _Second_> pro.projo.doubles.Factory<_Artifact_, _First_, _Second_> with(Function<_Artifact_, _First_> first, Function<_Artifact_, _Second_> second)
-        {
-            @SuppressWarnings("synthetic-access")
-            pro.projo.doubles.Factory<_Artifact_, _First_, _Second_> factory = (argument1, argument2) ->
-            {
-                return initialize(type).members(first, second).with(argument1, argument2);
-            };
-            return factory;
-        }
-
-        public <_First_, _Second_, _Third_> pro.projo.triples.Factory<_Artifact_, _First_, _Second_, _Third_> with(Function<_Artifact_, _First_> first, Function<_Artifact_, _Second_> second, Function<_Artifact_, _Third_> third)
-        {
-            @SuppressWarnings("synthetic-access")
-            pro.projo.triples.Factory<_Artifact_, _First_, _Second_, _Third_> factory = (argument1, argument2, argument3) ->
-            {
-                return initialize(type).members(first, second, third).with(argument1, argument2, argument3);
-            };
-            return factory;
-        }
-    }
-
+    /**
+    * Creates a new {@link Intermediate} object that provides factories for creating artifacts.
+    *
+    * @param type the Projo interface
+    * @return a new {@link Intermediate} object
+    **/
     public static <_Artifact_> Intermediate<_Artifact_> creates(Class<_Artifact_> type)
     {
-        return new Intermediate<>(type);
+        return () -> type;
     }
 
+    /**
+    * Creates a new mutable Projo object. This method assumes that the object's interface provides
+    * setter methods that allow setting the object's fields.
+    *
+    * @param type the Projo interface class
+    * @return a new object whose fields will be initialized to default values
+    **/
     public static <_Artifact_> _Artifact_ create(Class<_Artifact_> type)
     {
-        return initialize(type).members().with();
+        return ((Prototype<_Artifact_>)() -> type).initialize().members().with();
     }
 
     /**
@@ -104,15 +113,5 @@ public class Projo
         {
             throw new IllegalArgumentException(illegalAccess.getMessage());
         }
-    }
-
-    private static <_Artifact_> ProjoInvocationHandler<_Artifact_>.Initializer initialize(Class<_Artifact_> type)
-    {
-        Class<?>[] interfaces = {type};
-        ClassLoader loader = Projo.class.getClassLoader();
-        ProjoInvocationHandler<_Artifact_> handler = new ProjoInvocationHandler<>();
-        @SuppressWarnings("unchecked")
-        _Artifact_ instance = (_Artifact_)newProxyInstance(loader, interfaces, handler);
-        return handler.initialize(instance);
     }
 }

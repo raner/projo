@@ -20,20 +20,24 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.stream.IntStream;
 import pro.projo.template.annotation.Configuration;
 import static java.lang.System.lineSeparator;
+import static java.util.stream.Collectors.joining;
 
 /**
-* The {@link ProjoFactoryTemplateConfiguration} creates the template {@link Configuration}s for
-* generating Projo factory interfaces.
+* The {@link ProjoIntermediateTemplateConfiguration} creates the template {@link Configuration}s for
+* generating Projo intermediate interfaces.
 *
 * @author Mirko Raner
 **/
-public class ProjoFactoryTemplateConfiguration extends ArrayList<Configuration> implements ProjoBaseTemplateConfiguration
+public class ProjoIntermediateTemplateConfiguration extends ArrayList<Configuration> implements ProjoBaseTemplateConfiguration
 {
-    private final static long serialVersionUID = 3050346253598962997L;
+    private final static long serialVersionUID = -9198129168518550932L;
 
-    public ProjoFactoryTemplateConfiguration()
+    public ProjoIntermediateTemplateConfiguration()
     {
         for (int index = 0; index < NAMES.length; index++)
         {
@@ -43,7 +47,7 @@ public class ProjoFactoryTemplateConfiguration extends ArrayList<Configuration> 
                 @Override
                 public String fullyQualifiedClassName()
                 {
-                    return "pro.projo." + NAMES[number] + ".Factory";
+                    return "pro.projo." + NAMES[number] + ".Intermediate";
                 }
 
                 @Override
@@ -65,11 +69,13 @@ public class ProjoFactoryTemplateConfiguration extends ArrayList<Configuration> 
                     parameters.put("template", NAMES[number]);
                     parameters.put("n", String.valueOf(number+1));
                     parameters.put("s", number > 0? "s":"");
-                    parameters.put("First", "_First_");
+                    parameters.put("members", format(0, number, Function.identity(), ", "));
+                    parameters.put("arguments", arguments(number));
+                    parameters.put("First", "Function<_Artifact_, _First_> first");
                     parameters.put("AdditionalTypeParameters", format(0, number, this::typeParameterName, ", "));
-                    parameters.put("additionalTypeParameterDocumentation", format(0, number, this::typeParameterDocumentation, lineSeparator() + "* "));
+                    parameters.put("additionalTypeParameterDocumentation", format(0, number, this::typeParameterDocumentation, lineSeparator() + "    * "));
                     parameters.put("additionalMethodParameterDocumentation", format(0, number, this::methodParameterDocumentation, lineSeparator() + "    * "));
-                    parameters.put("argumentAndAdditionalParameters", format(0, number, this::typeAndParameterName, ", ").substring("_First_ ".length()));
+                    parameters.put("argumentAndAdditionalParameters", (number > 0? ", ":"") + format(1, number, this::functionParameter, ", "));
                     return parameters;
                 }
 
@@ -77,6 +83,17 @@ public class ProjoFactoryTemplateConfiguration extends ArrayList<Configuration> 
                 public String toString()
                 {
                     return fullyQualifiedClassName() + ":" + parameters();
+                }
+
+                private String arguments(int count)
+                {
+                    IntFunction<String> toString = item -> "argument" + item;
+                    return IntStream.range(1, count+2).mapToObj(toString).collect(joining(", "));
+                }
+
+                private String functionParameter(String regularName)
+                {
+                    return "Function<_Artifact_, " + typeParameterName(regularName) + "> " + regularName;
                 }
             };
             add(configuration);

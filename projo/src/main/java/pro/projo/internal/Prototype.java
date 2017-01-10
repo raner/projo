@@ -1,0 +1,49 @@
+//                                                                          //
+// Copyright 2017 Mirko Raner                                               //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
+package pro.projo.internal;
+
+import pro.projo.Projo;
+import static java.lang.reflect.Proxy.newProxyInstance;
+
+/**
+* The {@link Prototype} interface serves as the base interface of all generated intermediate
+* interfaces. It declares an abstract method for determining the type of the objects that it should
+* generate and implements an initialization method based on that abstract method.
+*
+* @param <_Artifact_> the object type
+*
+* @author Mirko Raner
+**/
+public interface Prototype<_Artifact_>
+{
+    /**
+     * @return the object type
+     */
+    public Class<_Artifact_> type();
+
+    /**
+     * @return an {@link ProjoInvocationHandler.Initializer Initializer} that creates a new Projo object
+     */
+    public default ProjoInvocationHandler<_Artifact_>.Initializer initialize()
+    {
+        Class<?>[] interfaces = {type()};
+        ClassLoader loader = Projo.class.getClassLoader();
+        ProjoInvocationHandler<_Artifact_> handler = new ProjoInvocationHandler<>();
+        @SuppressWarnings("unchecked")
+        _Artifact_ instance = (_Artifact_)newProxyInstance(loader, interfaces, handler);
+        return handler.initialize(instance);
+    }
+}
