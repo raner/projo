@@ -15,12 +15,11 @@
 //                                                                          //
 package pro.projo;
 
+import java.util.Objects;
 import org.junit.Test;
 import pro.projo.trigintuples.Factory;
 import static org.junit.Assert.assertArrayEquals;
 import static pro.projo.Projo.creates;
-
-import java.util.Objects;
 
 /**
 * The class {@link ImmutableProjoTrigintuplesTest} is a JUnit test class for verifying immutable
@@ -50,7 +49,6 @@ public class ImmutableProjoTrigintuplesTest
         @Override
         public long longValue()
         {
-            // TODO Auto-generated method stub
             return 0;
         }
 

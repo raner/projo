@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,12 +15,21 @@
 //                                                                          //
 package pro.projo;
 
+import java.util.stream.Stream;
 import org.junit.Test;
+import pro.projo.annotations.ValueObject;
 import pro.projo.doubles.Factory;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static pro.projo.Projo.creates;
 
+/**
+* The {@link ProjoTest} class verifies the public static methods of the {@link Projo} class.
+*
+* @author Mirko Raner
+**/
 public class ProjoTest
 {
     static interface Interval
@@ -36,6 +45,51 @@ public class ProjoTest
         int getInteger();
     }
 
+    static interface ValueObject1
+    {
+        @Override
+        boolean equals(Object other);
+
+        Object field();
+    }
+
+    static interface ValueObject2
+    {
+        @Override
+        int hashCode();
+
+        Object field();
+    }
+
+    static interface ValueObject3
+    {
+        @Override
+        int hashCode();
+
+        @Override
+        boolean equals(Object other);
+
+        Object field();
+    }
+
+    @ValueObject
+    static interface ValueObject4
+    {
+        Object field();
+    }
+
+    @ValueObject
+    static interface ValueObject5
+    {
+        @Override
+        int hashCode();
+
+        @Override
+        boolean equals(Object other);
+
+        Object field();
+    }
+
     @Test
     public void testGetFactory()
     {
@@ -46,5 +100,23 @@ public class ProjoTest
     public void testGetFactoryReturnsNull()
     {
         assertNull(Projo.getFactory(NoFactory.class));
+    }
+
+    @Test
+    public void testIsValueObject()
+    {
+        Class<?>[] projos =
+        {
+            Interval.class,
+            NoFactory.class,
+            ValueObject1.class,
+            ValueObject2.class,
+            ValueObject3.class,
+            ValueObject4.class,
+            ValueObject5.class
+        };
+        Object[] expected = {false, false, true, true, true, true, true};
+        Object[] actual = Stream.of(projos).map(Projo::isValueObject).collect(toList()).toArray();
+        assertArrayEquals(expected, actual);
     }
 }

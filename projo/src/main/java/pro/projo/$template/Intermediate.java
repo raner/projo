@@ -52,7 +52,7 @@ public interface Intermediate<_Artifact_> extends Prototype<_Artifact_>
         Factory<_Artifact_, $AdditionalTypeParameters> factory = ($arguments) ->
         {
             /*#*/ Function<_Artifact_, ?> $members = null; /*#*/
-            return initialize().members($members).with($arguments);
+            return initialize().new Members($members).with($arguments);
         };
         return factory;
     }

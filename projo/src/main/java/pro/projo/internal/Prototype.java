@@ -30,18 +30,18 @@ import static java.lang.reflect.Proxy.newProxyInstance;
 public interface Prototype<_Artifact_>
 {
     /**
-     * @return the object type
-     */
+    * @return the object type
+    **/
     public Class<_Artifact_> type();
 
     /**
-     * @return an {@link ProjoInvocationHandler.Initializer Initializer} that creates a new Projo object
-     */
+    * @return an {@link ProjoInvocationHandler.Initializer Initializer} that creates a new Projo object
+    **/
     public default ProjoInvocationHandler<_Artifact_>.Initializer initialize()
     {
         Class<?>[] interfaces = {type()};
         ClassLoader loader = Projo.class.getClassLoader();
-        ProjoInvocationHandler<_Artifact_> handler = new ProjoInvocationHandler<>();
+        ProjoInvocationHandler<_Artifact_> handler = new ProjoInvocationHandler<>(type());
         @SuppressWarnings("unchecked")
         _Artifact_ instance = (_Artifact_)newProxyInstance(loader, interfaces, handler);
         return handler.initialize(instance);

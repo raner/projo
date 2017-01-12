@@ -1,10 +1,28 @@
+//                                                                          //
+// Copyright 2017 Mirko Raner                                               //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
 package pro.projo;
 
 import org.junit.Test;
 import pro.projo.doubles.Factory;
-
+import static java.lang.System.identityHashCode;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static pro.projo.Projo.creates;
 
 public class ImmutableProjoDoublesTest
@@ -69,5 +87,30 @@ public class ImmutableProjoDoublesTest
         assertEquals(Math.E, complexPerson.complex().imaginary());
         assertEquals("John", complexPerson.person().firstName());
         assertEquals("Doe", complexPerson.person().lastName());
+    }
+
+    @Test
+    public void testEquals()
+    {
+        Person person = Person.FACTORY.create("John", "Doe");
+        assertTrue(person.equals(person));
+    }
+
+    @Test
+    public void testNotEquals()
+    {
+        Person person1 = Person.FACTORY.create("John", "Doe");
+        Person person2 = Person.FACTORY.create("John", "Doe");
+        assertFalse(person1.equals(person2));
+    }
+
+    @Test
+    public void testHashCode()
+    {
+        Person person1 = Person.FACTORY.create("John", "Doe");
+        Person person2 = Person.FACTORY.create("John", "Doe");
+        int[] expected = {identityHashCode(person1), identityHashCode(person2)};
+        int[] actual = {person1.hashCode(), person2.hashCode()};
+        assertArrayEquals(expected, actual);
     }
 }

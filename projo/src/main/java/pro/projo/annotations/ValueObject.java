@@ -13,48 +13,24 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo.annotations;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public class PropertyMatcherTest
+/**
+* The {@link ValueObject} annotation can be used to designate Projo interfaces to generate Value Objects.
+* <br>
+* <b>NOTE:</b> Projo's notion of Value Objects does not require immutability; it merely indicates that object
+* equality is determined via a field-by-field comparison of the object's fields (not by object identity).
+*
+* @author Mirko Raner
+**/
+@Target(TYPE)
+@Retention(RUNTIME)
+public @interface ValueObject
 {
-    private PropertyMatcher matcher = new PropertyMatcher();
-
-    @Test
-    public void testGetter()
-    {
-        assertEquals("Property", matcher.propertyName("getProperty"));
-    }
-
-    @Test
-    public void testSetter()
-    {
-        assertEquals("Property", matcher.propertyName("setProperty"));
-    }
-
-    @Test
-    public void testImmutableGetter1()
-    {
-        assertEquals("property", matcher.propertyName("property"));
-    }
-
-    @Test
-    public void testImmutableGetter2()
-    {
-        assertEquals("getter", matcher.propertyName("getter"));
-    }
-
-    @Test
-    public void testBadlyNamedImmutableGetter()
-    {
-        assertEquals("setter", matcher.propertyName("setter"));
-    }
-
-    @Test
-    public void testGetterName()
-    {
-        assertEquals("getFirstName", matcher.getterName("FirstName"));
-    }
+    // This annotation currently has no fields.
 }

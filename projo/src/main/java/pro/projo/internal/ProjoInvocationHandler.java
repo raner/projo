@@ -1,3 +1,18 @@
+//                                                                          //
+// Copyright 2017 Mirko Raner                                               //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
 package pro.projo.internal;
 
 import java.lang.reflect.InvocationHandler;
@@ -7,17 +22,50 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+import static java.lang.System.identityHashCode;
+import static pro.projo.Projo.isValueObject;
 
+/**
+* The {@link ProjoInvocationHandler} is the {@link InvocationHandler} for Projo objects that are
+* implemented by Java proxies. It implements the functionality of getters and setters as well as
+* the {@link Object#equals(Object) equals()} and {@link Object#hashCode() hashCode()} methods.
+*
+* @param <_Artifact_> the type of the Projo object
+*
+* @author Mirko Raner
+**/
 public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
 {
     private static Map<Class<?>, Object> DEFAULTS = new HashMap<>();
     private static PropertyMatcher matcher = new PropertyMatcher();
 
+    public static BiPredicate<Method, Object[]> equals = (method, arguments) -> method.getName().equals("equals")
+        && method.getParameterCount() == 1
+        && method.getParameterTypes()[0] == Object.class
+        && method.getReturnType() == boolean.class;
+    public static BiPredicate<Method, Object[]> hashCode = (method, arguments) -> method.getName().equals("hashCode")
+        && method.getParameterCount() == 0;
+    public static BiPredicate<Method, Object[]> getter = (method, arguments) -> (arguments == null || arguments.length == 0)
+        && !hashCode.test(method, arguments);
+    public static BiPredicate<Method, Object[]> setter = (method, arguments) -> (arguments != null && arguments.length == 1)
+        && !equals.test(method, arguments);
+
     private Map<String, Object> state = new HashMap<>();
+    private Class<_Artifact_> reifiedType;
+    Function<_Artifact_, ?>[] getters;
     Stack<Object> initializationStack = new Stack<>();
-    BiFunction<Method, Object[], Object> invoker = this::initializationInvoker;
+    InvocationHandler invoker = (Object proxy, Method method, Object... arguments) ->
+    {
+        state.put(matcher.propertyName(method.getName()), initializationStack.pop());
+
+        // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
+        //
+        return DEFAULTS.get(method.getReturnType());
+    };
 
     static
     {
@@ -39,25 +87,20 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
         {
             this.instance = object;
         }
-
-        @SafeVarargs
-        public final Members members(Function<_Artifact_, ?>... members)
-        {
-            return new Members(members);
-        }
  
         public class Members
         {
-            private Iterator<Function<_Artifact_, ?>> members;
+            //private Iterator<Function<_Artifact_, ?>> members;
 
             @SafeVarargs
-            Members(Function<_Artifact_, ?>... members)
+            public Members(Function<_Artifact_, ?>... members)
             {
-                this.members = Arrays.asList(members).iterator();
+                getters = members;
             }
 
             public _Artifact_ with(Object... values)
             {
+                Iterator<Function<_Artifact_, ?>> members = Arrays.asList(getters).iterator();
                 for (Object value: values)
                 {
                     initializationStack.push(value);
@@ -67,43 +110,42 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
                 {
                     throw new IllegalStateException();
                 }
-                invoker = ProjoInvocationHandler.this::regularInvoker;
+                return returnInstance();
+            }
+
+            public _Artifact_ returnInstance()
+            {
+                invoker = ProjoInvocationHandler.this.regularInvoker;
                 initializationStack = null;
                 return instance;
             }
         }
     }
 
-    private Object initializationInvoker(Method method, @SuppressWarnings("unused") Object... arguments)
+    InvocationHandler regularInvoker = (Object proxy, Method method, Object... arguments) ->
     {
-        state.put(matcher.propertyName(method.getName()), initializationStack.pop());
-
-        // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
-        //
-        return DEFAULTS.get(method.getReturnType());
-    }
-
-    private Object regularInvoker(Method method, Object... arguments)
-    {
-        if (setter(method, arguments))
+        if (setter.test(method, arguments))
         {
             return state.put(matcher.propertyName(method.getName()), arguments[0]);
         }
-        if (getter(method, arguments))
+        if (getter.test(method, arguments))
         {
             return state.get(matcher.propertyName(method.getName()));
         }
+        if (equals.test(method, arguments))
+        {
+            return isValueObject(reifiedType)? isEqual(artifact(proxy), artifact(arguments[0])):proxy == arguments[0];
+        }
+        if (hashCode.test(method, arguments))
+        {
+            return /*isValueObject(reifiedType)? hashCode(state):*/identityHashCode(proxy);
+        }
         throw new NoSuchMethodError(String.valueOf(method));
-    }
+    };
 
-    private boolean getter(@SuppressWarnings("unused") Method method, Object... arguments)
+    public ProjoInvocationHandler(Class<_Artifact_> type)
     {
-        return arguments == null || arguments.length == 0;
-    }
-
-    private boolean setter(@SuppressWarnings("unused") Method method, Object... arguments)
-    {
-        return arguments != null && arguments.length == 1;
+        reifiedType = type;
     }
 
     public Initializer initialize(_Artifact_ artifact)
@@ -114,6 +156,23 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
     @Override
     public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable
     {
-        return invoker.apply(method, arguments);
+        return invoker.invoke(proxy, method, arguments);
+    }
+
+    private boolean isEqual(_Artifact_ proxy, _Artifact_ object)
+    {
+        Predicate<Function<_Artifact_, ?>> equal = member -> equalOrBothNull(member.apply(proxy), member.apply(object));
+        return reifiedType.isInstance(object) && Stream.of(getters).allMatch(equal);
+    }
+
+    private boolean equalOrBothNull(Object one, Object two)
+    {
+        return one == null? two == null:one.equals(two);
+    }
+
+    @SuppressWarnings("unchecked")
+    private _Artifact_ artifact(Object object)
+    {
+        return reifiedType.isInstance(object)? (_Artifact_)object:null;
     }
 }
