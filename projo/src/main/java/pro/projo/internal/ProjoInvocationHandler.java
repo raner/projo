@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -90,8 +91,6 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
  
         public class Members
         {
-            //private Iterator<Function<_Artifact_, ?>> members;
-
             @SafeVarargs
             public Members(Function<_Artifact_, ?>... members)
             {
@@ -138,7 +137,9 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
         }
         if (hashCode.test(method, arguments))
         {
-            return /*isValueObject(reifiedType)? hashCode(state):*/identityHashCode(proxy);
+            @SuppressWarnings("unchecked")
+            _Artifact_ artifact = (_Artifact_)proxy;
+            return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
         }
         throw new NoSuchMethodError(String.valueOf(method));
     };
@@ -157,6 +158,11 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
     public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable
     {
         return invoker.invoke(proxy, method, arguments);
+    }
+
+    private int hashCode(_Artifact_ proxy)
+    {
+        return Objects.hash(Stream.of(getters).map(method -> method.apply(proxy)).toArray(Object[]::new));
     }
 
     private boolean isEqual(_Artifact_ proxy, _Artifact_ object)

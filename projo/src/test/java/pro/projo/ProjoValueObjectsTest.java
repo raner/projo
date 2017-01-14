@@ -172,13 +172,47 @@ public class ProjoValueObjectsTest
     }
 
     @Test
-    @org.junit.Ignore("hashCode is not yet implemented")
-    public void testHashCode()
+    public void testIdentityHashCode()
     {
-        EqualPerson person1 = EqualPerson.FACTORY.create("John", "Doe");
-        EqualPerson person2 = EqualPerson.FACTORY.create("John", "Doe");
+        Complex number = create(Complex.class);
+        EqualPerson person =  EqualPerson.FACTORY.create("John", "Doe");
+        ComplexPerson person1 = ComplexPerson.FACTORY.create(number, person);
+        ComplexPerson person2 = ComplexPerson.FACTORY.create(number, person);
         int[] expected = {identityHashCode(person1), identityHashCode(person2)};
         int[] actual = {person1.hashCode(), person2.hashCode()};
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testEqualityHashCode()
+    {
+        EqualPerson person1 =  EqualPerson.FACTORY.create("John", "Doe");
+        EqualPerson person2 =  EqualPerson.FACTORY.create("John", "Doe");
+        assertTrue(person1.hashCode() == person2.hashCode());
+    }
+
+    @Test
+    public void testEqualityHashCodeSwitchFirstAndLast()
+    {
+        EqualPerson person1 =  EqualPerson.FACTORY.create("Lewis", "Kelly");
+        EqualPerson person2 =  EqualPerson.FACTORY.create("Kelly", "Lewis");
+        assertFalse(person1.hashCode() == person2.hashCode());
+    }
+
+    @Test
+    public void testEqualityHashCodeAllFieldsNull()
+    {
+        EqualPerson person1 =  EqualPerson.FACTORY.create(null, null);
+        EqualPerson person2 =  EqualPerson.FACTORY.create(null, null);
+        assertTrue(person1.hashCode() == person2.hashCode());
+    }
+
+    @Test
+    public void testEqualityHashCodeAlwaysTheSame()
+    {
+        EqualPerson person =  EqualPerson.FACTORY.create("Taylor", "Bennett");
+        int hashCode1 = person.hashCode();
+        int hashCode2 = person.hashCode();
+        assertTrue(hashCode1 == hashCode2);
     }
 }
