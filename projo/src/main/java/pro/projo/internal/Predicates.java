@@ -15,29 +15,24 @@
 //                                                                          //
 package pro.projo.internal;
 
-import pro.projo.Projo;
+import java.lang.reflect.Method;
+import java.util.function.BiPredicate;
 
 /**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
+* The {@link Predicates} class is a utility class that defines several commonly used predicates.
 *
 * @author Mirko Raner
 **/
-public interface Prototype<_Artifact_>
+public interface Predicates
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
-    {
-        return Projo.getImplementation().initializer(type());
-    }
+    static BiPredicate<Method, Object[]> equals = (method, arguments) -> method.getName().equals("equals")
+        && method.getParameterCount() == 1
+        && method.getParameterTypes()[0] == Object.class
+        && method.getReturnType() == boolean.class;
+    static BiPredicate<Method, Object[]> hashCode = (method, arguments) -> method.getName().equals("hashCode")
+        && method.getParameterCount() == 0;
+    static BiPredicate<Method, Object[]> getter = (method, arguments) -> (arguments == null || arguments.length == 0)
+        && !hashCode.test(method, arguments);
+    static BiPredicate<Method, Object[]> setter = (method, arguments) -> (arguments != null && arguments.length == 1)
+        && !equals.test(method, arguments);
 }

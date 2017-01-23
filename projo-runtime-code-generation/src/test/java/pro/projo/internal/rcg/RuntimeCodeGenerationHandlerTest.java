@@ -13,31 +13,43 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo.internal.rcg;
 
-import pro.projo.Projo;
+import org.junit.Test;
+import static java.lang.reflect.Proxy.isProxyClass;
+import static org.junit.Assert.assertFalse;
 
-/**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
-*
-* @author Mirko Raner
-**/
-public interface Prototype<_Artifact_>
+public class RuntimeCodeGenerationHandlerTest
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
+    public static interface Person
     {
-        return Projo.getImplementation().initializer(type());
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    static interface PackagePerson
+    {
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    @Test
+    public void testHandlerReturnsNonProxyClass()
+    {
+        RuntimeCodeGenerationHandler<Person> handler = new RuntimeCodeGenerationHandler<>();
+        Class<? extends Person> result = handler.getImplementationOf(Person.class);
+        assertFalse(isProxyClass(result));
+    }
+
+    @Test
+    public void testHandlerCanImplementNonPublicClass()
+    {
+        RuntimeCodeGenerationHandler<PackagePerson> handler = new RuntimeCodeGenerationHandler<>();
+        Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class);
+        assertFalse(isProxyClass(result));
     }
 }

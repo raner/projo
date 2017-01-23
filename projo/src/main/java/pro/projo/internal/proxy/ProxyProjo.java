@@ -13,31 +13,35 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo.internal.proxy;
 
 import pro.projo.Projo;
+import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
+* {@link ProxyProjo} is Projo's rather inefficient default implementation based on Java proxies.
+* It is highly recommended to use {@link RuntimeCodeGenerationProjo} instead.
 *
-* @param <_Artifact_> the object type
+* {@link ProxyProjo} has a {@link #precedence() precedence} of -2147483647 ({@link Integer#MIN_VALUE}{@code +1}).
 *
 * @author Mirko Raner
 **/
-public interface Prototype<_Artifact_>
+public class ProxyProjo extends Projo
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
+    @Override
+    protected int precedence()
     {
-        return Projo.getImplementation().initializer(type());
+        return Integer.MIN_VALUE+1;
+    }
+
+    @Override
+    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type)
+    {
+        Class<?>[] interfaces = {type};
+        ClassLoader loader = Projo.class.getClassLoader();
+        ProxyProjoInvocationHandler<_Artifact_> handler = new ProxyProjoInvocationHandler<>(type);
+        @SuppressWarnings("unchecked")
+        _Artifact_ instance = (_Artifact_)newProxyInstance(loader, interfaces, handler);
+        return handler.initialize(instance);
     }
 }

@@ -13,31 +13,32 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo;
 
-import pro.projo.Projo;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
+* The {@link ProjoTestSuite} brings in various JUnit tests from the main Projo project and runs them again in the
+* {@code projo-runtime-code-generation} project. This allows reusing the baseline tests that were created for the
+* proxy-based Projo implementation to be reused for the Projo implementation that uses runtime code generation.
 *
 * @author Mirko Raner
 **/
-public interface Prototype<_Artifact_>
+@RunWith(Suite.class)
+@SuiteClasses
+({
+    ProjoValueObjectsTest.class,
+    ImmutableProjoSinglesTest.class,
+    ImmutableProjoDoublesTest.class,
+    ImmutableProjoTriplesTest.class,
+    ImmutableProjoTrigintuplesTest.class,
+    MutableProjoSinglesTest.class,
+    MutableProjoDoublesTest.class,
+    MutableProjoTriplesTest.class
+})
+public class ProjoTestSuite
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
-    {
-        return Projo.getImplementation().initializer(type());
-    }
+    // No additional members...
 }

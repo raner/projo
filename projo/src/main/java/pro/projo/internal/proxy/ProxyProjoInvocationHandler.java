@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo.internal.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,15 +23,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import pro.projo.internal.Default;
+import pro.projo.internal.Predicates;
+import pro.projo.internal.ProjoHandler;
+import pro.projo.internal.PropertyMatcher;
 import static java.lang.System.identityHashCode;
 import static pro.projo.Projo.isValueObject;
 
 /**
-* The {@link ProjoInvocationHandler} is the {@link InvocationHandler} for Projo objects that are
+* The {@link ProxyProjoInvocationHandler} is the {@link InvocationHandler} for Projo objects that are
 * implemented by Java proxies. It implements the functionality of getters and setters as well as
 * the {@link Object#equals(Object) equals()} and {@link Object#hashCode() hashCode()} methods.
 *
@@ -39,21 +42,9 @@ import static pro.projo.Projo.isValueObject;
 *
 * @author Mirko Raner
 **/
-public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
+public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artifact_> implements Predicates, InvocationHandler
 {
-    private static Map<Class<?>, Object> DEFAULTS = new HashMap<>();
     private static PropertyMatcher matcher = new PropertyMatcher();
-
-    public static BiPredicate<Method, Object[]> equals = (method, arguments) -> method.getName().equals("equals")
-        && method.getParameterCount() == 1
-        && method.getParameterTypes()[0] == Object.class
-        && method.getReturnType() == boolean.class;
-    public static BiPredicate<Method, Object[]> hashCode = (method, arguments) -> method.getName().equals("hashCode")
-        && method.getParameterCount() == 0;
-    public static BiPredicate<Method, Object[]> getter = (method, arguments) -> (arguments == null || arguments.length == 0)
-        && !hashCode.test(method, arguments);
-    public static BiPredicate<Method, Object[]> setter = (method, arguments) -> (arguments != null && arguments.length == 1)
-        && !equals.test(method, arguments);
 
     private Map<String, Object> state = new HashMap<>();
     private Class<_Artifact_> reifiedType;
@@ -65,22 +56,10 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
 
         // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
         //
-        return DEFAULTS.get(method.getReturnType());
+        return Default.VALUES.get(method.getReturnType());
     };
 
-    static
-    {
-        DEFAULTS.put(int.class, 0);
-        DEFAULTS.put(long.class, 0L);
-        DEFAULTS.put(float.class, 0F);
-        DEFAULTS.put(double.class, 0D);
-        DEFAULTS.put(byte.class, (byte)0);
-        DEFAULTS.put(short.class, (short)0);
-        DEFAULTS.put(boolean.class, false);
-        DEFAULTS.put(char.class, '\0');
-    }
-
-    public class Initializer
+    class Initializer extends ProjoHandler<_Artifact_>.ProjoInitializer
     {
         _Artifact_ instance;
 
@@ -88,8 +67,15 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
         {
             this.instance = object;
         }
- 
-        public class Members
+
+        @Override
+        @SafeVarargs
+        public final ProjoMembers members(Function<_Artifact_, ?>... members)
+        {
+            return new Members(members);
+        }
+
+        class Members extends ProjoMembers
         {
             @SafeVarargs
             public Members(Function<_Artifact_, ?>... members)
@@ -97,6 +83,7 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
                 getters = members;
             }
 
+            @Override
             public _Artifact_ with(Object... values)
             {
                 Iterator<Function<_Artifact_, ?>> members = Arrays.asList(getters).iterator();
@@ -112,9 +99,10 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
                 return returnInstance();
             }
 
+            @Override
             public _Artifact_ returnInstance()
             {
-                invoker = ProjoInvocationHandler.this.regularInvoker;
+                invoker = ProxyProjoInvocationHandler.this.regularInvoker;
                 initializationStack = null;
                 return instance;
             }
@@ -144,7 +132,7 @@ public class ProjoInvocationHandler<_Artifact_> implements InvocationHandler
         throw new NoSuchMethodError(String.valueOf(method));
     };
 
-    public ProjoInvocationHandler(Class<_Artifact_> type)
+    public ProxyProjoInvocationHandler(Class<_Artifact_> type)
     {
         reifiedType = type;
     }

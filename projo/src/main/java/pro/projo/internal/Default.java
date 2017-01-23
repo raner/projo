@@ -15,29 +15,37 @@
 //                                                                          //
 package pro.projo.internal;
 
-import pro.projo.Projo;
+import java.util.Map;
+import static java.util.EnumSet.allOf;
+import static java.util.stream.Collectors.toMap;
 
 /**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
+* The {@link Default} class provides the default values for Java's primitive types.
 *
 * @author Mirko Raner
 **/
-public interface Prototype<_Artifact_>
+public enum Default
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
+    INT(int.class, 0),
+    LONG(long.class, 0L),
+    FLOAT(float.class, 0F),
+    DOUBLE(double.class, 0D),
+    BYTE(byte.class, (byte)0),
+    SHORT(short.class, (short)0),
+    BOOLEAN(boolean.class, false),
+    CHAR(char.class, '\0');
+
+    private Class<?> type;
+    private Object value;
+
+    private Default(Class<?> type, Object value)
+    {
+        this.type = type;
+        this.value = value;
+    }
 
     /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
+    * The map containing the default values.
     **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
-    {
-        return Projo.getImplementation().initializer(type());
-    }
+    public final static Map<Class<?>, Object> VALUES = allOf(Default.class).stream().collect(toMap(item -> item.type, item -> item.value));
 }

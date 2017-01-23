@@ -18,13 +18,17 @@ package pro.projo;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Comparator;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import pro.projo.annotations.ValueObject;
+import pro.projo.internal.Predicates;
+import pro.projo.internal.ProjoHandler;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.util.stream.Collectors.toList;
-import static pro.projo.internal.ProjoInvocationHandler.getter;
+import static java.util.stream.StreamSupport.stream;
 
 /**
 * The {@link Projo} class provides static methods for creating Projo objects, as well as other
@@ -32,7 +36,7 @@ import static pro.projo.internal.ProjoInvocationHandler.getter;
 *
 * @author Mirko Raner
 **/
-public class Projo
+public abstract class Projo
 {
     /**
     * The {@link Intermediate} interface provides access to all generated Projo factories.
@@ -72,6 +76,25 @@ public class Projo
         pro.projo.novemvigintuples.Intermediate<_Artifact_>,
         pro.projo.trigintuples.Intermediate<_Artifact_> { /**/ }
 
+    private static Projo implementation = initialize();
+
+    /**
+    * Specifies the order of precedence of a particular Projo implementation. A higher number indicates
+    * higher precedence. The Projo framework will always select the implementation with the highest precedence.
+    *
+    * @return the precedence between {@link Integer#MIN_VALUE} (inclusive) and {@link Integer#MAX_VALUE} (inclusive)
+    **/
+    protected abstract int precedence();
+
+    /**
+     * Returns the Projo implementation's {@link ProjoHandler.ProjoInitializer}. This abstract method is implemented by
+     * the actual Projo implementation.
+     *
+     * @param type the Projo interface
+     * @return the {@link ProjoHandler.ProjoInitializer}
+     */
+    public abstract <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type);
+
     /**
     * Creates a new {@link Intermediate} object that provides factories for creating artifacts.
     *
@@ -92,7 +115,7 @@ public class Projo
     **/
     public static <_Artifact_> _Artifact_ create(Class<_Artifact_> type)
     {
-        return creates(type).initialize().new Members(forAllGetters(type)).returnInstance();
+        return creates(type).initialize().members(forAllGetters(type)).returnInstance();
     }
 
     /**
@@ -109,6 +132,17 @@ public class Projo
     }
 
     /**
+    * Returns the actual Projo implementation that is being used. Projo can be implemented in several different ways,
+    * including Java proxies or runtime code generation.
+    *
+    * @return the {@link Projo} implementation class currently active
+    **/
+    public static Projo getImplementation()
+    {
+        return implementation;
+    }
+
+    /**
     * Gets the factory (if any) of a Projo interface.
     *
     * @param projoInterface the Projo interface
@@ -119,6 +153,28 @@ public class Projo
         Stream<Field> fields = Stream.of(projoInterface.getDeclaredFields());
         Predicate<Field> isFactory = field -> Factory.class.isAssignableFrom(field.getType()) && isStatic(field.getModifiers());
         return fields.filter(isFactory).map(Projo::getFactory).findFirst().orElse(null);
+    }
+
+    private static Projo initialize()
+    {
+        if (implementation != null)
+        {
+            Error error = new ExceptionInInitializerError("Projo already initialized: " + implementation);
+            implementation = null;
+            throw error;
+        }
+        ServiceLoader<Projo> serviceLoader = ServiceLoader.load(Projo.class);
+        Stream<Projo> implementations = stream(serviceLoader.spliterator(), false);
+        return implementations.max(by(Projo::precedence)).get();
+    }
+
+    private static Comparator<Projo> by(Function<Projo, Integer> property)
+    {
+        return (object1, object2) ->
+        {
+            int value1 = property.apply(object1), value2 = property.apply(object2);
+            return value1 < value2? -1: value1 == value2? 0:1;
+        };
     }
 
     private static Factory getFactory(Field field)
@@ -136,8 +192,8 @@ public class Projo
     private static <_Artifact_> Function<_Artifact_, ?>[] forAllGetters(Class<_Artifact_> type)
     {
         @SuppressWarnings("unchecked")
-        Function<_Artifact_, ?>[] array = (Function<_Artifact_, ?>[])new Function<?,?>[0];
-        Predicate<Method> getters = method -> getter.test(method, new Object[method.getParameterCount()]);
+        Function<_Artifact_, ?>[] array = (Function<_Artifact_, ?>[])new Function<?, ?>[0];
+        Predicate<Method> getters = method -> Predicates.getter.test(method, new Object[method.getParameterCount()]);
         Function<Method, Function<_Artifact_, ?>> toFunction = method -> artifact -> invoke(method, artifact);
         return Stream.of(type.getDeclaredMethods()).filter(getters).map(toFunction).collect(toList()).toArray(array);
     }

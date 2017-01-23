@@ -115,6 +115,14 @@ To create an object, you can then simply use the factory:
     Person person = Person.FACTORY.create("John", "Doe");
 ```
 
+### Are Java proxies efficient for implementing objects at runtime?
+No, not at all. In fact, proxies are quite horribly inefficient, both from a memory use and a performance perspective.
+Performance-wise, proxy-implemented objects are **2 to 3 orders of magnitude slower** than regular Java objects (typically
+by a factor of ~650). They also use a lot more memory.
+
+For those reasons, it is always recommended to have Projo RCG (Runtime Code Generation) on the runtime classpath. Projo
+RCG will replace the default proxy-based implementation with much more efficient code that is generated at runtime.
+
 ### Will Projo work with my JAX-RS application?
 Yes, Projo provides integration support for JAX-RS, and Projo objects can be serialized and deserialized just like
 any other object. To enable the integration, simply put the ```projo-jax-rs``` JAR on your runtime classpath (it is

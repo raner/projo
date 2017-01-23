@@ -15,29 +15,24 @@
 //                                                                          //
 package pro.projo.internal;
 
-import pro.projo.Projo;
+import java.lang.reflect.Method;
+import org.junit.Test;
+import static org.junit.Assert.assertFalse;
 
-/**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
-*
-* @author Mirko Raner
-**/
-public interface Prototype<_Artifact_>
+public class PredicatesTest
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
+    static interface Complex
     {
-        return Projo.getImplementation().initializer(type());
+        Number getReal();
+        void setReal(Number real);
+        Number getImaginary();
+        void setImaginary(Number imaginary);
+    }
+
+    @Test
+    public void testGetterPredicate() throws Exception
+    {
+        Method setReal = Complex.class.getDeclaredMethod("setReal", Number.class);
+        assertFalse(Predicates.getter.test(setReal, new Object[] {null}));
     }
 }

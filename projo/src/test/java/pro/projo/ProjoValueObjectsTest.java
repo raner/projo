@@ -15,11 +15,9 @@
 //                                                                          //
 package pro.projo;
 
-import java.lang.reflect.Method;
 import org.junit.Test;
 import pro.projo.annotations.ValueObject;
 import pro.projo.doubles.Factory;
-import pro.projo.internal.ProjoInvocationHandler;
 import static java.lang.System.identityHashCode;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
@@ -162,13 +160,6 @@ public class ProjoValueObjectsTest
         Complex number2 = create(Complex.class);
         number2.setImaginary(Math.E);
         assertFalse(number2.equals(number1));
-    }
-
-    @Test
-    public void testGetterPredicate() throws Exception
-    {
-        Method setReal = Complex.class.getDeclaredMethod("setReal", Number.class);
-        assertFalse(ProjoInvocationHandler.getter.test(setReal, new Object[] {null}));
     }
 
     @Test

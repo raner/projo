@@ -49,10 +49,11 @@ public interface Intermediate<_Artifact_> extends Prototype<_Artifact_>
     **/
     public default <$AdditionalTypeParameters> Factory<_Artifact_, $AdditionalTypeParameters> with($First $argumentAndAdditionalParameters)
     {
+        @SuppressWarnings("unchecked")
         Factory<_Artifact_, $AdditionalTypeParameters> factory = ($arguments) ->
         {
             /*#*/ Function<_Artifact_, ?> $members = null; /*#*/
-            return initialize().new Members($members).with($arguments);
+            return initialize().members($members).with($arguments);
         };
         return factory;
     }

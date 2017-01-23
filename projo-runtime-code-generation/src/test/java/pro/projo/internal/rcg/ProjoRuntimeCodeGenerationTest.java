@@ -13,31 +13,37 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal;
+package pro.projo.internal.rcg;
 
+import java.util.function.Function;
+import org.junit.Test;
 import pro.projo.Projo;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-/**
-* The {@link Prototype} interface serves as the base interface of all generated intermediate
-* interfaces. It declares an abstract method for determining the type of the objects that it should
-* generate and implements an initialization method based on that abstract method.
-*
-* @param <_Artifact_> the object type
-*
-* @author Mirko Raner
-**/
-public interface Prototype<_Artifact_>
+public class ProjoRuntimeCodeGenerationTest
 {
-    /**
-    * @return the object type
-    **/
-    public Class<_Artifact_> type();
-
-    /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
-    **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
+    static interface Getters
     {
-        return Projo.getImplementation().initializer(type());
+        String getName();
+        int getValue();
+    }
+
+    @Test
+    public void testRuntimeCodeGenerationProjoImplementation()
+    {
+        assertEquals(RuntimeCodeGenerationProjo.class, Projo.getImplementation().getClass());
+    }
+
+    @Test
+    public void testGetFields() throws Exception
+    {
+        Function<Getters, ?> getName = Getters::getName;
+        Function<Getters, Object> getValue = Getters::getValue;
+        @SuppressWarnings("unchecked")
+        Function<Getters, Object>[] getters = (Function<Getters, Object>[])new Function<?, ?>[] {getValue, getName};
+        String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
+        String[] expected = {"Value", "Name"};
+        assertArrayEquals(expected, fieldNames);
     }
 }
