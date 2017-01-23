@@ -88,8 +88,9 @@ public class RuntimeCodeGenerationProjo extends Projo
                                 try
                                 {
                                     Field field = implementationClass.getDeclaredField(fieldNames[index]);
+                                    Object value = values[index] != null? values[index]:Default.VALUES.get(field.getType());
                                     field.setAccessible(true);
-                                    field.set(instance, values[index]);
+                                    field.set(instance, value);
                                 }
                                 catch (NoSuchFieldException noSuchField)
                                 {

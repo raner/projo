@@ -57,6 +57,26 @@ public class ProjoValueObjectsTest
         void setImaginary(Number imaginary);
     }
 
+    static interface ComplexPrimitive
+    {
+        double getReal();
+        void setReal(double real);
+        double getImaginary();
+        void setImaginary(double imaginary);
+        @Override int hashCode();
+        @Override boolean equals(Object other);
+    }
+
+    static interface ImmutableComplexPrimitive
+    {
+        Factory<ImmutableComplexPrimitive, Double, Double> FACTORY = creates(ImmutableComplexPrimitive.class)
+            .with(ImmutableComplexPrimitive::getReal, ImmutableComplexPrimitive::getImaginary);
+        double getReal();
+        double getImaginary();
+        @Override int hashCode();
+        @Override boolean equals(Object other);
+    }
+
     static interface ComplexPerson
     {
         Factory<ComplexPerson, Complex, EqualPerson> FACTORY = creates(ComplexPerson.class)
@@ -160,6 +180,94 @@ public class ProjoValueObjectsTest
         Complex number2 = create(Complex.class);
         number2.setImaginary(Math.E);
         assertFalse(number2.equals(number1));
+    }
+
+    @Test
+    public void testMutablePrimitiveValueObjectsEquals()
+    {
+        ComplexPrimitive number1 = create(ComplexPrimitive.class);
+        number1.setReal(Math.PI);
+        number1.setImaginary(Math.E);
+        ComplexPrimitive number2 = create(ComplexPrimitive.class);
+        number2.setReal(Math.PI);
+        number2.setImaginary(Math.E);
+        assertTrue(number1.equals(number2));
+    }
+
+    @Test
+    public void testMutableValueObjectsNullIsEqualToDefaultValue()
+    {
+        ComplexPrimitive number1 = create(ComplexPrimitive.class);
+        number1.setReal(0D);
+        number1.setImaginary(Math.E);
+        ComplexPrimitive number2 = create(ComplexPrimitive.class);
+        number2.setImaginary(Math.E);
+        assertTrue(number1.equals(number2));
+    }
+
+    @Test
+    public void testMutablePrimitiveValueObjectsNotEqual()
+    {
+        ComplexPrimitive number1 = create(ComplexPrimitive.class);
+        number1.setReal(Math.PI);
+        number1.setImaginary(Math.E);
+        ComplexPrimitive number2 = create(ComplexPrimitive.class);
+        number2.setReal(Math.PI);
+        assertFalse(number1.equals(number2));
+    }
+
+    @Test
+    public void testImmutablePrimitiveValueObjectsEquals()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        assertTrue(number1.equals(number2));
+    }
+
+    @Test
+    public void testImmutablePrimitiveValueObjectsNotEqual()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(Math.E, Math.PI);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        assertFalse(number1.equals(number2));
+    }
+    
+    @Test
+    public void testImmutablePrimitiveValueObjectsNullIsEqualToDefaultValue()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(0D, 0D);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(null, null);
+        assertTrue(number1.equals(number2));
+    }
+
+    @Test
+    public void testImmutablePrimitiveValueObjectsHashCode()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        assertTrue(number1.hashCode() == number2.hashCode());
+    }
+
+    @Test
+    public void testImmutablePrimitiveValueObjectsHashCodeWithNullValues()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(0D, 0D);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(null, null);
+        assertTrue(number1.hashCode() == number2.hashCode());
+    }
+
+    /**
+    * This test is technically not 100% correct, as the two test objects could indeed accidentally have the
+    * same hash code. Despite this test's potential to fail unexpectedly, this particular test was added to
+    * guard against common implementation flaws where, for example, the {@link #hashCode()} method would
+    * always return the same value (which is still correct per the contract, though horribly inefficient).
+    **/
+    @Test
+    public void testImmutablePrimitiveValueObjectsHashCodeNotEqual()
+    {
+        ImmutableComplexPrimitive number1 = ImmutableComplexPrimitive.FACTORY.create(Math.PI, Math.E);
+        ImmutableComplexPrimitive number2 = ImmutableComplexPrimitive.FACTORY.create(0D, null);
+        assertTrue(number1.hashCode() != number2.hashCode());
     }
 
     @Test

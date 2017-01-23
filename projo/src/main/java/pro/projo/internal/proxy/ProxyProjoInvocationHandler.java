@@ -117,7 +117,8 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
         if (getter.test(method, arguments))
         {
-            return state.get(matcher.propertyName(method.getName()));
+            Object value = state.get(matcher.propertyName(method.getName()));
+            return value != null? value:Default.VALUES.get(method.getReturnType());
         }
         if (equals.test(method, arguments))
         {
