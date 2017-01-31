@@ -17,6 +17,8 @@ package pro.projo.internal.rcg.runtime;
 
 import java.lang.reflect.Field;
 import java.util.stream.Stream;
+import static java.util.Arrays.sort;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 import static pro.projo.internal.rcg.RuntimeCodeGenerationHandler.getInterfaceName;
 
@@ -38,6 +40,7 @@ public class ToStringObject implements ToString
     {
         Class<? extends Object> type = object.getClass();
         Field[] fields = type.getDeclaredFields();
+        sort(fields, comparing(Field::getName));
         return getInterfaceName(type) + "[" + Stream.of(fields).map(object::description).collect(joining(", ")) + "]";
     }
 }

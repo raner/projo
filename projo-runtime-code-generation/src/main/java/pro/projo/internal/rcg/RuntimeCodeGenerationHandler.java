@@ -69,10 +69,12 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     static
     {
-        baseClasses.put(asList(false, false), DefaultToStringObject.class);
-        baseClasses.put(asList(true, false), ValueObject.class);
-        baseClasses.put(asList(false, true), ToStringObject.class);
-        baseClasses.put(asList(true, true), ToStringValueObject.class);
+        @SuppressWarnings("unused")
+        boolean valueObject, toString;
+        baseClasses.put(asList(valueObject=false, toString=false), DefaultToStringObject.class);
+        baseClasses.put(asList(valueObject=true, toString=false), ValueObject.class);
+        baseClasses.put(asList(valueObject=false, toString=true), ToStringObject.class);
+        baseClasses.put(asList(valueObject=true, toString=true), ToStringValueObject.class);
     }
 
     /**
