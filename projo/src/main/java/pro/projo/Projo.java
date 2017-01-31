@@ -27,7 +27,8 @@ import pro.projo.annotations.ValueObject;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import static java.lang.reflect.Modifier.isStatic;
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.sort;
+import static java.util.Comparator.comparing;
 import static java.util.stream.StreamSupport.stream;
 
 /**
@@ -202,11 +203,11 @@ public abstract class Projo
 
     private static <_Artifact_> Function<_Artifact_, ?>[] forAllGetters(Class<_Artifact_> type)
     {
-        @SuppressWarnings("unchecked")
-        Function<_Artifact_, ?>[] array = (Function<_Artifact_, ?>[])new Function<?, ?>[0];
         Predicate<Method> getters = method -> Predicates.getter.test(method, new Object[method.getParameterCount()]);
         Function<Method, Function<_Artifact_, ?>> toFunction = method -> artifact -> invoke(method, artifact);
-        return Stream.of(type.getDeclaredMethods()).filter(getters).map(toFunction).collect(toList()).toArray(array);
+        Method[] declaredMethods = type.getDeclaredMethods();
+        sort(declaredMethods, comparing(Method::getName));
+        return Stream.of(declaredMethods).filter(getters).map(toFunction).toArray(Function[]::new);
     }
 
     private static boolean methodExists(Class<?> type, String methodName, Class<?>... parameters)
