@@ -17,10 +17,12 @@ package pro.projo.internal.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -54,13 +56,13 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     private Class<_Artifact_> reifiedType;
     Function<_Artifact_, ?>[] getters;
     Stack<Object> initializationStack = new Stack<>();
-    LinkedHashMap<String, Class<?>> properties = new LinkedHashMap<>();
+    List<Entry<String, Class<?>>> properties = new ArrayList<>();
 
     InvocationHandler invoker = (Object proxy, Method method, Object... arguments) ->
     {
         String propertyName = matcher.propertyName(method.getName());
         state.put(propertyName, initializationStack.pop());
-        properties.put(propertyName, method.getReturnType());
+        properties.add(new SimpleEntry<>(propertyName, method.getReturnType()));
 
         // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
         //
@@ -167,7 +169,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     {
         if (Projo.hasCustomToString(reifiedType))
         {
-            String fields = properties.entrySet().stream().map(this::propertyDescription).collect(joining(", "));
+            String fields = properties.stream().map(this::propertyDescription).collect(joining(", "));
             return reifiedType.getName() + "[" + fields + "]";
         }
         return reifiedType.getName() + "@" + Integer.toHexString(proxy.hashCode());
