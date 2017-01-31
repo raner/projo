@@ -36,7 +36,7 @@ public class PropertyMatcher
 
     public String getterName(String propertyName)
     {
-        Object[] name = {propertyName};
+        Object[] name = {propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1)};
         return getterName.format(name);
     }
 
@@ -45,7 +45,8 @@ public class PropertyMatcher
         Matcher matcher = pattern.matcher(methodName);
         if (matcher.matches())
         {
-            return matcher.group(1);
+            String matched = matcher.group(1);
+            return matched.substring(0, 1).toLowerCase() + matched.substring(1);
         }
         return methodName;
     }

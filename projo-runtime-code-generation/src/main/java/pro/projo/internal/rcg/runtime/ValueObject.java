@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import static pro.projo.internal.rcg.RuntimeCodeGenerationHandler.getInterfaceName;
 
 /**
 * Projo uses the {@link ValueObject} class as the base class for runtime-generated Projo objects that
@@ -83,6 +84,12 @@ public class ValueObject
     public int hashCode()
     {
         return Objects.hash(getters().map(this::value).toArray(Object[]::new));
+    }
+
+    @Override
+    public String toString()
+    {
+        return getInterfaceName(getClass()) + "@" + Integer.toHexString(hashCode());
     }
 
     private Stream<Method> getters()

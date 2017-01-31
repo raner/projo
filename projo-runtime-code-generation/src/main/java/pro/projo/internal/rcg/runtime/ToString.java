@@ -13,43 +13,40 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.rcg;
+package pro.projo.internal.rcg.runtime;
 
-import java.util.function.Function;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import java.lang.reflect.Field;
+import pro.projo.internal.Default;
 
 /**
-* The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
-* of Projo Runtime Code Generation (RCG).
+* The {@link ToString} interface provides a default implementation of the {@link #description(Field)} method,
+* which describes the contents of an individual field.
 *
 * @author Mirko Raner
 **/
-public class ProjoRuntimeCodeGenerationTest
+public interface ToString
 {
-    static interface Getters
+    /**
+    * Provides a string description of an individual field.
+    *
+    * @param field the {@link Field}
+    * @return the field description, typically <i>field</i>=<i>value</i>
+    **/
+    default String description(Field field)
     {
-        String getName();
-        int getValue();
-    }
-
-    @Test
-    public void testRuntimeCodeGenerationProjoImplementation()
-    {
-        assertEquals(RuntimeCodeGenerationProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testGetFields() throws Exception
-    {
-        Function<Getters, ?> getName = Getters::getName;
-        Function<Getters, Object> getValue = Getters::getValue;
-        @SuppressWarnings("unchecked")
-        Function<Getters, Object>[] getters = (Function<Getters, Object>[])new Function<?, ?>[] {getValue, getName};
-        String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
-        String[] expected = {"value", "name"};
-        assertArrayEquals(expected, fieldNames);
+        field.setAccessible(true);
+        try
+        {
+            Object value = field.get(this);
+            value = value != null? value : Default.VALUES.get(field.getType());
+            value = value instanceof String? "\"" + value + "\"" : value;
+            return field.getName() + "=" + value;
+        }
+        catch (IllegalAccessException illegalAccess)
+        {
+            IllegalAccessError error = new IllegalAccessError(illegalAccess.getMessage());
+            error.initCause(illegalAccess);
+            throw error;
+        }
     }
 }

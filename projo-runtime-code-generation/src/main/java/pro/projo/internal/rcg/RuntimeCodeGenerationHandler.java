@@ -17,6 +17,7 @@ package pro.projo.internal.rcg;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
@@ -29,7 +30,11 @@ import pro.projo.Projo;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.PropertyMatcher;
+import pro.projo.internal.rcg.runtime.DefaultToStringObject;
+import pro.projo.internal.rcg.runtime.ToStringObject;
+import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
+import static java.util.Arrays.asList;
 import static java.util.function.UnaryOperator.identity;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
@@ -58,6 +63,18 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     **/
     private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache = new HashMap<>();
 
+    private final static String SUFFIX = "$Projo";
+
+    private static Map<List<Boolean>, Class<?>> baseClasses = new HashMap<>();
+
+    static
+    {
+        baseClasses.put(asList(false, false), DefaultToStringObject.class);
+        baseClasses.put(asList(true, false), ValueObject.class);
+        baseClasses.put(asList(false, true), ToStringObject.class);
+        baseClasses.put(asList(true, true), ToStringValueObject.class);
+    }
+
     /**
     * Provides a class that implements the given type. All requests for the same type will return the same
     * implementation class.
@@ -68,6 +85,18 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
     {
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
+    }
+
+    /**
+    * Determines the Projo interface name (if any) of an implementation type.
+    *
+    * @param type the Projo implementation type
+    * @return the interface name if the class was a Projo implementation class, otherwise the original type name
+    **/
+    public static String getInterfaceName(Class<?> type)
+    {
+        String name = type.getName();
+        return name.endsWith(SUFFIX)? name.substring(0, name.length()-SUFFIX.length()):name;
     }
 
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type)
@@ -88,7 +117,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Class<?> returnType = method.getReturnType();
         int parameterCount = method.getParameterCount();
         return (parameterCount == 1 && returnType.equals(void.class))
-            || (parameterCount == 0 && !returnType.equals(void.class) && !"hashCode".equals(method.getName()));
+            || (parameterCount == 0 && !returnType.equals(void.class)
+                && !"hashCode".equals(method.getName()) && !"toString".equals(method.getName()));
     }
 
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
@@ -97,7 +127,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         boolean isGetter = Predicates.getter.test(method, new Object[method.getParameterCount()]);
-        Class<?> type = isGetter? method.getReturnType():method.getParameterTypes()[0];
+        Class<?> type = isGetter? method.getReturnType():void.class;
         addFieldForGetter = isGetter? localBuilder -> localBuilder.defineField(propertyName, type, PRIVATE):identity();
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(FieldAccessor.ofField(propertyName));
     }
@@ -112,17 +142,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private String implementationName(Class<_Artifact_> type)
     {
-        return type.getName() + "$Projo";
+        return type.getName() + SUFFIX;
     }
 
     private Builder<_Artifact_> create(Class<_Artifact_> type)
     {
-        if (Projo.isValueObject(type))
-        {
-            @SuppressWarnings("unchecked")
-            Builder<_Artifact_> builder = (Builder<_Artifact_>)new ByteBuddy().subclass(ValueObject.class).implement(type);
-            return builder;
-        }
-        return new ByteBuddy().subclass(type);
+        List<Boolean> features = asList(Projo.isValueObject(type), Projo.hasCustomToString(type));
+        @SuppressWarnings("unchecked")
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)new ByteBuddy().subclass(baseClasses.get(features)).implement(type);
+        return builder;
     }
 }

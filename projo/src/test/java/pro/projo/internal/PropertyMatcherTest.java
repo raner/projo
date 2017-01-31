@@ -25,13 +25,13 @@ public class PropertyMatcherTest
     @Test
     public void testGetter()
     {
-        assertEquals("Property", matcher.propertyName("getProperty"));
+        assertEquals("property", matcher.propertyName("getProperty"));
     }
 
     @Test
     public void testSetter()
     {
-        assertEquals("Property", matcher.propertyName("setProperty"));
+        assertEquals("property", matcher.propertyName("setProperty"));
     }
 
     @Test

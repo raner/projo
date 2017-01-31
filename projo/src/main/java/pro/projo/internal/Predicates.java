@@ -30,9 +30,14 @@ public interface Predicates
         && method.getParameterTypes()[0] == Object.class
         && method.getReturnType() == boolean.class;
     static BiPredicate<Method, Object[]> hashCode = (method, arguments) -> method.getName().equals("hashCode")
-        && method.getParameterCount() == 0;
+        && method.getParameterCount() == 0
+        && int.class.equals(method.getReturnType());
+    static BiPredicate<Method, Object[]> toString = (method, arguments) -> method.getName().equals("toString")
+        && method.getParameterCount() == 0
+        && String.class.equals(method.getReturnType());
     static BiPredicate<Method, Object[]> getter = (method, arguments) -> (arguments == null || arguments.length == 0)
-        && !hashCode.test(method, arguments);
+        && !hashCode.test(method, arguments)
+        && !toString.test(method, arguments);
     static BiPredicate<Method, Object[]> setter = (method, arguments) -> (arguments != null && arguments.length == 1)
         && !equals.test(method, arguments);
 }

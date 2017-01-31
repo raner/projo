@@ -13,43 +13,31 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.rcg;
+package pro.projo.internal.rcg.runtime;
 
-import java.util.function.Function;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import java.lang.reflect.Field;
+import java.util.stream.Stream;
+import static java.util.stream.Collectors.joining;
+import static pro.projo.internal.rcg.RuntimeCodeGenerationHandler.getInterfaceName;
 
 /**
-* The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
-* of Projo Runtime Code Generation (RCG).
+* The {@link ToStringObject} class serves as the base class for non-Value Objects that support a
+* field-by-field {@link #toString()} implementation.
 *
 * @author Mirko Raner
 **/
-public class ProjoRuntimeCodeGenerationTest
+public class ToStringObject implements ToString
 {
-    static interface Getters
+    @Override
+    public String toString()
     {
-        String getName();
-        int getValue();
+        return toString(this);
     }
 
-    @Test
-    public void testRuntimeCodeGenerationProjoImplementation()
+    static String toString(ToString object)
     {
-        assertEquals(RuntimeCodeGenerationProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testGetFields() throws Exception
-    {
-        Function<Getters, ?> getName = Getters::getName;
-        Function<Getters, Object> getValue = Getters::getValue;
-        @SuppressWarnings("unchecked")
-        Function<Getters, Object>[] getters = (Function<Getters, Object>[])new Function<?, ?>[] {getValue, getName};
-        String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
-        String[] expected = {"value", "name"};
-        assertArrayEquals(expected, fieldNames);
+        Class<? extends Object> type = object.getClass();
+        Field[] fields = type.getDeclaredFields();
+        return getInterfaceName(type) + "[" + Stream.of(fields).map(object::description).collect(joining(", ")) + "]";
     }
 }

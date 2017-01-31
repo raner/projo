@@ -20,17 +20,21 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Stack;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import pro.projo.Projo;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.PropertyMatcher;
 import static java.lang.System.identityHashCode;
+import static java.util.stream.Collectors.joining;
 import static pro.projo.Projo.isValueObject;
 
 /**
@@ -50,9 +54,13 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     private Class<_Artifact_> reifiedType;
     Function<_Artifact_, ?>[] getters;
     Stack<Object> initializationStack = new Stack<>();
+    LinkedHashMap<String, Class<?>> properties = new LinkedHashMap<>();
+
     InvocationHandler invoker = (Object proxy, Method method, Object... arguments) ->
     {
-        state.put(matcher.propertyName(method.getName()), initializationStack.pop());
+        String propertyName = matcher.propertyName(method.getName());
+        state.put(propertyName, initializationStack.pop());
+        properties.put(propertyName, method.getReturnType());
 
         // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
         //
@@ -96,15 +104,15 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 {
                     throw new IllegalStateException();
                 }
-                return returnInstance();
+                invoker = ProxyProjoInvocationHandler.this.regularInvoker;
+                initializationStack = null;
+                return instance;
             }
 
             @Override
             public _Artifact_ returnInstance()
             {
-                invoker = ProxyProjoInvocationHandler.this.regularInvoker;
-                initializationStack = null;
-                return instance;
+                return with(new Object[getters.length]);
             }
         }
     }
@@ -130,6 +138,12 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             _Artifact_ artifact = (_Artifact_)proxy;
             return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
         }
+        if (toString.test(method, arguments))
+        {
+            @SuppressWarnings("unchecked")
+            _Artifact_ artifact = (_Artifact_)proxy;
+            return toString(artifact);
+        }
         throw new NoSuchMethodError(String.valueOf(method));
     };
 
@@ -149,6 +163,16 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         return invoker.invoke(proxy, method, arguments);
     }
 
+    private String toString(_Artifact_ proxy)
+    {
+        if (Projo.hasCustomToString(reifiedType))
+        {
+            String fields = properties.entrySet().stream().map(this::propertyDescription).collect(joining(", "));
+            return reifiedType.getName() + "[" + fields + "]";
+        }
+        return reifiedType.getName() + "@" + Integer.toHexString(proxy.hashCode());
+    }
+
     private int hashCode(_Artifact_ proxy)
     {
         return Objects.hash(Stream.of(getters).map(method -> method.apply(proxy)).toArray(Object[]::new));
@@ -163,6 +187,14 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     private boolean equalOrBothNull(Object one, Object two)
     {
         return one == null? two == null:one.equals(two);
+    }
+
+    private String propertyDescription(Entry<String, Class<?>> description)
+    {
+        String property = description.getKey();
+        Object rawValue = state.get(property);
+        Object value = rawValue != null? rawValue:Default.VALUES.get(description.getValue());
+        return property + "=" + (value instanceof String? "\"" + value + "\"":String.valueOf(value));
     }
 
     @SuppressWarnings("unchecked")

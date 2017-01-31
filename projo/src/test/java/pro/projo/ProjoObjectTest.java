@@ -13,43 +13,54 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.rcg;
+package pro.projo;
 
-import java.util.function.Function;
+import java.lang.reflect.Method;
 import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
-* The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
-* of Projo Runtime Code Generation (RCG).
+* {@link ProjoObjectTest} is a JUnit test that makes sure that all methods of {@link java.lang.Object}
+* (excluding {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()}) can be invoked without
+* problems on Projo objects.
 *
 * @author Mirko Raner
 **/
-public class ProjoRuntimeCodeGenerationTest
+public class ProjoObjectTest
 {
-    static interface Getters
+    static interface ProjoObject extends Cloneable
     {
-        String getName();
         int getValue();
     }
 
+    private ProjoObject projo = Projo.create(ProjoObject.class);
+
+    /**
+     * Tests the {@link #finalize()} method. This test has no assertions, it merely insures that invoking
+     * the method will not throw an exception.
+     *
+     * @throws Exception if the test failed
+     */
     @Test
-    public void testRuntimeCodeGenerationProjoImplementation()
+    public void testFinalize() throws Exception
     {
-        assertEquals(RuntimeCodeGenerationProjo.class, Projo.getImplementation().getClass());
+        Method finalize = Object.class.getDeclaredMethod("finalize");
+        finalize.setAccessible(true);
+        finalize.invoke(projo);
     }
 
     @Test
-    public void testGetFields() throws Exception
+    public void testClone() throws Exception
     {
-        Function<Getters, ?> getName = Getters::getName;
-        Function<Getters, Object> getValue = Getters::getValue;
-        @SuppressWarnings("unchecked")
-        Function<Getters, Object>[] getters = (Function<Getters, Object>[])new Function<?, ?>[] {getValue, getName};
-        String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
-        String[] expected = {"value", "name"};
-        assertArrayEquals(expected, fieldNames);
+        Method clone = Object.class.getDeclaredMethod("clone");
+        clone.setAccessible(true);
+        assertNotNull(clone.invoke(projo));
+    }
+
+    @Test
+    public void testGetClass()
+    {
+        assertTrue(ProjoObject.class.isAssignableFrom(projo.getClass()));
     }
 }

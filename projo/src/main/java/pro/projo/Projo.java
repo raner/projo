@@ -132,6 +132,17 @@ public abstract class Projo
     }
 
     /**
+    * Determines if the given interface has a custom {@link #toString()} method.
+    *
+    * @param projo the Projo interface
+    * @return {@code true} if the interface has a custom {@link #toString()} method
+    **/
+    public static boolean hasCustomToString(Class<?> projo)
+    {
+        return methodExists(projo, "toString");
+    }
+
+    /**
     * Returns the actual Projo implementation that is being used. Projo can be implemented in several different ways,
     * including Java proxies or runtime code generation.
     *

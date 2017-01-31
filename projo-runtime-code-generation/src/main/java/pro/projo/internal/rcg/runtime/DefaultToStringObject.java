@@ -13,43 +13,21 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.rcg;
+package pro.projo.internal.rcg.runtime;
 
-import java.util.function.Function;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static pro.projo.internal.rcg.RuntimeCodeGenerationHandler.getInterfaceName;
 
 /**
-* The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
-* of Projo Runtime Code Generation (RCG).
+* The {@link DefaultToStringObject} class serves as the base class for non-Value Objects that support a
+* default {@link #toString()} implementation.
 *
 * @author Mirko Raner
 **/
-public class ProjoRuntimeCodeGenerationTest
+public class DefaultToStringObject
 {
-    static interface Getters
+    @Override
+    public String toString()
     {
-        String getName();
-        int getValue();
-    }
-
-    @Test
-    public void testRuntimeCodeGenerationProjoImplementation()
-    {
-        assertEquals(RuntimeCodeGenerationProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testGetFields() throws Exception
-    {
-        Function<Getters, ?> getName = Getters::getName;
-        Function<Getters, Object> getValue = Getters::getValue;
-        @SuppressWarnings("unchecked")
-        Function<Getters, Object>[] getters = (Function<Getters, Object>[])new Function<?, ?>[] {getValue, getName};
-        String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
-        String[] expected = {"value", "name"};
-        assertArrayEquals(expected, fieldNames);
+        return getInterfaceName(getClass()) + "@" + Integer.toHexString(hashCode());
     }
 }

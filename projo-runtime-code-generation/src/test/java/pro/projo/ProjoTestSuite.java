@@ -29,7 +29,10 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses
 ({
+    ProjoObjectTest.class,
+    ProjoToStringTest.class,
     ProjoValueObjectsTest.class,
+    ProjoValueObjectsToStringTest.class,
     ImmutableProjoSinglesTest.class,
     ImmutableProjoDoublesTest.class,
     ImmutableProjoTriplesTest.class,
