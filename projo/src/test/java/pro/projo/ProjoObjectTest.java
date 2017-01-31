@@ -17,6 +17,8 @@ package pro.projo;
 
 import java.lang.reflect.Method;
 import org.junit.Test;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +36,16 @@ public class ProjoObjectTest
         int getValue();
     }
 
+    private final static int DELAY = 500;
+
     private ProjoObject projo = Projo.create(ProjoObject.class);
+    private Runnable notifyAll = () ->
+    {
+        synchronized (projo)
+        {
+            projo.notifyAll();
+        }
+    };
 
     /**
      * Tests the {@link #finalize()} method. This test has no assertions, it merely insures that invoking
@@ -62,5 +73,42 @@ public class ProjoObjectTest
     public void testGetClass()
     {
         assertTrue(ProjoObject.class.isAssignableFrom(projo.getClass()));
+    }
+
+    @Test(timeout=DELAY*2)
+    public void testWaitNotify() throws InterruptedException
+    {
+        Runnable notify = () ->
+        {
+            synchronized (projo)
+            {
+                projo.notify();
+            }
+        };
+        newSingleThreadScheduledExecutor().schedule(notify, DELAY, MILLISECONDS);
+        synchronized (projo)
+        {
+            projo.wait();
+        }
+    }
+
+    @Test(timeout=DELAY*2)
+    public void testWaitLongNotifyAll() throws InterruptedException
+    {
+        newSingleThreadScheduledExecutor().schedule(notifyAll, DELAY, MILLISECONDS);
+        synchronized (projo)
+        {
+            projo.wait(DELAY*3);
+        }
+    }
+
+    @Test(timeout=DELAY*2)
+    public void testWaitLongIntNotifyAll() throws InterruptedException
+    {
+        newSingleThreadScheduledExecutor().schedule(notifyAll, DELAY, MILLISECONDS);
+        synchronized (projo)
+        {
+            projo.wait(DELAY*3, 1);
+        }
     }
 }
