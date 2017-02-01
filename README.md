@@ -1,4 +1,4 @@
-## projo &nbsp; [![Build Status](https://travis-ci.org/raner/projo.svg?branch=master)](https://travis-ci.org/raner/projo)
+## projo &nbsp; [![Build Status](https://travis-ci.org/raner/projo.svg?branch=master)](https://travis-ci.org/raner/projo) [![Maven Central](https://img.shields.io/maven-central/v/pro.projo/projo.svg)](https://oss.sonatype.org/content/repositories/releases/pro/projo/)
 **Projo** is a Java library for reducing the amount of boiler-plate code that is necessary for implementing simple model
 objects and DTOs (i.e., objects that don't contain any business logic). The name Projo is a portmanteau of **Pro**xy and
 PO**JO**.
@@ -82,6 +82,28 @@ Still got questions? Please continue reading...
 
 ## FAQ
 
+### How do I use Projo in my project?
+If you are using [Maven](https://maven.apache.org/), simply add these two dependencies to your POM:
+```xml
+  <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo</artifactId>
+   <version>1.0.0</version>
+  </dependency>
+  <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-runtime-code-generation</artifactId>
+   <version>1.0.0</version>
+   <scope>runtime</scope>
+  </dependency>
+```
+The ```projo-runtime-code-generation``` dependency is technically optional, but highly recommended as it provides a way
+more efficient implementation. This dependency is not needed at compile-time, only at runtime.
+As a very minor down-side, Projo's runtime code generation brings in a transitive dependency on [ByteBuddy](http://bytebuddy.net/).
+
+If you are using a different build system, such as [Gradle](https://gradle.org/) or [SBT](http://www.scala-sbt.org/),
+please use the equivalent way to include the same dependency coordinates.
+
 ### How does Projo relate to Project Lombok?
 Project Lombok uses compile-time code generation to splice getters, setters, equals, etc., into your class files when you
 compile your sources. Generating code at compile time can be tricky and requires some hacks to get IDEs to recognize the
@@ -126,7 +148,16 @@ RCG will replace the default proxy-based implementation with much more efficient
 ### Will Projo work with my JAX-RS application?
 Yes, Projo provides integration support for JAX-RS, and Projo objects can be serialized and deserialized just like
 any other object. To enable the integration, simply put the ```projo-jax-rs``` JAR on your runtime classpath (it is
-not needed at compile time). The integration uses auto-discovery to modify your JAX-RS serialization and deserialization
+not needed at compile time), i.e.:
+```xml
+  <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-jax-rs</artifactId>
+   <version>1.0.0</version>
+   <scope>runtime</scope>
+  </dependency>
+```
+The integration uses auto-discovery to modify your JAX-RS serialization and deserialization
 so that it becomes Projo-aware. Instead of trying to ```new``` up an interface, the deserializer will correctly use
 the Projo library to instantiate new objects.
 
