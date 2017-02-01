@@ -23,7 +23,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
  </parent>
  <name>Projo JAX-RS Integration for Jersey</name>
  <artifactId>projo-jax-rs</artifactId>
@@ -33,13 +33,13 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>1.0.0</version>
   </dependency>
 
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-runtime-code-generation</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>1.0.0</version>
    <scope>runtime</scope>
   </dependency>
 

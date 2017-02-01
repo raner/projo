@@ -34,7 +34,7 @@ public interface Prototype<_Artifact_>
     public Class<_Artifact_> type();
 
     /**
-    * @return an {@link ProjoHandler.Initializer Initializer} that creates a new Projo object
+    * @return an {@link ProjoHandler.ProjoInitializer Initializer} that creates a new Projo object
     **/
     public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
     {

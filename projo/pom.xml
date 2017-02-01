@@ -26,24 +26,24 @@
  <parent>
   <artifactId>projo-parent</artifactId>
   <groupId>pro.projo</groupId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
  </parent>
 
  <dependencies>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-annotation</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>1.0.0</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-configuration</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>1.0.0</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-generation</artifactId>
-   <version>0.0.1-SNAPSHOT</version>
+   <version>1.0.0</version>
    <scope>provided</scope>
   </dependency>
  </dependencies>

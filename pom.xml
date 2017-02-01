@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2016 Mirko Raner                                               -->
+<!-- Copyright 2017 Mirko Raner                                               -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -22,13 +22,50 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>pro.projo</groupId>
  <artifactId>projo-parent</artifactId>
- <version>0.0.1-SNAPSHOT</version>
+ <version>1.0.0</version>
  <name>Projo Parent POM</name>
+ <url>https://github.com/raner/projo</url>
  <packaging>pom</packaging>
+
+ <description>
+  Projo is a Java library for reducing the amount of boiler-plate code that is necessary for
+  implementing simple model objects and DTOs (including Value Objects and "POJOs").
+ </description>
+
+ <licenses>
+  <license>
+   <name>Apache License, Version 2.0</name>
+   <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+  </license>
+ </licenses>
+
+ <developers>
+  <developer>
+   <name>Mirko Raner</name>
+   <email>mirko@raner.ws</email>
+  </developer>
+ </developers>
 
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
  </properties>
+
+ <scm>
+  <url>https://github.com/raner/projo</url>
+  <connection>scm:git:https://github.com/raner/projo.git</connection>
+  <developerConnection>scm:git:https://github.com/raner/projo.git</developerConnection>
+ </scm>
+
+ <distributionManagement>
+  <snapshotRepository>
+   <id>central</id>
+   <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  </snapshotRepository>
+  <repository>
+   <id>central</id>
+   <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+  </repository>
+ </distributionManagement>
 
  <modules>
   <module>projo</module>
@@ -40,6 +77,61 @@
  </modules>
 
  <build>
+  <plugins>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-source-plugin</artifactId>
+    <version>3.0.1</version>
+    <executions>
+     <execution>
+      <id>attach-sources</id>
+      <goals>
+       <goal>jar-no-fork</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-javadoc-plugin</artifactId>
+    <version>2.10.4</version>
+    <configuration>
+     <excludePackageNames>pro.projo.$template</excludePackageNames>
+    </configuration>
+    <executions>
+     <execution>
+      <id>attach-javadocs</id>
+      <goals>
+       <goal>jar</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <artifactId>maven-gpg-plugin</artifactId>
+    <version>1.6</version>
+    <executions>
+     <execution>
+      <id>sign-artifacts</id>
+      <phase>verify</phase>
+      <goals>
+       <goal>sign</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <groupId>org.sonatype.plugins</groupId>
+    <artifactId>nexus-staging-maven-plugin</artifactId>
+    <version>1.6.7</version>
+    <extensions>true</extensions>
+    <configuration>
+     <serverId>central</serverId>
+     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+     <autoReleaseAfterClose>false</autoReleaseAfterClose>
+    </configuration>
+   </plugin>
+  </plugins>
   <pluginManagement>
    <plugins>
     <plugin>

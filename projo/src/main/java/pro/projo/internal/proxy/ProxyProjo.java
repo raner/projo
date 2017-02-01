@@ -20,7 +20,7 @@ import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
 * {@link ProxyProjo} is Projo's rather inefficient default implementation based on Java proxies.
-* It is highly recommended to use {@link RuntimeCodeGenerationProjo} instead.
+* It is highly recommended to use {@code RuntimeCodeGenerationProjo} instead.
 *
 * {@link ProxyProjo} has a {@link #precedence() precedence} of -2147483647 ({@link Integer#MIN_VALUE}{@code +1}).
 *

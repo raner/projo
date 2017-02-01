@@ -88,18 +88,20 @@ public abstract class Projo
     protected abstract int precedence();
 
     /**
-     * Returns the Projo implementation's {@link ProjoHandler.ProjoInitializer}. This abstract method is implemented by
-     * the actual Projo implementation.
-     *
-     * @param type the Projo interface
-     * @return the {@link ProjoHandler.ProjoInitializer}
-     */
+    * Returns the Projo implementation's {@link ProjoHandler.ProjoInitializer}. This abstract method is implemented by
+    * the actual Projo implementation.
+    *
+    * @param type the Projo interface
+    * @param <_Artifact_> the type of the generated artifact
+    * @return the {@link ProjoHandler.ProjoInitializer}
+    **/
     public abstract <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type);
 
     /**
     * Creates a new {@link Intermediate} object that provides factories for creating artifacts.
     *
     * @param type the Projo interface
+    * @param <_Artifact_> the type of the generated artifact
     * @return a new {@link Intermediate} object
     **/
     public static <_Artifact_> Intermediate<_Artifact_> creates(Class<_Artifact_> type)
@@ -112,6 +114,7 @@ public abstract class Projo
     * setter methods that allow setting the object's fields.
     *
     * @param type the Projo interface class
+    * @param <_Artifact_> the type of the generated artifact
     * @return a new object whose fields will be initialized to default values
     **/
     public static <_Artifact_> _Artifact_ create(Class<_Artifact_> type)

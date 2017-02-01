@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,7 +29,7 @@ import org.eclipse.persistence.oxm.XMLContext;
 * whose descriptors are Projo-aware. The resolver will install an {@link InstantiationPolicy} that will create Projo
 * objects when the target type is an interface.
 *
-* <P/><B>NOTE:</B> this class leverages non-public MOXy/EclipseLink interfaces!
+* <P><B>NOTE:</B> this class leverages non-public MOXy/EclipseLink interfaces!</P>
 *
 * @author Mirko Raner
 **/

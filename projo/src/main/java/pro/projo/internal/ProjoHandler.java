@@ -18,9 +18,11 @@ package pro.projo.internal;
 import java.util.function.Function;
 
 /**
-* The {@link ProjoHandler} and its nested member classes {@link ProjoInitializer} and {@link ProjoMembers} provide
-* Projo's main service provider interface (SPI). Currently, the {@link ProjoHandler}'s only function is to carry the
-* type parameter and serve as an enclosure for the {@link ProjoInitializer} and {@link ProjoMembers} classes.
+* The {@link ProjoHandler} and its nested member classes {@link ProjoHandler.ProjoInitializer ProjoInitializer} and
+* {@link ProjoHandler.ProjoInitializer.ProjoMembers ProjoMembers} provide Projo's main service provider interface (SPI).
+* Currently, the {@link ProjoHandler}'s only function is to carry the type parameter and serve as an enclosure for the
+* {@link ProjoHandler.ProjoInitializer ProjoInitializer} and {@link ProjoHandler.ProjoInitializer.ProjoMembers ProjoMembers}
+* classes.
 *
 * @param <_Artifact_> the artifact type
 *

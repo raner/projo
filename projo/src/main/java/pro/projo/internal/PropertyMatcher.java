@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
-* The {@link PropertyMatches} converts between Projo's internal property names and the corresponding getter/setter
+* The {@link PropertyMatcher} converts between Projo's internal property names and the corresponding getter/setter
 * method names and vice versa. This class is intended to be used as a stateless singleton.
 * <br>
 * <b>NOTE:</b> For standard getter and setter names, Projo's internal field names will start with a capital letter,
