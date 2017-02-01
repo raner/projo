@@ -1,5 +1,5 @@
 #                                                                          #
-# Copyright 2016 Mirko Raner                                               #
+# Copyright 2017 Mirko Raner                                               #
 #                                                                          #
 # Licensed under the Apache License, Version 2.0 (the "License");          #
 # you may not use this file except in compliance with the License.         #
@@ -15,4 +15,3 @@
 #                                                                          #
 language: java
 jdk: oraclejdk8
-script: mvn clean test
