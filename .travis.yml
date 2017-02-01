@@ -15,5 +15,5 @@
 #                                                                          #
 language: java
 jdk: oraclejdk8
-install: mvn clean dependency:resolve
-script: mvn integration-test -B
+install: true
+script: mvn clean integration-test -B
