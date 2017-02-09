@@ -137,6 +137,20 @@ To create an object, you can then simply use the factory:
     Person person = Person.FACTORY.create("John", "Doe");
 ```
 
+### Can Projo create Value Objects?
+The [Value Object](http://dl.acm.org/citation.cfm?id=141550) pattern (free article available
+[here](http://dirkriehle.com/computer-science/research/2006/plop-2006-value-object.pdf)) requires objects to be immutable
+and have ```equals(Object)``` and ```hashCode()``` methods that are based on the individual fields of the object instead
+of the object's identity. Projo will create appropriate implementations of ```equals(Object)``` and ```hashCode()``` if **at
+least one** of these three criteria is fulfilled:
+* the Projo interface declares an ```equals(Object)``` method (should also have ```@Override``` annotation)
+* the Projo interface declares a ```hashCode()``` method (should also have ```@Override``` annotation)
+* the Projo interface has a ```@pro.projo.annotations.ValueObject``` annotation
+
+For example, both ```equals(Object)``` and ```hashCode()``` will be implemented properly, even if the Projo interface only declared and overrode the ```hashCode()``` method. Projo will **never** create objects that have inconsistent 
+```equals(Object)``` and ```hashCode()``` methods: either both methods will be implemented on a field-by-field basis or both
+methods will be based on object identity (but never a mix of the two).
+
 ### Are Java proxies efficient for implementing objects at runtime?
 No, not at all. In fact, proxies are quite horribly inefficient, both from a memory use and a performance perspective.
 Performance-wise, proxy-implemented objects are **2 to 3 orders of magnitude slower** than regular Java objects (typically
