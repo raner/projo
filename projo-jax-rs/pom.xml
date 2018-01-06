@@ -40,7 +40,7 @@
    <groupId>pro.projo</groupId>
    <artifactId>projo-runtime-code-generation</artifactId>
    <version>1.0.0</version>
-   <scope>runtime</scope>
+   <scope>compile</scope>
   </dependency>
 
   <dependency>

@@ -20,10 +20,17 @@ import pro.projo.triples.Factory;
 import static org.junit.Assert.assertArrayEquals;
 import static pro.projo.Projo.creates;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 public class ImmutableProjoTriplesTest
 {
     static interface Name
     {
+        Function<Name, String> x = Name::first;
+        List<Function<Name, ?>> y = Arrays.asList(Name::first, Name::middle, Name::last);
         Factory<Name, String, Character, String> FACTORY = creates(Name.class).with(Name::first, Name::middle, Name::last);
         String first();
         char middle();

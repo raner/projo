@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -34,10 +34,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public interface AddressBook
 {
     @PUT
-    @Path("/{contact}")
+    @Path("/address/{contact}")
     void createOrUpdate(@PathParam("contact") Contact contact, Address address);
 
     @GET
-    @Path("/{contact}")
+    @Path("/address/{contact}")
     Address getAddress(@PathParam("contact") Contact contact);
+
+    @PUT
+    @Path("/phone/{contact}")
+    void createOrUpdatePhoneNumber(@PathParam("contact") Contact contact, PhoneNumber address);
+
+    @GET
+    @Path("/phone/{contact}")
+    PhoneNumber getPhoneNumber(@PathParam("contact") Contact contact);
 }

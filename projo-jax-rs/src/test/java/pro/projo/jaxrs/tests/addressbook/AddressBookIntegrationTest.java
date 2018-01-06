@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -93,11 +93,33 @@ public class AddressBookIntegrationTest
     public void testProjoRequestAndResponse() throws Exception
     {
         String json = "{\"street\":\"1 Main Street\", \"city\":\"Smalltown\", \"state\":\"CA\", \"zipCode\":\"99999\"}";
-        url("addressbook/John_Doe").method(PUT)
+        url("addressbook/address/John_Doe").method(PUT)
             .body().set(json).back()
             .fetch().as(RestResponse.class)
             .assertStatus(HTTP_NO_CONTENT);
-        url("addressbook/John_Doe").method(GET)
+        url("addressbook/address/John_Doe").method(GET)
+            .fetch().as(RestResponse.class).assertBody(matches(json))
+            .assertStatus(HTTP_OK);
+    }
+
+    @Test
+    public void testProjoPhoneRequestAndResponse() throws Exception
+    {
+        String json = "{\"areaCode\":\"212\", \"exchange\":\"555\", \"subscriberNumber\":\"8237\"}";
+        url("addressbook/phone/John_Doe").method(PUT)
+            .body().set(json).back()
+            .fetch().as(RestResponse.class)
+            .assertStatus(HTTP_NO_CONTENT);
+        url("addressbook/phone/John_Doe").method(GET)
+            .fetch().as(RestResponse.class).assertBody(matches(json))
+            .assertStatus(HTTP_OK);
+    }
+
+    @Test
+    public void testProjoPhoneDefaultResponse() throws Exception
+    {
+        String json = "{\"areaCode\":\"123\", \"exchange\":\"456\", \"subscriberNumber\":\"7890\"}";
+        url("addressbook/phone/Default_Contact").method(GET)
             .fetch().as(RestResponse.class).assertBody(matches(json))
             .assertStatus(HTTP_OK);
     }

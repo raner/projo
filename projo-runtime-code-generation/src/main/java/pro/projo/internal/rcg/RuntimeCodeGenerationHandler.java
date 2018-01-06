@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Unloaded;
@@ -89,6 +92,13 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
     }
 
+    public Class<? extends _Artifact_> getUntypedImplementationOf(Class<?> type)
+    {
+        @SuppressWarnings("unchecked")
+        Class<_Artifact_> artifactType = (Class<_Artifact_>)type;
+        return getImplementationOf(artifactType);
+    }
+
     /**
     * Determines the Projo interface name (if any) of an implementation type.
     *
@@ -130,10 +140,97 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         boolean isGetter = Predicates.getter.test(method, new Object[method.getParameterCount()]);
         Class<?> type = isGetter? method.getReturnType():void.class;
-        addFieldForGetter = isGetter? localBuilder -> localBuilder.defineField(propertyName, type, PRIVATE):identity();
-        return addFieldForGetter.apply(builder).method(named(methodName)).intercept(FieldAccessor.ofField(propertyName));
+        addFieldForGetter = isGetter? addField(propertyName, type):identity();
+        class XmlElementImpl implements XmlElement {
+
+            @Override
+            public Class<? extends Annotation> annotationType()
+            {
+                // TODO Auto-generated method stub
+                return XmlElement.class;
+            }
+
+            @Override
+            public String name()
+            {
+                // TODO Auto-generated method stub
+                return "##default";
+            }
+
+            @Override
+            public boolean nillable()
+            {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public boolean required()
+            {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public String namespace()
+            {
+                // TODO Auto-generated method stub
+                return "##default";
+            }
+
+            @Override
+            public String defaultValue()
+            {
+                // TODO Auto-generated method stub
+                return "\u0000";
+            }
+
+            @Override
+            public Class type()
+            {
+                // TODO Auto-generated method stub
+                return XmlElement.DEFAULT.class;
+            }
+            
+        }
+
+        return addFieldForGetter.apply(builder)
+                .method(named(methodName))
+                .intercept(FieldAccessor.ofField(propertyName))
+                .annotateMethod(new XmlElementImpl());
     }
 
+    private UnaryOperator<Builder<_Artifact_>> addField(String propertyName, Class<?> type)
+    {
+        class XmlAttributeImpl implements XmlAttribute {
+
+            @Override
+            public Class<? extends Annotation> annotationType()
+            {
+                return XmlAttribute.class;
+            }
+
+            @Override
+            public String name()
+            {
+                return "##default";
+            }
+
+            @Override
+            public boolean required()
+            {
+                return false;
+            }
+
+            @Override
+            public String namespace()
+            {
+                return "##default";
+            }
+        }
+        return localBuilder -> localBuilder.defineField(propertyName, type, PRIVATE);//.annotateField(new XmlAttributeImpl());
+    }
+    
     private <_Any_> BinaryOperator<_Any_> sequentialOnly()
     {
         return (operand1, operand2) ->

@@ -1,0 +1,24 @@
+Non-immutable case:
+- hits MappingsGenerator.java:3424
+- TypeInfo.properties/originalProperties contains Property elements with
+  - element: getter Method
+  - originalGet/SetMethodName: getter/setter names
+  - propertyName: property name
+- TypeInfo.getNonTransientPropertiesInPropOrder() returns non-empty list
+- XMLDescriptor gets fully populated
+
+Immutable case:
+- hits MappingsGenerator.java:2467 -  generateMappings(TypeInfo, Descriptor, JavaClass, NamespaceInfo)
+  - originalProperties contains Property objects for all properties
+- TypeInfo.getPropertyNames() returns all fields, including FACTORY
+- all properties get skipped because Property.isTransient() returns true
+- TypeInfo.getNonTransientPropertiesInPropOrder() returns empty list
+
+Code:
+if(jaxbContext.getTypeToTypeMappingInfo() != null){
+    TypeMappingInfo tmi = jaxbContext.getTypeToTypeMappingInfo().get(originalClass);
+    if(tmi != null && jaxbContext.getTypeMappingInfoToGeneratedType() != null) {
+        Class generatedClass = jaxbContext.getTypeMappingInfoToGeneratedType().get(tmi);
+        if(generatedClass != null){
+            classToUnmarshalTo = generatedClass;
+JAXBUnmarshaller:339: javaClass still points to interface class, not Projo impl

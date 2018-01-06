@@ -37,12 +37,18 @@ import pro.projo.internal.PropertyMatcher;
 **/
 public class RuntimeCodeGenerationProjo extends Projo
 {
-    private RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+    /*private*/ public RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
 
     @Override
     protected int precedence()
     {
         return 0;
+    }
+
+    @Override
+    public Class<?> getImplementationClass(Class<?> type)
+    {
+        return handler.getUntypedImplementationOf(type);
     }
 
     @Override

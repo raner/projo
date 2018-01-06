@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2017 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,6 +29,15 @@ import javax.inject.Singleton;
 public class AddressBookImpl implements AddressBook
 {
     private Map<Contact, Address> map = new HashMap<>();
+    private Map<Contact, PhoneNumber> phoneNumbers = new HashMap<>();
+
+    {
+        Contact defaultContact = new Contact();
+        defaultContact.setFirstName("Default");
+        defaultContact.setLastName("Contact");
+        PhoneNumber defaultNumber = PhoneNumber.FACTORY.create("123", "456", "7890");
+        phoneNumbers.put(defaultContact, defaultNumber);
+    }
 
     @Override
     public void createOrUpdate(Contact contact, Address address)
@@ -40,5 +49,17 @@ public class AddressBookImpl implements AddressBook
     public Address getAddress(Contact contact)
     {
         return map.get(contact);
+    }
+
+    @Override
+    public void createOrUpdatePhoneNumber(Contact contact, PhoneNumber number)
+    {
+        phoneNumbers.put(contact, number);
+    }
+
+    @Override
+    public PhoneNumber getPhoneNumber(Contact contact)
+    {
+        return phoneNumbers.get(contact);
     }
 }

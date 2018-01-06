@@ -15,14 +15,19 @@
 //                                                                          //
 package pro.projo.internal.rcg.runtime;
 
+import javax.xml.bind.annotation.XmlTransient;
 import static pro.projo.internal.rcg.RuntimeCodeGenerationHandler.getInterfaceName;
 
 /**
 * The {@link DefaultToStringObject} class serves as the base class for non-Value Objects that support a
 * default {@link #toString()} implementation.
 *
+* This class is declared as {@link XmlTransient @XmlTransient} to prevent the {@code type} attribute from
+* showing up in the JSON serialization.
+*
 * @author Mirko Raner
 **/
+@XmlTransient
 public class DefaultToStringObject
 {
     @Override

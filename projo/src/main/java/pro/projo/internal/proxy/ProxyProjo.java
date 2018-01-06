@@ -35,6 +35,12 @@ public class ProxyProjo extends Projo
     }
 
     @Override
+    public Class<?> getImplementationClass(Class<?> type)
+    {
+        return initializer(type).getClass();
+    }
+
+    @Override
     public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type)
     {
         Class<?>[] interfaces = {type};

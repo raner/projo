@@ -98,6 +98,15 @@ public abstract class Projo
     public abstract <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type);
 
     /**
+     * Returns the Projo implementation class. This abstract method is implemented by
+     * the actual Projo implementation.
+     *
+     * @param type the Projo interface
+     * @return the implementation class
+     **/
+    public abstract Class<?> getImplementationClass(Class<?> type);
+
+    /**
     * Creates a new {@link Intermediate} object that provides factories for creating artifacts.
     *
     * @param type the Projo interface
@@ -210,7 +219,9 @@ public abstract class Projo
         Function<Method, Function<_Artifact_, ?>> toFunction = method -> artifact -> invoke(method, artifact);
         Method[] declaredMethods = type.getDeclaredMethods();
         sort(declaredMethods, comparing(Method::getName));
-        return Stream.of(declaredMethods).filter(getters).map(toFunction).toArray(Function[]::new);
+        @SuppressWarnings("unchecked")
+        Function<_Artifact_, ?>[] result = Stream.of(declaredMethods).filter(getters).map(toFunction).toArray(Function[]::new);
+        return result;
     }
 
     private static boolean methodExists(Class<?> type, String methodName, Class<?>... parameters)
