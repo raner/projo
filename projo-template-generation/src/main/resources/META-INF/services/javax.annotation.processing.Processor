@@ -1,1 +1,2 @@
 pro.projo.generation.ProjoTemplateFactoryProcessor
+pro.projo.generation.interfaces.InterfaceTemplateProcessor

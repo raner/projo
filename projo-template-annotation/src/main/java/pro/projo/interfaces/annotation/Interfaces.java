@@ -13,20 +13,25 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.template.annotation;
+package pro.projo.interfaces.annotation;
 
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import static java.lang.annotation.ElementType.PACKAGE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-* The {@link Configuration} interface describes the fully-qualified class name and the input
-* parameters for an individual template invocation. A template can be invoke multiple times
-* with different configurations.
+* The {@link Interfaces} annotation is the container annotation for
+* {@link java.lang.annotation.Repeatable @Repeatable} {@link Interface @Interface} annotations.
 *
 * @author Mirko Raner
 **/
-public interface Configuration
+@Target(PACKAGE)
+@Retention(RUNTIME)
+public @interface Interfaces
 {
-    String fullyQualifiedClassName();
-
-    Map<String, Object> parameters();
+    /**
+    * @return the {@link Interface @Interface} annotations contained within this annotation
+    **/
+    Interface[] value();
 }

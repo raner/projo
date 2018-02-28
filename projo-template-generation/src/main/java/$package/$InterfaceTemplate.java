@@ -13,20 +13,32 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.template.annotation;
-
-import java.util.Map;
-
+package $package;
+/* *#**#/
+#foreach ($import in $imports)
+import $import;
+#end
+/* */
 /**
-* The {@link Configuration} interface describes the fully-qualified class name and the input
-* parameters for an individual template invocation. A template can be invoke multiple times
-* with different configurations.
-*
+*#*
+* The {@link $package.$InterfaceTemplate} interface provides the Velocity template for Projo's interface scraping
+* mechanism. The class is both a completely valid Java class and a valid Apache Velocity template (which is why
+* the specific definition of its template references may appear a little funky at first glance), though it is
+* currently treated as a resource, not a Java source.
+*#
+* $javadoc
+*#*
 * @author Mirko Raner
+*#
 **/
-public interface Configuration
+/* *#**#/
+@Generated("$generatedBy")
+/* */
+public interface $InterfaceTemplate
 {
-    String fullyQualifiedClassName();
-
-    Map<String, Object> parameters();
+/* *#**#/
+#foreach ($method in $methods)
+    $method;
+#end
+/* */
 }

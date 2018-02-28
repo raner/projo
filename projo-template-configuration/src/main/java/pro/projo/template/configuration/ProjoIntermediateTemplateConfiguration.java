@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2018 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -63,9 +63,9 @@ public class ProjoIntermediateTemplateConfiguration extends ArrayList<Configurat
                 }
 
                 @Override
-                public Map<String, String> parameters()
+                public Map<String, Object> parameters()
                 {
-                    Map<String, String> parameters = new HashMap<>();
+                    Map<String, Object> parameters = new HashMap<>();
                     parameters.put("template", NAMES[number]);
                     parameters.put("n", String.valueOf(number+1));
                     parameters.put("s", number > 0? "s":"");

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2018 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -34,28 +34,28 @@ import static org.apache.velocity.runtime.RuntimeSingleton.getRuntimeServices;
 **/
 public class ProjoTemplateFactoryGenerator
 {
-    public String generate(String templateName, Map<String, String> parameters)
+    public String generate(String templateName, Map<String, Object> parameters)
     {
         StringWriter writer = new StringWriter();
         generate(templateName, parameters, writer);
         return writer.toString();
     }
 
-    public void generate(String templateName, Map<String, String> parameters, Writer writer)
+    public void generate(String templateName, Map<String, Object> parameters, Writer writer)
     {
         VelocityEngine engine = new VelocityEngine();
         Template template = engine.getTemplate(templateName);
         generate(template, parameters, writer);
     }
 
-    public void generate(Template template, Map<String, String> parameters, Writer writer)
+    public void generate(Template template, Map<String, Object> parameters, Writer writer)
     {
         VelocityContext context = new VelocityContext();
         parameters.forEach(context::put);
         template.merge(context, writer);
     }
 
-    public void generate(Reader reader, String name, Map<String, String> parameters, Writer writer)
+    public void generate(Reader reader, String name, Map<String, Object> parameters, Writer writer)
     {
         try
         {

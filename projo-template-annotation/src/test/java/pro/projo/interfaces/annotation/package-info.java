@@ -13,20 +13,17 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.template.annotation;
+@Interface(generate="Callable", from=Callable.class)
+@Interface(generate="Math", from=Math.class, modifiers={PUBLIC, STATIC})
+package pro.projo.interfaces.annotation;
 
-import java.util.Map;
+import java.util.concurrent.Callable;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 
 /**
-* The {@link Configuration} interface describes the fully-qualified class name and the input
-* parameters for an individual template invocation. A template can be invoke multiple times
-* with different configurations.
+* This {@code package-info} class contains the annotations that are tested by the
+* {@link InterfaceTest} class.
 *
 * @author Mirko Raner
 **/
-public interface Configuration
-{
-    String fullyQualifiedClassName();
-
-    Map<String, Object> parameters();
-}
