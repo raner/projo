@@ -57,6 +57,7 @@ import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.template.annotation.Configuration;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.SourceVersion.RELEASE_8;
 import static javax.tools.Diagnostic.Kind.NOTE;
@@ -105,7 +106,7 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
                 {
                     String templateClassName = $package.$InterfaceTemplate.class.getName();
                     JavaFileObject sourceFile = filer.createSourceFile(className, typeElement);
-                    String resourceName = "/" + templateClassName.replace('.', '/')+ ".java";
+                    String resourceName = "/" + templateClassName.replace('.', '/') + ".java";
                     try (PrintWriter writer = new PrintWriter(sourceFile.openWriter(), true))
                     {
                         try (Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName)))
@@ -136,11 +137,18 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
         Function<ExecutableElement, String> toDeclaration = method ->
         {
             StringBuffer declaration = new StringBuffer();
+            List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+            if (!typeParameters.isEmpty())
+            {
+                declaration.append("<");
+                declaration.append(typeParameters.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
+                declaration.append("> ");
+            }
             declaration.append(method.getReturnType()).append(' ');
-            declaration.append(method.getSimpleName()).append(' ');
+            declaration.append(method.getSimpleName()).append('(');
             List<? extends VariableElement> parameters = method.getParameters();
-            declaration.append("(" + parameters.stream().map(toString).collect(Collectors.joining(", "))+ ")"); //TODO
-            return declaration.toString();
+            declaration.append(parameters.stream().map(toString).collect(joining(", ")));
+            return declaration.append(')').toString();
         };
         Predicate<ExecutableElement> realMethodsOnly = method -> method.getSimpleName().charAt(0) != '<';
         Function<Interface, Configuration> getConfiguration = annotation ->

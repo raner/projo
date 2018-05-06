@@ -13,20 +13,19 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Interface(generate="Callable", from=Callable.class)
-@Interface(generate="Math", from=Math.class, modifiers={PUBLIC, STATIC})
-@Interface(generate="ObjectFactory", from=ObjectFactory.class, modifiers={PUBLIC, STATIC})
-package pro.projo.generation.interfaces.test;
+package pro.projo.generation.interfaces.test.classes;
 
-import java.util.concurrent.Callable;
-import pro.projo.generation.interfaces.test.classes.ObjectFactory;
-import pro.projo.interfaces.annotation.Interface;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
-
-/**
-* This {@code package-info} class contains the annotations that are tested by the
-* {@link InterfaceTest} class.
-*
-* @author Mirko Raner
-**/
+public class ObjectFactory
+{
+    public static <T> T createObject(Class<T> type)
+    {
+        try
+        {
+            return type.newInstance();
+        }
+        catch (@SuppressWarnings("unused") InstantiationException | IllegalAccessException exception)
+        {
+            return null;
+        }
+    }
+}

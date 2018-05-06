@@ -16,6 +16,7 @@
 package pro.projo.generation.interfaces;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -58,5 +59,20 @@ public class InterfaceTemplateProcessorTest
         Set<String> actual = Stream.of(math.getDeclaredMethods()).map(toString).collect(toSet());
         Set<String> expected = Stream.of(Math.class.getDeclaredMethods()).filter(publicStatic).map(toString).collect(toSet());
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testObjectFactoryClassIsGeneratedInCorrectPackage() throws Exception
+    {
+        Class.forName("pro.projo.generation.interfaces.test.ObjectFactory");
+    }
+
+    @Test
+    public void testMethodWithTypeParameter() throws Exception
+    {
+        Class<?> classObjectFactory = Class.forName("pro.projo.generation.interfaces.test.ObjectFactory");
+        Method createObjectMethod = classObjectFactory.getMethod("createObject", Class.class);
+        TypeVariable<Method> typeVariable = createObjectMethod.getTypeParameters()[0];
+        assertEquals("T", typeVariable.getName());
     }
 }
