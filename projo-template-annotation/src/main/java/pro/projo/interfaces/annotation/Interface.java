@@ -59,4 +59,9 @@ public @interface Interface
     * @return the original class (or interface) from which the new interface will be generated
     **/
     Class<?> from();
+
+    /**
+    * @return optional type mappings, if any
+    **/
+    Map[] map() default {};
 }

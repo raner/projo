@@ -75,4 +75,28 @@ public class InterfaceTemplateProcessorTest
         TypeVariable<Method> typeVariable = createObjectMethod.getTypeParameters()[0];
         assertEquals("T", typeVariable.getName());
     }
+
+    @Test
+    public void testObservablesClassIsGeneratedInCorrectPackage() throws Exception
+    {
+        Class.forName("pro.projo.generation.interfaces.test.Observables");
+    }
+
+    @Test
+    public void testGeneratedMethodReturnsCorrectType() throws Exception
+    {
+        Class<?> classObjectFactory = Class.forName("pro.projo.generation.interfaces.test.ObjectFactory");
+        Method createObjectFactoryMethod = classObjectFactory.getMethod("createObjectFactory");
+        Class<?> returnType = createObjectFactoryMethod.getReturnType();
+        assertEquals(classObjectFactory, returnType);
+    }
+
+    @Test
+    public void testGeneratedMethodReturnsCorrectTypeFromMapJavadocExample() throws Exception
+    {
+        Class<?> classType = Class.forName("pro.projo.generation.interfaces.test.NewType");
+        Method selfMethod = classType.getMethod("self", classType);
+        Class<?> returnType = selfMethod.getReturnType();
+        assertEquals(classType, returnType);
+    }
 }

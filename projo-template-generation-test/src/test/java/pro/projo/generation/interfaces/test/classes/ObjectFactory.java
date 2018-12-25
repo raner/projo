@@ -28,4 +28,9 @@ public class ObjectFactory
             return null;
         }
     }
+
+    public static ObjectFactory createObjectFactory()
+    {
+        return new ObjectFactory();
+    }
 }

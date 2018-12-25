@@ -27,13 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Generated;
-import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -48,17 +47,18 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner8;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
+import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.template.annotation.Configuration;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static javax.lang.model.SourceVersion.RELEASE_8;
 import static javax.tools.Diagnostic.Kind.NOTE;
 
@@ -71,7 +71,7 @@ import static javax.tools.Diagnostic.Kind.NOTE;
 **/
 @SupportedSourceVersion(RELEASE_8)
 @SupportedAnnotationTypes("pro.projo.interfaces.annotation.Interfaces")
-public class InterfaceTemplateProcessor extends AbstractProcessor
+public class InterfaceTemplateProcessor extends ProjoProcessor
 {
     private Filer filer;
     private Elements elements;
@@ -127,12 +127,20 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
         return true;
     }
 
+    /**
+    * Generates code generation configurations for declared {@link Interface @Interface} annotations.
+    *
+    * @param packageName the package name in which interfaces will be generated
+    * @param interfaces the set of {@link Interface @Interface} annotations containing the configuration data
+    * @return a collection of code generation configurations, one for each generated interface
+    **/
     private Collection<? extends Configuration> getConfiguration(Name packageName, Interfaces interfaces)
     {
         final String className = getClass().getName();
+        Function<String, String> typeMap = getTypeMap(packageName, interfaces);
         Function<VariableElement, String> toString = parameter ->
         {
-            return parameter.asType() + " " + parameter.getSimpleName();
+            return typeMap.apply(parameter.asType().toString()) + " " + parameter.getSimpleName();
         };
         Function<ExecutableElement, String> toDeclaration = method ->
         {
@@ -144,7 +152,7 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
                 declaration.append(typeParameters.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
                 declaration.append("> ");
             }
-            declaration.append(method.getReturnType()).append(' ');
+            declaration.append(typeMap.apply(method.getReturnType().toString())).append(' ');
             declaration.append(method.getSimpleName()).append('(');
             List<? extends VariableElement> parameters = method.getParameters();
             declaration.append(parameters.stream().map(toString).collect(joining(", ")));
@@ -155,7 +163,7 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
         {
             Set<TypeElement> imports = new HashSet<>();
             imports.add(elements.getTypeElement(Generated.class.getName()));
-            TypeMirror originalClass = getInputType(annotation::from);
+            TypeMirror originalClass = getTypeMirror(annotation::from);
             Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
             TypeElement typeElement = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
@@ -210,17 +218,35 @@ public class InterfaceTemplateProcessor extends AbstractProcessor
         return Stream.of(interfaces.value()).map(getConfiguration).collect(toList());
     }
 
-    // TODO: reunite with getInputType(Template)
-    private TypeMirror getInputType(Supplier<Class<?>> supplier)
+    private Function<String, String> getTypeMap(Name packageName, Interfaces interfaces)
     {
-        try
+        Function<Interface, String> keyMapper = annotation -> getTypeMirror(annotation::from).toString();
+        Function<Interface, String> valueMapper = annotation ->
         {
-            supplier.get();
-        }
-        catch (MirroredTypeException mirroredTypeException)
+            return packageName + "." + getMap(annotation).getOrDefault(getTypeMirror(annotation::from), annotation.generate());
+            // If the Interface contains a Map that overrides its own type source, use the Map's target type instead:
+        };
+        BinaryOperator<String> merger = (oldValue, newValue) ->
         {
-            return mirroredTypeException.getTypeMirror();
-        }
-        return null;
+            if (newValue.equals(oldValue))
+            {
+                return oldValue;
+            }
+            throw new IllegalStateException(String.format("Value mismatch: %s/%s", oldValue, newValue));
+        };
+        Map<String, String> map = Stream.of(interfaces.value()).collect(toMap(keyMapper, valueMapper, merger));
+        return key ->
+        {
+            int typeParameterIndex = key.indexOf('<');
+            typeParameterIndex = typeParameterIndex == -1? key.length():typeParameterIndex;
+            String rootType = key.substring(0, typeParameterIndex);
+            String typeParameter = key.substring(typeParameterIndex);
+            return map.getOrDefault(rootType, rootType) + typeParameter;
+        };
+    }
+
+    private Map<TypeMirror, String> getMap(Interface map)
+    {
+        return Stream.of(map.map()).collect(toMap(annotation -> getTypeMirror(annotation::type), pro.projo.interfaces.annotation.Map::to));
     }
 }

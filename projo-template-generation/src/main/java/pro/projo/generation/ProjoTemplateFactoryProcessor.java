@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2018 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -20,7 +20,6 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Collection;
 import java.util.Set;
-import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -29,7 +28,6 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
@@ -50,7 +48,7 @@ import static javax.tools.StandardLocation.SOURCE_PATH;
 **/
 @SupportedSourceVersion(RELEASE_8)
 @SupportedAnnotationTypes("pro.projo.template.annotation.Template")
-public class ProjoTemplateFactoryProcessor extends AbstractProcessor
+public class ProjoTemplateFactoryProcessor extends ProjoProcessor
 {
     private Filer filer;
     private Elements elements;
@@ -74,7 +72,7 @@ public class ProjoTemplateFactoryProcessor extends AbstractProcessor
             Template template = element.getAnnotation(Template.class);
             messager.printMessage(NOTE, "@Template annotation found in " + element);
             FileObject templateFile = getTemplateFile(element);
-            Collection<? extends Configuration> configurations = getConfiguration(getInputType(template));
+            Collection<? extends Configuration> configurations = getConfiguration(getTypeMirror(template::input));
             messager.printMessage(NOTE, "Generating " + configurations.size() + " additional sources...");
             for (Configuration configuration: configurations)
             {
@@ -122,14 +120,9 @@ public class ProjoTemplateFactoryProcessor extends AbstractProcessor
     {
         try
         {
-            Collection<? extends Configuration> configuration = getClass(type).newInstance();
-            return configuration;
+            return getClass(type).newInstance();
         }
-        catch (@SuppressWarnings("unused") InstantiationException instantiationException)
-        {
-            return null;
-        }
-        catch (@SuppressWarnings("unused") IllegalAccessException illegalAccessException)
+        catch (@SuppressWarnings("unused") InstantiationException | IllegalAccessException exception)
         {
             return null;
         }
@@ -147,18 +140,5 @@ public class ProjoTemplateFactoryProcessor extends AbstractProcessor
         {
             return null;
         }
-    }
-
-    private TypeMirror getInputType(Template template)
-    {
-        try
-        {
-            template.input();
-        }
-        catch (MirroredTypeException mirroredTypeException)
-        {
-            return mirroredTypeException.getTypeMirror();
-        }
-        return null;
     }
 }
