@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2017 Mirko Raner                                               -->
+<!-- Copyright 2018 Mirko Raner                                               -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -27,6 +27,10 @@
  </parent>
  <name>Projo JAX-RS Integration for Jersey</name>
  <artifactId>projo-jax-rs</artifactId>
+
+ <properties>
+  <tomcat-embed.version>8.5.37</tomcat-embed.version>
+ </properties>
 
  <dependencies>
 
@@ -85,14 +89,14 @@
   <dependency>
    <groupId>org.apache.tomcat.embed</groupId>
    <artifactId>tomcat-embed-core</artifactId>
-   <version>8.5.6</version>
+   <version>${tomcat-embed.version}</version>
    <scope>test</scope>
   </dependency>
 
   <dependency>
    <groupId>org.apache.tomcat.embed</groupId>
    <artifactId>tomcat-embed-jasper</artifactId>
-   <version>8.5.6</version>
+   <version>${tomcat-embed.version}</version>
    <scope>test</scope>
   </dependency>
 
