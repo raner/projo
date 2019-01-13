@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Generated;
@@ -137,14 +138,17 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     private Collection<? extends Configuration> getConfiguration(Name packageName, Interfaces interfaces)
     {
         final String className = getClass().getName();
+        UnaryOperator<String> shorten = shortenQualifiedName(packageName);
         Function<String, String> typeMap = getTypeMap(packageName, interfaces);
         Function<VariableElement, String> toString = parameter ->
         {
-            return typeMap.apply(parameter.asType().toString()) + " " + parameter.getSimpleName();
+            return shorten.apply(typeMap.apply(parameter.asType().toString())) + " " + parameter.getSimpleName();
         };
         Function<ExecutableElement, String> toDeclaration = method ->
         {
             StringBuffer declaration = new StringBuffer();
+
+            // Add type parameters, if any:
             List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
             if (!typeParameters.isEmpty())
             {
@@ -152,7 +156,11 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 declaration.append(typeParameters.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
                 declaration.append("> ");
             }
-            declaration.append(typeMap.apply(method.getReturnType().toString())).append(' ');
+
+            // Add return type:
+            declaration.append(shorten.apply(typeMap.apply(method.getReturnType().toString()))).append(' ');
+
+            // Add parameters:
             declaration.append(method.getSimpleName()).append('(');
             List<? extends VariableElement> parameters = method.getParameters();
             declaration.append(parameters.stream().map(toString).collect(joining(", ")));
@@ -216,6 +224,11 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             };
         };
         return Stream.of(interfaces.value()).map(getConfiguration).collect(toList());
+    }
+
+    private UnaryOperator<String> shortenQualifiedName(Name packageName)
+    {
+        return name -> name.startsWith(packageName + ".")? name.substring(packageName.length()+1) : name;
     }
 
     private Function<String, String> getTypeMap(Name packageName, Interfaces interfaces)

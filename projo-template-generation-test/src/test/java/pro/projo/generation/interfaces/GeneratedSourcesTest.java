@@ -13,12 +13,34 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation.interfaces.test.classes;
+package pro.projo.generation.interfaces;
 
-public class Type
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
+
+public class GeneratedSourcesTest
 {
-    public static Type self(Type type)
+    @Test
+    public void testNewType() throws Exception
     {
-        return type;
+        File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/NewType.java");
+        File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/NewType.java");
+        String expected = read(comparison);
+        String actual = read(generated);
+        assertEquals(expected, actual);
+    }
+
+    private String read(File file) throws IOException
+    {
+        try (InputStream stream = new FileInputStream(file))
+        {
+            return IOUtils.toString(stream, UTF_8);
+        }
     }
 }

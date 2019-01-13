@@ -13,12 +13,21 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation.interfaces.test.classes;
-
-public class Type
+package pro.projo.generation.interfaces.test;
+/* */
+import javax.annotation.Generated;
+/* */
+/**
+*
+* This interface was extracted from pro.projo.generation.interfaces.test.classes.Type.
+*
+**/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface NewType
 {
-    public static Type self(Type type)
-    {
-        return type;
-    }
+/* */
+    NewType self(NewType type);
+/* */
 }
