@@ -36,6 +36,16 @@ public class GeneratedSourcesTest
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void testNewThing() throws Exception
+    {
+      File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/NewThing.java");
+      File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/NewThing.java");
+      String expected = read(comparison);
+      String actual = read(generated);
+      assertEquals(expected, actual);
+    }
+
     private String read(File file) throws IOException
     {
         try (InputStream stream = new FileInputStream(file))

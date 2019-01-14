@@ -228,7 +228,16 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
 
     private UnaryOperator<String> shortenQualifiedName(Name packageName)
     {
-        return name -> name.startsWith(packageName + ".")? name.substring(packageName.length()+1) : name;
+        return name ->
+        {
+            String prefix;
+            if (name.startsWith(prefix = packageName + ".")
+            || (name.startsWith(prefix = "java.lang.")))
+            {
+                return name.substring(prefix.length());
+            }
+            return name;
+        };
     }
 
     private Function<String, String> getTypeMap(Name packageName, Interfaces interfaces)
