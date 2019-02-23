@@ -20,10 +20,12 @@
 @Interface(generate="Observables", from=Observable.class, modifiers={PUBLIC, STATIC}, map=@Map(type=Observable.class, to="Observable"))
 @Interface(generate="NewType", from=Type.class)
 @Interface(generate="NewThing", from=Thing.class)
+@Interface(generate="Mapper", from=Converter.class)
 package pro.projo.generation.interfaces.test;
 
 import java.util.concurrent.Callable;
 import io.reactivex.Observable;
+import pro.projo.generation.interfaces.test.classes.Converter;
 import pro.projo.generation.interfaces.test.classes.ObjectFactory;
 import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.interfaces.test.classes.Type;

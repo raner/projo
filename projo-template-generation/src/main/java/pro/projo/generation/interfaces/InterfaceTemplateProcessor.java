@@ -26,10 +26,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +54,7 @@ import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
+import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.template.annotation.Configuration;
@@ -138,39 +139,11 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     private Collection<? extends Configuration> getConfiguration(Name packageName, Interfaces interfaces)
     {
         final String className = getClass().getName();
-        UnaryOperator<String> shorten = shortenQualifiedName(packageName);
         Function<String, String> typeMap = getTypeMap(packageName, interfaces);
-        Function<VariableElement, String> toString = parameter ->
-        {
-            return shorten.apply(typeMap.apply(parameter.asType().toString())) + " " + parameter.getSimpleName();
-        };
-        Function<ExecutableElement, String> toDeclaration = method ->
-        {
-            StringBuffer declaration = new StringBuffer();
-
-            // Add type parameters, if any:
-            List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
-            if (!typeParameters.isEmpty())
-            {
-                declaration.append("<");
-                declaration.append(typeParameters.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
-                declaration.append("> ");
-            }
-
-            // Add return type:
-            declaration.append(shorten.apply(typeMap.apply(method.getReturnType().toString()))).append(' ');
-
-            // Add parameters:
-            declaration.append(method.getSimpleName()).append('(');
-            List<? extends VariableElement> parameters = method.getParameters();
-            declaration.append(parameters.stream().map(toString).collect(joining(", ")));
-            return declaration.append(')').toString();
-        };
-        Predicate<ExecutableElement> realMethodsOnly = method -> method.getSimpleName().charAt(0) != '<';
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
-            Set<TypeElement> imports = new HashSet<>();
-            imports.add(elements.getTypeElement(Generated.class.getName()));
+            Set<String> imports = new HashSet<>();
+            imports.add(Generated.class.getName());
             TypeMirror originalClass = getTypeMirror(annotation::from);
             Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
             TypeElement typeElement = elements.getTypeElement(originalClass.toString());
@@ -189,7 +162,40 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 }
             };
             typeElement.accept(scanner, methods);
-            Stream<String> declarations = methods.stream().filter(realMethodsOnly).map(toDeclaration);
+            imports.addAll(classesUsedBy(methods, typeMap));
+            List<String> importNames = imports.stream().map(Object::toString)
+                .filter(name -> !name.startsWith(packageName + ".") && !name.startsWith("java.lang."))
+                .map(pro.projo.generation.utilities.Name::new)
+                .sorted(new DefaultNameComparator())
+                .map(Name::toString)
+                .collect(toList());
+            Function<VariableElement, String> toString = parameter ->
+            {
+                return shortenQualifiedName(packageName, importNames).apply(typeMap.apply(parameter.asType().toString())) + " " + parameter.getSimpleName();
+            };
+            Function<ExecutableElement, String> toDeclaration = method ->
+            {
+                StringBuffer declaration = new StringBuffer();
+
+                // Add type parameters, if any:
+                List<? extends TypeParameterElement> typeParameterList = method.getTypeParameters();
+                if (!typeParameterList.isEmpty())
+                {
+                    declaration.append("<");
+                    declaration.append(typeParameterList.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
+                    declaration.append("> ");
+                }
+
+                // Add return type:
+                declaration.append(shortenQualifiedName(packageName, importNames).apply(typeMap.apply(method.getReturnType().toString()))).append(' ');
+
+                // Add parameters:
+                declaration.append(method.getSimpleName()).append('(');
+                List<? extends VariableElement> parameters = method.getParameters();
+                declaration.append(parameters.stream().map(toString).collect(joining(", ")));
+                return declaration.append(')').toString();
+            };
+            Stream<String> declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration);
             return new Configuration()
             {
                 @Override
@@ -197,8 +203,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 {
                     Map<String, Object> parameters = new HashMap<>();
                     parameters.put("package", packageName);
-                    parameters.put("imports", imports);
-                    // TODO: imports.stream().map(Class::getName).toArray());
+                    parameters.put("imports", importNames);
                     parameters.put("InterfaceTemplate", interfaceSignature());
                     parameters.put("javadoc", "This interface was extracted from " + originalClass + ".");
                     parameters.put("generatedBy", className);
@@ -226,8 +231,36 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return Stream.of(interfaces.value()).map(getConfiguration).collect(toList());
     }
 
-    private UnaryOperator<String> shortenQualifiedName(Name packageName)
+    boolean realMethodsOnly(ExecutableElement method)
     {
+        return method.getSimpleName().charAt(0) != '<';
+    }
+
+    Collection<String> classesUsedBy(List<ExecutableElement> methods, Function<String, String> typeMap)
+    {
+        return methods.stream().filter(this::realMethodsOnly).flatMap(method -> classesUsedBy(method, typeMap)).collect(toList());
+    }
+
+    Stream<String> classesUsedBy(ExecutableElement method, Function<String, String> typeMap)
+    {
+        TypeElement returnType = elements.getTypeElement(method.getReturnType().toString());
+        Stream<? extends VariableElement> parameters = method.getParameters().stream();
+        Stream<TypeElement> parameterTypes = parameters.map(Element::asType).map(this::typeElement);
+        return Stream.concat(Stream.of(returnType), parameterTypes).filter(Objects::nonNull)
+            .map(TypeElement::getQualifiedName).map(Name::toString).map(typeMap);
+        // TODO: filtering non-null (i.e., non-matching) types conveniently takes care of type
+        //       parameters, but will cause problems if there is a type in scope with the same
+        //       name as the type parameter (i.e., there is a type parameter V and also a type V)
+    }
+    
+    TypeElement typeElement(TypeMirror type)
+    {
+        return elements.getTypeElement(type.toString());
+    }
+
+    private UnaryOperator<String> shortenQualifiedName(Name packageName, List<String> imports)
+    {
+        // TODO: change signature back to ..., Set<String> for efficiency reasons
         return name ->
         {
             String prefix;
@@ -236,17 +269,34 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             {
                 return name.substring(prefix.length());
             }
+            if (imports.contains(name))
+            {
+              return name.substring(name.lastIndexOf('.') + 1);
+            }
             return name;
         };
     }
 
+    /**
+    * To generate the source code of the Projo interface we need to produce two things:
+    * - a sorted list of all classes that need to be imported
+    * - a map that allows to look up the short name based on the fully qualified name
+    * A couple of additional rules apply:
+    * - java.lang.* classes need to be part of the lookup map but not part of the list
+    * - the generated class itself is not part of the import list and always resolves to
+    *   an unqualified name
+    *   
+    * @param packageName
+    * @param interfaces
+    * @return
+    **/
     private Function<String, String> getTypeMap(Name packageName, Interfaces interfaces)
     {
         Function<Interface, String> keyMapper = annotation -> getTypeMirror(annotation::from).toString();
         Function<Interface, String> valueMapper = annotation ->
         {
             return packageName + "." + getMap(annotation).getOrDefault(getTypeMirror(annotation::from), annotation.generate());
-            // If the Interface contains a Map that overrides its own type source, use the Map's target type instead:
+            // If the Interface contains a Map that overrides its own type source, use the Map's target type instead
         };
         BinaryOperator<String> merger = (oldValue, newValue) ->
         {

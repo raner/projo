@@ -26,62 +26,6 @@ import static org.junit.Assert.assertTrue;
 
 public class DefaultNameComparatorTest
 {
-    static class Name implements javax.lang.model.element.Name
-    {
-        private String name;
-
-        Name(String name)
-        {
-            this.name = name;
-        }
-
-        @Override
-        public int length()
-        {
-            return name.length();
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            return name.charAt(index);
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end)
-        {
-            return name.subSequence(start, end);
-        }
-
-        @Override
-        public boolean contentEquals(CharSequence sequence)
-        {
-            return name.contentEquals(sequence);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object other)
-        {
-            if (!(other instanceof Name))
-            {
-                return false;
-            }
-            return name.equals(((Name)other).name);
-        }
-
-        @Override
-        public String toString()
-        {
-            return name;
-        }
-    }
-
     DefaultNameComparator comparator = new DefaultNameComparator();
 
     @Test

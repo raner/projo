@@ -46,6 +46,16 @@ public class GeneratedSourcesTest
       assertEquals(expected, actual);
     }
 
+    @Test
+    public void testMapper() throws Exception
+    {
+      File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/Mapper.java");
+      File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/Mapper.java");
+      String expected = read(comparison);
+      String actual = read(generated);
+      assertEquals(expected, actual);
+    }
+
     private String read(File file) throws IOException
     {
         try (InputStream stream = new FileInputStream(file))
