@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -210,7 +210,8 @@ public abstract class Projo
         Function<Method, Function<_Artifact_, ?>> toFunction = method -> artifact -> invoke(method, artifact);
         Method[] declaredMethods = type.getDeclaredMethods();
         sort(declaredMethods, comparing(Method::getName));
-        return Stream.of(declaredMethods).filter(getters).map(toFunction).toArray(Function[]::new);
+        Stream<Function<_Artifact_, ?>> map = Stream.of(declaredMethods).filter(getters).map(toFunction);
+        return map.<Function<_Artifact_, ?>>toArray(Function[]::new);
     }
 
     private static boolean methodExists(Class<?> type, String methodName, Class<?>... parameters)

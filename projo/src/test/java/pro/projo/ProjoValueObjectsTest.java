@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -117,6 +117,7 @@ public class ProjoValueObjectsTest
     }
 
     @Test
+    @SuppressWarnings("unlikely-arg-type")
     public void testNotEqualsWrongType()
     {
         EqualPerson person = EqualPerson.FACTORY.create("John", "Doe");
