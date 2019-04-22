@@ -15,22 +15,32 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import pro.projo.interfaces.annotation.Interface;
 
 /**
-* The {@link TypeConverter} class converts {@link DeclaredType}s according to the mappings specified
+* The {@link TypeConverter} class converts types according to the mappings specified
 * in a set of {@link Interface}s.
 *
 * @author Mirko Raner
@@ -38,46 +48,109 @@ import pro.projo.interfaces.annotation.Interface;
 public class TypeConverter implements TypeMirrorUtilities
 {
     private Types types;
-    private Elements elements;
-    private Map<DeclaredType, String> generates = new HashMap<>();
+    private PackageShortener shortener;
+    private Map<String, String> generates = new HashMap<>();
+    private Set<String> imports = new HashSet<>();
 
-    public TypeConverter(Types types, Elements elements, Name targetPackage, Interface... interfaces)
+    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Interface... interfaces)
     {
         this.types = types;
-        this.elements = elements;
-        generates = Stream.of(interfaces).collect(toMap(type -> getDeclaredType(type::from), type -> targetPackage + "." + type.generate()));
+        this.shortener = shortener;
+        Function<Interface, String> keyMapper = type -> getDeclaredType(type::from).toString();
+        Function<Interface, String> valueMapper = type ->
+        {
+            String className = getMap(type).getOrDefault(getTypeMirror(type::from), type.generate());
+            return targetPackage + "." + className;
+        };
+        BinaryOperator<String> merger = (oldValue, newValue) ->
+        {
+            if (oldValue.equals(newValue))
+            {
+                return oldValue;
+            }
+            throw new IllegalStateException("old=" + oldValue + ", new=" + newValue);
+        };
+        generates = Stream.of(interfaces).collect(toMap(keyMapper, valueMapper, merger , HashMap::new));
     }
 
-    public DeclaredType convert(DeclaredType element)
+    public String convert(TypeMirror element)
     {
-        DeclaredType declaredType = getRawType(element);
-        List<? extends TypeMirror> typeArguments = element.getTypeArguments();
-        String string = generates.getOrDefault(declaredType, declaredType.toString());
-        TypeElement typeElement = elements.getTypeElement(string);
-        DeclaredType baseType = (DeclaredType) typeElement.asType();
-        TypeMirror[] arguments = typeArguments.stream().map(this::map).toArray(TypeMirror[]::new);
-        baseType = types.getDeclaredType(typeElement, arguments);
-        // NOTE: this will actually make copies of the TypeArguments, hence the resulting
-        //       DeclaredTypes will not be equal even if they have all the same attributes
-        return baseType;
+        if (element == null)
+        {
+            return ""; // to deal with absent extends/super bounds
+        }
+        if (element instanceof DeclaredType)
+        {
+            DeclaredType declaredType = getRawType(element);
+            List<? extends TypeMirror> typeArguments = ((DeclaredType)element).getTypeArguments();
+            String string = generates.getOrDefault(declaredType.toString(), declaredType.toString());
+            String[] arguments = typeArguments.stream().map(this::convert).toArray(String[]::new);
+            boolean hasArguments = arguments.length > 0;
+            return shorten(string) + Stream.of(arguments).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
+        }
+        if (element instanceof ArrayType)
+        {
+            ArrayType arrayType = (ArrayType)element;
+            return convert(arrayType.getComponentType()) + "[]";
+        }
+        if (element instanceof WildcardType)
+        {
+            WildcardType wildcard = (WildcardType)element;
+            TypeMirror extendsBound = wildcard.getExtendsBound();
+            TypeMirror superBound = wildcard.getSuperBound();
+            String bounds = "?";
+            bounds += extendsBound != null? " extends " + convert(extendsBound) : "";
+            bounds += superBound != null? " super " + convert(superBound) : "";
+            return bounds;
+        }
+        if (element instanceof TypeVariable
+        || (element instanceof NoType)
+        || (element instanceof PrimitiveType))
+        {
+            return element.toString();
+        }
+        throw new UnsupportedOperationException(element.getClass().getName());
+    }
+
+    public String convert(VariableElement variable)
+    {
+        TypeMirror type = variable.asType();
+        String result = convert(type) + " " + variable.getSimpleName();
+        return result;
     }
 
     public DeclaredType getRawType(TypeMirror type)
     {
+        if (type instanceof WildcardType)
+        {
+            WildcardType wildcard = (WildcardType)type;
+            if (wildcard.getExtendsBound() != null)
+            {
+                return types.getDeclaredType((TypeElement)((DeclaredType)wildcard.getExtendsBound()).asElement());
+            }
+            return types.getDeclaredType((TypeElement)((DeclaredType)wildcard.getSuperBound()).asElement());
+        }
         return types.getDeclaredType((TypeElement)((DeclaredType)type).asElement());
     }
 
-    private TypeMirror map(TypeMirror type)
+    public PackageShortener getPackageShortener()
     {
-        if (type instanceof DeclaredType)
-        {
-            return convert((DeclaredType)type);
-        }
-        return type;
+        return shortener;
+    }
+
+    public Set<String> getImports()
+    {
+        return imports;
     }
 
     private DeclaredType getDeclaredType(Supplier<Class<?>> type)
     {
         return (DeclaredType)getTypeMirror(type);
+    }
+
+    private String shorten(String fqcn)
+    {
+        imports.add(fqcn);
+        return shortener.shorten(fqcn);
     }
 }

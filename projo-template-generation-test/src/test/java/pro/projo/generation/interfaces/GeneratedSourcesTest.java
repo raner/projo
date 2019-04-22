@@ -19,41 +19,50 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
+/**
+* {@link GeneratedSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/expected} match their
+* corresponding generated files.
+*
+* @author Mirko Raner
+**/
+@RunWith(Parameterized.class)
 public class GeneratedSourcesTest
 {
-    @Test
-    public void testNewType() throws Exception
+    Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/{0}");
+    Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/expected/{0}");
+
+    @Parameters(name="{0}")
+    public static Collection<Object[]> testSources()
     {
-        File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/NewType.java");
-        File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/NewType.java");
-        String expected = read(comparison);
-        String actual = read(generated);
+        File expected = new File("src/test/resources/pro/projo/generation/interfaces/expected");
+        return Stream.of(expected.list()).map(file -> new Object[] {file}).collect(toList());
+    }
+
+    @Parameter
+    public String className;
+
+    @Test
+    public void test() throws Exception
+    {
+        Object[] file = {className};
+        String expected = read(new File(this.comparison.format(file)));
+        String actual = read(new File(this.generated.format(file)));
         assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testNewThing() throws Exception
-    {
-      File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/NewThing.java");
-      File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/NewThing.java");
-      String expected = read(comparison);
-      String actual = read(generated);
-      assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testMapper() throws Exception
-    {
-      File generated = new File("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/Mapper.java");
-      File comparison = new File("src/test/resources/pro/projo/generation/interfaces/expected/Mapper.java");
-      String expected = read(comparison);
-      String actual = read(generated);
-      assertEquals(expected, actual);
     }
 
     private String read(File file) throws IOException

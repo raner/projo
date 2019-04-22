@@ -13,18 +13,14 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation;
+package pro.projo.generation.interfaces.test.classes;
 
-import javax.annotation.processing.AbstractProcessor;
-import pro.projo.generation.utilities.TypeMirrorUtilities;
+import java.util.concurrent.Future;
 
-/**
-* The {@link ProjoProcessor} class is an abstract base class that enriches the
-* {@link AbstractProcessor} with some utility methods.
-*
-* @author Mirko Raner
-**/
-public abstract class ProjoProcessor extends AbstractProcessor implements TypeMirrorUtilities
+public class Runner
 {
-    // No methods at this point
+    public static void process(Future<Runner[]> runner) throws Exception
+    {
+        runner.get();
+    }
 }

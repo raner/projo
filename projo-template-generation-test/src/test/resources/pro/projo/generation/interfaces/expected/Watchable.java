@@ -13,18 +13,22 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation;
-
-import javax.annotation.processing.AbstractProcessor;
-import pro.projo.generation.utilities.TypeMirrorUtilities;
-
+package pro.projo.generation.interfaces.test;
+/* */
+import javax.annotation.Generated;
+import io.reactivex.ObservableSource;
+/* */
 /**
-* The {@link ProjoProcessor} class is an abstract base class that enriches the
-* {@link AbstractProcessor} with some utility methods.
 *
-* @author Mirko Raner
+* This interface was extracted from pro.projo.generation.interfaces.test.classes.Watchable.
+*
 **/
-public abstract class ProjoProcessor extends AbstractProcessor implements TypeMirrorUtilities
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface Watchable<S>
 {
-    // No methods at this point
+/* */
+    <T> Watchable<T> amb(Iterable<? extends ObservableSource<? extends T>> sources);
+/* */
 }

@@ -13,18 +13,21 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation;
-
-import javax.annotation.processing.AbstractProcessor;
-import pro.projo.generation.utilities.TypeMirrorUtilities;
+package pro.projo.generation.utilities;
 
 /**
-* The {@link ProjoProcessor} class is an abstract base class that enriches the
-* {@link AbstractProcessor} with some utility methods.
+* The {@link PackageShortener} is a simple class that shortens a fully qualified class name
+* (FQCN) by cutting off the fully qualified package part.
+*
+* TODO: currently, the PackageShortener just cuts off everything before the last ".", which is
+*       probably not sufficient in all cases
 *
 * @author Mirko Raner
 **/
-public abstract class ProjoProcessor extends AbstractProcessor implements TypeMirrorUtilities
+public class PackageShortener
 {
-    // No methods at this point
+    public String shorten(String fullyQualifiedClassName)
+    {
+        return fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf('.') + 1);
+    }
 }

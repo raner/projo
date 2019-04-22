@@ -15,9 +15,13 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import pro.projo.interfaces.annotation.Interface;
+import static java.util.stream.Collectors.toMap;
 
 /**
 * {@link TypeMirrorUtilities} is a collection of useful methods for dealing with {@link TypeMirror}s.
@@ -44,5 +48,17 @@ public interface TypeMirrorUtilities
             return mirroredTypeException.getTypeMirror();
         }
         return null;
+    }
+
+    /**
+    * Extracts the {@link pro.projo.interfaces.annotation.Map Map} of {@link TypeMirror}s to class names as
+    * a {@link java.util.Map}.
+    *
+    * @param map the {@link Interface} annotation instance
+    * @return a map of {@link TypeMirror}s to class names
+    **/
+    default Map<TypeMirror, String> getMap(Interface map)
+    {
+        return Stream.of(map.map()).collect(toMap(annotation -> getTypeMirror(annotation::type), pro.projo.interfaces.annotation.Map::to));
     }
 }
