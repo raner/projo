@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -111,6 +111,18 @@ public class ImmutableProjoDoublesTest
         Person person2 = Person.FACTORY.create("John", "Doe");
         int[] expected = {identityHashCode(person1), identityHashCode(person2)};
         int[] actual = {person1.hashCode(), person2.hashCode()};
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testCreateWithBuilder()
+    {
+        Person person = Projo.builder(Person.class)
+            .with(Person::firstName, "John")
+            .with(Person::lastName, "Doe")
+            .build();
+        String[] expected = {"John", "Doe"};
+        String[] actual = {person.firstName(), person.lastName()};
         assertArrayEquals(expected, actual);
     }
 }

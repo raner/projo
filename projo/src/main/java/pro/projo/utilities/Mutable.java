@@ -13,32 +13,26 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.utilities;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class ProxyProjoTest
+/**
+* The {@link Mutable} class provides a mutable wrapper for otherwise immutable objects.
+*
+* @param <_Type_> the type of the wrapped object
+*
+* @author Mirko Raner
+**/
+public class Mutable<_Type_>
 {
-    static interface Interface
+    private _Type_ object;
+
+    public void set(_Type_ object)
     {
-        int value();
+        this.object = object;
     }
 
-    @Test
-    public void testProxyProjoImplementation()
+    public _Type_ get()
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        return object;
     }
 }

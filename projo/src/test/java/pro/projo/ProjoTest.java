@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -22,7 +22,9 @@ import pro.projo.doubles.Factory;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static pro.projo.Projo.creates;
 
 /**
@@ -118,5 +120,32 @@ public class ProjoTest
         Object[] expected = {false, false, true, true, true, true, true};
         Object[] actual = Stream.of(projos).map(Projo::isValueObject).collect(toList()).toArray();
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testIsImplementationClass()
+    {
+        Class<? extends Interval> type = Interval.FACTORY.create(1D, 2D).getClass();
+        assertTrue(Projo.isProjoClass(type));
+    }
+
+    @Test
+    public void testIsNotImplementationClass()
+    {
+        assertFalse(Projo.isProjoClass(String.class));
+    }
+
+    @Test
+    public void testInterfaceIsNotImplementationClass()
+    {
+        assertFalse(Projo.isProjoClass(Interval.class));
+    }
+
+    @Test
+    public void testGetProjoInterface()
+    {
+        Class<? extends Interval> type = Interval.FACTORY.create(1D, 2D).getClass();
+        Class<Interval> projoInterface = Projo.getInterfaceClass(type);
+        assertEquals(Interval.class, projoInterface);
     }
 }

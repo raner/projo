@@ -13,32 +13,31 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.utilities;
 
-import java.lang.reflect.Proxy;
+import java.lang.reflect.Method;
+import java.util.function.Function;
 import org.junit.Test;
-import pro.projo.Projo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class ProxyProjoTest
+public class MethodFunctionConverterTest
 {
-    static interface Interface
+    MethodFunctionConverter converter = new MethodFunctionConverter();
+
+    @Test
+    public void convertFunctionToMethod() throws NoSuchMethodException
     {
-        int value();
+        Method expected = CharSequence.class.getDeclaredMethod("length");
+        Method actual = converter.convert(CharSequence.class, CharSequence::length);
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void testProxyProjoImplementation()
+    public void convertMethodToFunction() throws NoSuchMethodException
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        Method method = CharSequence.class.getDeclaredMethod("length");
+        Function<CharSequence, Integer> function = converter.convert(method);
+        CharSequence test = "test";
+        assertEquals(test.length(), function.apply(test).intValue());
     }
 }

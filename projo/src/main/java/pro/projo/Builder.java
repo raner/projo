@@ -13,32 +13,25 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.function.Function;
 
-public class ProxyProjoTest
+public interface Builder<_Artifact_>
 {
-    static interface Interface
-    {
-        int value();
-    }
+    /**
+    * Adds a new property to the build process.
+    *
+    * @param property the property's getter method
+    * @param value the property value
+    * @return a new {@link Builder} that includes new property
+    **/
+    <_Property_> Builder<_Artifact_> with(Function<_Artifact_, _Property_> property, _Property_ value);
 
-    @Test
-    public void testProxyProjoImplementation()
-    {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
-    }
+    /**
+    * Instantiates the object based on the {@link Builder}'s current description.
+    *
+    * @return the new object
+    **/
+    _Artifact_ build();
 }

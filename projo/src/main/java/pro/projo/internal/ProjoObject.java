@@ -13,32 +13,16 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.internal;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class ProxyProjoTest
+/**
+* {@link ProjoObject} is a marker interface that is implemented by all
+* {@link java.lang.reflect.Proxy Proxy}-based implementations of
+* {@link pro.projo.Projo Projo} objects.
+*
+* @author Mirko Raner
+**/
+public interface ProjoObject
 {
-    static interface Interface
-    {
-        int value();
-    }
-
-    @Test
-    public void testProxyProjoImplementation()
-    {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
-    }
+    // This is a marker interface; it declares no methods.
 }

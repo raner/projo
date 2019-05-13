@@ -13,32 +13,43 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.rangeClosed;
 
-public class ProxyProjoTest
+@RunWith(Parameterized.class)
+public class IntermediateTest
 {
-    static interface Interface
+    @Parameters(name="with[{0}]")
+    public static Collection<Object[]> oneToThirty()
     {
-        int value();
+        return rangeClosed(1, 30).mapToObj(value -> new Object[] {value}).collect(toList());
     }
 
-    @Test
-    public void testProxyProjoImplementation()
-    {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
+    @Parameter
+    public int count;
 
     @Test
-    public void testProxyProjoImplementationClass()
+    public void testParameterCount()
     {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        Projo.Intermediate<Object> intermediate = new Projo.Intermediate<Object>()
+        {
+            @Override
+            public Class<Object> type()
+            {
+                return Object.class;
+            }
+        };
+        Method method = intermediate.methods()[count-1];
+        assertEquals(count, method.getParameterCount());
     }
 }

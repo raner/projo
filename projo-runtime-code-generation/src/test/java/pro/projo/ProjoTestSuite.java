@@ -29,6 +29,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses
 ({
+    BuilderTest.class,
+    ProjoTest.class,
     ProjoObjectTest.class,
     ProjoToStringTest.class,
     ProjoValueObjectsTest.class,

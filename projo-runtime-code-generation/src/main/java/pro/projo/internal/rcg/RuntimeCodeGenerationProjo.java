@@ -46,6 +46,14 @@ public class RuntimeCodeGenerationProjo extends Projo
     }
 
     @Override
+    public <_Artifact_> ProjoHandler<_Artifact_> getHandler(Class<_Artifact_> type)
+    {
+        @SuppressWarnings("unchecked")
+        RuntimeCodeGenerationHandler<_Artifact_> projoHandler = (RuntimeCodeGenerationHandler<_Artifact_>)handler;
+        return projoHandler;
+    }
+
+    @Override
     public <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type)
     {
         @SuppressWarnings("unchecked")

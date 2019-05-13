@@ -13,32 +13,19 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.jackson;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
-public class ProxyProjoTest
+public class ProjoJacksonModule extends SimpleModule
 {
-    static interface Interface
-    {
-        int value();
-    }
+    private static final long serialVersionUID = 7412117452716589192L;
 
-    @Test
-    public void testProxyProjoImplementation()
+    @Override
+    public void setupModule(SetupContext context)
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        super.setupModule(context);
+        context.addAbstractTypeResolver(new ProjoJacksonTypeResolver());
+        context.addValueInstantiators(new ProjoJacksonValueInstantiators());
     }
 }

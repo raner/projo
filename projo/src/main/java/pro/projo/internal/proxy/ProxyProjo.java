@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,7 @@
 package pro.projo.internal.proxy;
 
 import pro.projo.Projo;
+import pro.projo.internal.ProjoObject;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
@@ -35,13 +36,18 @@ public class ProxyProjo extends Projo
     }
 
     @Override
+    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_> getHandler(Class<_Artifact_> type)
+    {
+        return new ProxyProjoInvocationHandler<>(type);
+    }
+
+    @Override
     public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type)
     {
-        Class<?>[] interfaces = {type};
-        ClassLoader loader = Projo.class.getClassLoader();
-        ProxyProjoInvocationHandler<_Artifact_> handler = new ProxyProjoInvocationHandler<>(type);
+        Class<?>[] interfaces = {type, ProjoObject.class};
+        ProxyProjoInvocationHandler<_Artifact_> handler = getHandler(type);
         @SuppressWarnings("unchecked")
-        _Artifact_ instance = (_Artifact_)newProxyInstance(loader, interfaces, handler);
+        _Artifact_ instance = (_Artifact_)newProxyInstance(getClassLoader(), interfaces, handler);
         return handler.initialize(instance);
     }
 }

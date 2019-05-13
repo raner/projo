@@ -69,6 +69,7 @@
 
  <modules>
   <module>projo</module>
+  <module>projo-jackson</module>
   <module>projo-jax-rs</module>
   <module>projo-template-annotation</module>
   <module>projo-template-generation</module>

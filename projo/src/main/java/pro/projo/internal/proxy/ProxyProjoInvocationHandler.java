@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -34,8 +34,10 @@ import pro.projo.Projo;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
+import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
 import static java.lang.System.identityHashCode;
+import static java.lang.reflect.Proxy.getProxyClass;
 import static java.util.stream.Collectors.joining;
 import static pro.projo.Projo.isValueObject;
 
@@ -163,6 +165,16 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     public Object invoke(Object proxy, Method method, Object[] arguments) throws Throwable
     {
         return invoker.invoke(proxy, method, arguments);
+    }
+
+    @Override
+    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
+    {
+        Class<?>[] interfaces = {type, ProjoObject.class};
+        ClassLoader classLoader = Projo.getImplementation().getClassLoader();
+        @SuppressWarnings("unchecked")
+        Class<? extends _Artifact_> proxyClass = (Class<? extends _Artifact_>)getProxyClass(classLoader, interfaces);
+        return proxyClass;
     }
 
     private String toString(_Artifact_ proxy)

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -64,4 +64,13 @@ public abstract class ProjoHandler<_Artifact_>
         **/
         public abstract ProjoMembers members(@SuppressWarnings("unchecked") Function<_Artifact_, ?>... getters);
     }
+
+    /**
+    * Returns the concrete Projo implementation class for a given abstract type. The implementation class
+    * can be a proxy class or some other class that was dynamically created at runtime.
+    *
+    * @param type the interface or abstract type to be implemented
+    * @return the concrete implementation class
+    **/
+    public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type);
 }

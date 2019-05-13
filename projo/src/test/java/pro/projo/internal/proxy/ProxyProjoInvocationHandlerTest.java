@@ -15,30 +15,21 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
-import java.lang.reflect.Proxy;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class ProxyProjoTest
+public class ProxyProjoInvocationHandlerTest
 {
-    static interface Interface
+    static interface TestClass
     {
-        int value();
+        int testValue();
     }
 
     @Test
-    public void testProxyProjoImplementation()
+    public void getImplementationOfReturnsAProjoClass()
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        ProxyProjoInvocationHandler<TestClass> handler = new ProxyProjoInvocationHandler<>(TestClass.class);
+        assertTrue(Projo.isProjoClass(handler.getImplementationOf(TestClass.class)));
     }
 }

@@ -13,32 +13,45 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.jackson;
 
-import java.lang.reflect.Proxy;
+import java.util.stream.Stream;
+import org.junit.Before;
 import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ProxyProjoTest
-{
-    static interface Interface
+public class JacksonTest {
+
+    private ObjectMapper mapper;
+
+    @Before
+    public void initializeObjectMapper()
     {
-        int value();
+        mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
     }
 
     @Test
-    public void testProxyProjoImplementation()
+    public void ensureThatProjoJacksonModuleIsFound() throws Exception
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
+        Stream<Module> modules = ObjectMapper.findModules().stream();
+        assertTrue(modules.anyMatch(ProjoJacksonModule.class::isInstance));
     }
 
     @Test
-    public void testProxyProjoImplementationClass()
+    public void testDeserializeToInterface() throws Exception
     {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        Complex value = mapper.readValue("{\"real\":3.14, \"imaginary\":2.71}", Complex.class);
+        assertArrayEquals(new double[] {3.14, 2.71}, new double[] {value.real(), value.imaginary()}, 1E-6);
+    }
+
+    @Test
+    public void testDeserializeToRegularObject() throws Exception
+    {
+        ComplexPojo value = mapper.readValue("{\"real\":3.14, \"imaginary\":2.71}", ComplexPojo.class);
+        assertArrayEquals(new double[] {3.14, 2.71}, new double[] {value.getReal(), value.getImaginary()}, 1E-6);
     }
 }

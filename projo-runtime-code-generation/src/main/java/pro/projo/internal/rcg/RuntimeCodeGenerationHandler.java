@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,6 +29,7 @@ import net.bytebuddy.implementation.FieldAccessor;
 import pro.projo.Projo;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
+import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
 import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
@@ -84,6 +85,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @param type the type (i.e., Projo interface)
     * @return the generated implementation class
     **/
+    @Override
     public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
     {
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
@@ -150,8 +152,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     private Builder<_Artifact_> create(Class<_Artifact_> type)
     {
         List<Boolean> features = asList(Projo.isValueObject(type), Projo.hasCustomToString(type));
+        Class<?> baseclass = baseClasses.get(features);
         @SuppressWarnings("unchecked")
-        Builder<_Artifact_> builder = (Builder<_Artifact_>)new ByteBuddy().subclass(baseClasses.get(features)).implement(type);
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)new ByteBuddy().subclass(baseclass).implement(type, ProjoObject.class);
         return builder;
     }
 }

@@ -119,8 +119,9 @@ compile time no Projo code generation will take place.
 
 ### Does Projo support immutable objects?
 Yes, Projo does support immutable objects. As immutable objects need to be fully initialized when they are created this
-requires the use of a factory or a builder (the latter not being supported yet). To use a factory, simply add a static
-factory field to your Projo interface:
+requires the use of a factory or a builder.
+
+To use a factory, simply add a static factory field to your Projo interface:
 ```java
 import pro.projo.doubles.Factory;
 import static pro.projo.Projo.creates;
@@ -135,6 +136,13 @@ interface Person
 To create an object, you can then simply use the factory:
 ```java
     Person person = Person.FACTORY.create("John", "Doe");
+```
+Alternatively, immutable objects can also be constructed using a builder:
+```java
+    Person person = Projo.builder(Person.class)
+        .with(Person::firstName, "John")
+        .with(Person::lastName, "Doe")
+        .build();
 ```
 
 ### Can Projo create Value Objects?

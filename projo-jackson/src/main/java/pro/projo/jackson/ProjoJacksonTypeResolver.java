@@ -13,32 +13,26 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.jackson;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
+import com.fasterxml.jackson.databind.AbstractTypeResolver;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.SimpleType;
 import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class ProxyProjoTest
+public class ProjoJacksonTypeResolver extends AbstractTypeResolver
 {
-    static interface Interface
+    @Override
+    public JavaType findTypeMapping(DeserializationConfig config, JavaType type)
     {
-        int value();
-    }
-
-    @Test
-    public void testProxyProjoImplementation()
-    {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        JavaType typeMapping = super.findTypeMapping(config, type);
+        if (typeMapping == null && type.isInterface())
+        {
+            Class<?> rawClass = type.getRawClass();
+            Class<?> implementation = Projo.getImplementationClass(rawClass);
+            typeMapping = SimpleType.constructUnsafe(implementation);
+        }
+        return typeMapping;
     }
 }

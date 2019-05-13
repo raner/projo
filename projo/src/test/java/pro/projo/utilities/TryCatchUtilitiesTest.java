@@ -13,32 +13,47 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.utilities;
 
-import java.lang.reflect.Proxy;
 import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ProxyProjoTest
+public class TryCatchUtilitiesTest implements TryCatchUtilities
 {
-    static interface Interface
+    @Test
+    public void testSuccessfulCompletionWithoutCatches()
     {
-        int value();
+        boolean result = tryCatch(() -> true).andReturn();
+        assertTrue(result);
     }
 
     @Test
-    public void testProxyProjoImplementation()
+    public void testSuccessfulCompletionWithRethrow()
     {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
+        boolean result = tryCatch(() -> true)
+            .rethrow(IllegalArgumentException.class).as(Error.class)
+            .andReturn();
+        assertTrue(result);
     }
 
-    @Test
-    public void testProxyProjoImplementationClass()
+    @Test(expected=ClassFormatError.class)
+    public void testMatchingExceptionCaughtWithRethrow()
     {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
-        assertTrue(Proxy.isProxyClass(implementation));
+        tryCatch(() -> throwing(new ClassCastException()))
+            .rethrow(ClassCastException.class).as(ClassFormatError.class)
+            .andReturn();
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void testNonMatchingExceptionCaughtWithRethrow()
+    {
+        tryCatch(() -> throwing(new NullPointerException()))
+            .rethrow(ClassCastException.class).as(ClassFormatError.class)
+            .andReturn();
+    }
+
+    private Boolean throwing(RuntimeException exception)
+    {
+        throw exception;
     }
 }
