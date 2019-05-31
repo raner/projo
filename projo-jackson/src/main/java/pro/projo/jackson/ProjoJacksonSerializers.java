@@ -15,24 +15,30 @@
 //                                                                          //
 package pro.projo.jackson;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.module.SimpleSerializers;
+import pro.projo.Projo;
 
 /**
-* The {@link ProjoJacksonModule} configures Jackson so that it can serialize and
-* deserialize Projo objects.
+* {@link ProjoJacksonSerializers} returns a special {@link ProjoJacksonSerializer} whenever
+* it detects a Projo class.
 *
 * @author Mirko Raner
 **/
-public class ProjoJacksonModule extends SimpleModule
+public class ProjoJacksonSerializers extends SimpleSerializers
 {
-    private static final long serialVersionUID = 7412117452716589192L;
+    private final static long serialVersionUID = 3618292130159662693L;
 
     @Override
-    public void setupModule(SetupContext context)
+    public JsonSerializer<?> findSerializer(SerializationConfig configuration, JavaType type, BeanDescription bean)
     {
-        super.setupModule(context);
-        context.addSerializers(new ProjoJacksonSerializers());
-        context.addAbstractTypeResolver(new ProjoJacksonTypeResolver());
-        context.addValueInstantiators(new ProjoJacksonValueInstantiators());
+        if (Projo.isProjoClass(type.getRawClass()))
+        {
+            return new ProjoJacksonSerializer(configuration, type, bean);
+        }
+        return super.findSerializer(configuration, type, bean);
     }
 }

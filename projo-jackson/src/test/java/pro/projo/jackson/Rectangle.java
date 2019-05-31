@@ -15,24 +15,10 @@
 //                                                                          //
 package pro.projo.jackson;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.awt.Point;
 
-/**
-* The {@link ProjoJacksonModule} configures Jackson so that it can serialize and
-* deserialize Projo objects.
-*
-* @author Mirko Raner
-**/
-public class ProjoJacksonModule extends SimpleModule
+public interface Rectangle
 {
-    private static final long serialVersionUID = 7412117452716589192L;
-
-    @Override
-    public void setupModule(SetupContext context)
-    {
-        super.setupModule(context);
-        context.addSerializers(new ProjoJacksonSerializers());
-        context.addAbstractTypeResolver(new ProjoJacksonTypeResolver());
-        context.addValueInstantiators(new ProjoJacksonValueInstantiators());
-    }
+    Point topRight();
+    Point bottomLeft();
 }

@@ -15,24 +15,28 @@
 //                                                                          //
 package pro.projo.jackson;
 
-import com.fasterxml.jackson.databind.module.SimpleModule;
-
-/**
-* The {@link ProjoJacksonModule} configures Jackson so that it can serialize and
-* deserialize Projo objects.
-*
-* @author Mirko Raner
-**/
-public class ProjoJacksonModule extends SimpleModule
+public class WrappedComplex
 {
-    private static final long serialVersionUID = 7412117452716589192L;
+    private Complex complex;
+    private long value;
 
-    @Override
-    public void setupModule(SetupContext context)
+    public Complex getComplex()
     {
-        super.setupModule(context);
-        context.addSerializers(new ProjoJacksonSerializers());
-        context.addAbstractTypeResolver(new ProjoJacksonTypeResolver());
-        context.addValueInstantiators(new ProjoJacksonValueInstantiators());
+        return complex;
+    }
+
+    public void setComplex(Complex complex)
+    {
+        this.complex = complex;
+    }
+
+    public long getValue()
+    {
+        return value;
+    }
+
+    public void setValue(long value)
+    {
+        this.value = value;
     }
 }
