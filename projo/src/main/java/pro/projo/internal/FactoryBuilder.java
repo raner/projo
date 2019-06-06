@@ -42,6 +42,8 @@ import static java.util.Collections.unmodifiableMap;
 **/
 public class FactoryBuilder<_Artifact_> implements Builder<_Artifact_>, TryCatchUtilities
 {
+    private static Numbers<?, ?> numbers = new Numbers<>();
+
     private final Class<_Artifact_> type;
     private final Map<Method, Object> attributes;
 
@@ -60,10 +62,19 @@ public class FactoryBuilder<_Artifact_> implements Builder<_Artifact_>, TryCatch
     @Override
     public <_Property_> Builder<_Artifact_> with(Function<_Artifact_, _Property_> property, _Property_ value)
     {
+        _Property_ assignment = value;
         Map<Method, Object> newProperties = new HashMap<>();
         newProperties.putAll(attributes);
         MethodFunctionConverter converter = new MethodFunctionConverter();
-        newProperties.put(converter.convert(type, property), value);
+        Method method = converter.convert(type, property);
+        Class<?> returnType = method.getReturnType();
+        if (assignment instanceof Number && !assignment.getClass().equals(numbers.getWrapperClass(returnType)))
+        {
+            @SuppressWarnings("unchecked")
+            _Property_ cast = (_Property_)numbers.cast((Number)assignment).to((Class<Number>)returnType);
+            assignment = cast;
+        }
+        newProperties.put(method, assignment);
         return new FactoryBuilder<>(type, newProperties);
     }
 

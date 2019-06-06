@@ -94,6 +94,42 @@ public class JacksonTest
         assertEquals(json("{\"topRight\":{\"x\":1.0, \"y\":2.0}, \"bottomLeft\":{\"x\":3.0, \"y\":4.0}}"), json(result));
     }
 
+    @Test
+    public void testSerializeWrapped() throws Exception
+    {
+        WrappedComplex wrapped = new WrappedComplex();
+        Complex complex = Projo.builder(Complex.class).with(Complex::real, 2D).with(Complex::imaginary, 3D).build();
+        wrapped.setComplex(complex);
+        wrapped.setValue(1);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        mapper.writeValue(output, wrapped);
+        String result = output.toString(StandardCharsets.UTF_8.name());
+        assertEquals(json("{\"value\":1, \"complex\":{\"real\":2.0, \"imaginary\":3.0}}"), json(result));
+    }
+
+    @Test
+    public void testSerializeWrappedWithIntegersInsteadOfDoubles() throws Exception
+    {
+        WrappedComplex wrapped = new WrappedComplex();
+        Complex complex = Projo.builder(Complex.class).with(Complex::real, 2).with(Complex::imaginary, 3).build();
+        wrapped.setComplex(complex);
+        wrapped.setValue(1);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        mapper.writeValue(output, wrapped);
+        String result = output.toString(StandardCharsets.UTF_8.name());
+        assertEquals(json("{\"value\":1, \"complex\":{\"real\":2.0, \"imaginary\":3.0}}"), json(result));
+    }
+
+    @Test
+    public void testSerializeWithShortsInsteadOfIntegers() throws Exception
+    {
+        Interval interval = Projo.builder(Interval.class).with(Interval::begin, (short)2).with(Interval::end, (short)3).build();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        mapper.writeValue(output, interval);
+        String result = output.toString(StandardCharsets.UTF_8.name());
+        assertEquals(json("{\"begin\":2, \"end\":3}"), json(result));
+    }
+
     /**
     * This is not a test for Projo Jackson serialization but merely a control to make sure
     * that {@link Point}s are serialized as expected by default.

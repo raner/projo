@@ -16,7 +16,10 @@
 package pro.projo;
 
 import org.junit.Test;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.rules.ExpectedException.none;
 
 public class BuilderTest
 {
@@ -32,6 +35,21 @@ public class BuilderTest
         double y();
         double z();
     }
+
+    static interface Interval
+    {
+        int begin();
+        int end();
+    }
+
+    static interface LongInterval
+    {
+        long begin();
+        long end();
+    }
+
+    @Rule
+    public ExpectedException expectedException = none();
 
     @Test
     public void testBuilderWithTwoProperties()
@@ -94,5 +112,54 @@ public class BuilderTest
         double[] expected = {0D, 0D, 0D};
         double[] actual = {object.x(), object.y(), object.z()};
         assertArrayEquals(expected, actual, 1E-6);
+    }
+
+    /**
+    * Due to interaction between auto-boxing and type inference the compiler infers {@code ? extends Number} for
+    * the return type of the {@link ThreeD#z} when a {@code long} literal is passed. This means that instead of
+    * a {@code double} value it is possible to pass a {@code long} value. When dealing with primitives, JLS section
+    * 5.1.2 allows for widening of {@code long} to {@code double}, and this test verifies that the same widening
+    * is allowed in this case.
+    **/
+    @Test
+    public void testBuilderWithIncorrectPropertyTypeLong()
+    {
+        ThreeD object = Projo.builder(ThreeD.class).with(ThreeD::x, 1D).with(ThreeD::y, 2D).with(ThreeD::z, 3L).build();
+        double[] expected = {1D, 2D, 3D};
+        double[] actual = {object.x(), object.y(), object.z()};
+        assertArrayEquals(expected, actual, 1E-6);
+    }
+
+    /**
+    * Same as {@link #testBuilderWithIncorrectPropertyTypeLong()} but for {@link Integer}...
+    **/
+    @Test
+    public void testBuilderWithIncorrectPropertyTypeInteger()
+    {
+        ThreeD object = Projo.builder(ThreeD.class).with(ThreeD::x, 1D).with(ThreeD::y, 2D).with(ThreeD::z, Integer.valueOf(3)).build();
+        double[] expected = {1D, 2D, 3D};
+        double[] actual = {object.x(), object.y(), object.z()};
+        assertArrayEquals(expected, actual, 1E-6);
+    }
+
+    @Test
+    public void testBuilderWithIncorrectPropertyTypeIntegerInsteadOfLong()
+    {
+        LongInterval interval = Projo.builder(LongInterval.class).with(LongInterval::begin, -1).with(LongInterval::end, 1).build();
+        long[] expected = {-1L, 1L};
+        long[] actual = {interval.begin(), interval.end()};
+        assertArrayEquals(expected, actual);
+    }
+
+    /**
+    * Tests the opposite scenario of {@link #testBuilderWithIncorrectPropertyTypeLong()}. Despite the fact that
+    * the type system allows it, passing a {@code long} for an {@code int} should not be permitted because a
+    * {@code long} cannot be losslessly converted to an {@code int} and should therefore result in an exception.
+    **/
+    @Test
+    public void testBuilderWithIncorrectPropertyTypeAndLossyCast()
+    {
+        expectedException.expect(IllegalArgumentException.class);
+        Projo.builder(Interval.class).with(Interval::begin, -1).with(Interval::end, 1L).build();
     }
 }
