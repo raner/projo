@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -35,6 +35,7 @@ import org.junit.runners.Suite.SuiteClasses;
     ProjoToStringTest.class,
     ProjoValueObjectsTest.class,
     ProjoValueObjectsToStringTest.class,
+    InheritanceTest.class,
     ImmutableProjoSinglesTest.class,
     ImmutableProjoDoublesTest.class,
     ImmutableProjoTriplesTest.class,

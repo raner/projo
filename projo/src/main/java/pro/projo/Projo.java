@@ -29,7 +29,6 @@ import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.utilities.MethodFunctionConverter;
 import static java.lang.reflect.Modifier.isStatic;
-import static java.util.Arrays.sort;
 import static java.util.Comparator.comparing;
 import static java.util.stream.StreamSupport.stream;
 
@@ -307,6 +306,19 @@ public abstract class Projo
     }
 
     /**
+    * Returns methods of a class that match at least one of a list of predicates.
+    *
+    * @param type the {@link Class}
+    * @param predicates the predicates (if no predicate is supplied the method will return no methods)
+    * @return all methods of the class that match at least one of the given predicates
+    **/
+    @SafeVarargs
+    public static Stream<Method> getMethods(Class<?> type, Predicate<Method>... predicates)
+    {
+        return Stream.of(type.getMethods()).filter(Stream.of(predicates).reduce(always -> false, Predicate::or));
+    }
+
+    /**
     * Returns all property getter methods of a class as {@link Method}s.
     *
     * @param type the {@link Class}
@@ -314,11 +326,7 @@ public abstract class Projo
     **/
     public static <_Artifact_> Method[] getGetterMethods(Class<_Artifact_> type)
     {
-        Predicate<Method> getters = method -> Predicates.getter.test(method, new Object[method.getParameterCount()]);
-        Method[] declaredMethods = type.getDeclaredMethods();
-        sort(declaredMethods, comparing(Method::getName));
-        Stream<Method> getterMethods = Stream.of(declaredMethods).filter(getters);
-        return getterMethods.toArray(Method[]::new);
+        return getMethods(type, Predicates.getter).sorted(comparing(Method::getName)).toArray(Method[]::new);
     }
 
     /**

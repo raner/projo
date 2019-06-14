@@ -21,13 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.dynamic.DynamicType.Unloaded;
 import net.bytebuddy.implementation.FieldAccessor;
 import pro.projo.Projo;
-import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
@@ -40,6 +37,8 @@ import static java.util.function.UnaryOperator.identity;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static pro.projo.internal.Predicates.getter;
+import static pro.projo.internal.Predicates.setter;
 
 /**
 * The {@link RuntimeCodeGenerationHandler} is a {@link ProjoHandler} that generates implementation classes
@@ -105,32 +104,17 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type)
     {
-        Method[] declaredMethods = type.getDeclaredMethods();
         Builder<_Artifact_> builder = create(type).name(implementationName(type));
-        builder = Stream.of(declaredMethods).filter(this::getterOrSetter).reduce(builder, this::add, sequentialOnly());
-        Unloaded<_Artifact_> unloaded = builder.make();
-        return unloaded.load(type.getClassLoader(), INJECTION).getLoaded();
-    }
-
-    /**
-    * TODO: this duplicates some of the predicate logic from the Predicates utility (but without the arguments).
-    *    => Refactor!
-    **/
-    private boolean getterOrSetter(Method method)
-    {
-        Class<?> returnType = method.getReturnType();
-        int parameterCount = method.getParameterCount();
-        return (parameterCount == 1 && returnType.equals(void.class))
-            || (parameterCount == 0 && !returnType.equals(void.class)
-                && !"hashCode".equals(method.getName()) && !"toString".equals(method.getName()));
+        builder = Projo.getMethods(type, getter, setter).reduce(builder, this::add, sequentialOnly());
+        return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
     }
 
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
     {
+        boolean isGetter = getter.test(method);
         String methodName = method.getName();
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
-        boolean isGetter = Predicates.getter.test(method, new Object[method.getParameterCount()]);
         Class<?> type = isGetter? method.getReturnType():void.class;
         addFieldForGetter = isGetter? localBuilder -> localBuilder.defineField(propertyName, type, PRIVATE):identity();
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(FieldAccessor.ofField(propertyName));

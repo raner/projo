@@ -15,11 +15,19 @@
 //                                                                          //
 package pro.projo;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.junit.Test;
 import pro.projo.annotations.ValueObject;
 import pro.projo.doubles.Factory;
+import pro.projo.internal.Predicates;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -147,5 +155,43 @@ public class ProjoTest
         Class<? extends Interval> type = Interval.FACTORY.create(1D, 2D).getClass();
         Class<Interval> projoInterface = Projo.getInterfaceClass(type);
         assertEquals(Interval.class, projoInterface);
+    }
+
+    @Test
+    public void testGetMethodsNoPredicatesShouldReturnNoResults()
+    {
+        Stream<Method> methods = Projo.getMethods(NoFactory.class);
+        assertEquals(0, methods.count());
+    }
+
+    @Test
+    public void testGetMethodsGettersShouldReturnGetters() throws Exception
+    {
+        Stream<Method> methods = Projo.getMethods(NoFactory.class, Predicates.getter);
+        List<Method> expected = singletonList(NoFactory.class.getMethod("getInteger"));
+        List<Method> actual = methods.collect(toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetMethodsSettersShouldReturnSetters() throws Exception
+    {
+        Stream<Method> methods = Projo.getMethods(NoFactory.class, Predicates.setter);
+        List<Method> expected = singletonList(NoFactory.class.getMethod("setInteger", int.class));
+        List<Method> actual = methods.collect(toList());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGetMethodsGettersOrSettersShouldReturnGettersAndSetters() throws Exception
+    {
+        Stream<Method> methods = Projo.getMethods(NoFactory.class, Predicates.getter, Predicates.setter);
+        Method[] expected =
+        {
+            NoFactory.class.getMethod("getInteger"),
+            NoFactory.class.getMethod("setInteger", int.class)
+        };
+        Set<Method> actual = methods.collect(toSet());
+        assertEquals(new HashSet<>(Arrays.asList(expected)), actual);
     }
 }

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,7 +16,7 @@
 package pro.projo.internal;
 
 import java.lang.reflect.Method;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
 * The {@link Predicates} class is a utility class that defines several commonly used predicates.
@@ -25,19 +25,21 @@ import java.util.function.BiPredicate;
 **/
 public interface Predicates
 {
-    static BiPredicate<Method, Object[]> equals = (method, arguments) -> method.getName().equals("equals")
+    static Predicate<Method> equals = method -> method.getName().equals("equals")
         && method.getParameterCount() == 1
         && method.getParameterTypes()[0] == Object.class
         && method.getReturnType() == boolean.class;
-    static BiPredicate<Method, Object[]> hashCode = (method, arguments) -> method.getName().equals("hashCode")
+    static Predicate<Method> hashCode = method -> method.getName().equals("hashCode")
         && method.getParameterCount() == 0
         && int.class.equals(method.getReturnType());
-    static BiPredicate<Method, Object[]> toString = (method, arguments) -> method.getName().equals("toString")
+    static Predicate<Method> toString = method -> method.getName().equals("toString")
         && method.getParameterCount() == 0
         && String.class.equals(method.getReturnType());
-    static BiPredicate<Method, Object[]> getter = (method, arguments) -> (arguments == null || arguments.length == 0)
-        && !hashCode.test(method, arguments)
-        && !toString.test(method, arguments);
-    static BiPredicate<Method, Object[]> setter = (method, arguments) -> (arguments != null && arguments.length == 1)
-        && !equals.test(method, arguments);
+    static Predicate<Method> getter = method -> method.getParameterCount() == 0
+        && !method.getDeclaringClass().equals(Object.class)
+        && !hashCode.test(method)
+        && !toString.test(method);
+    static Predicate<Method> setter = method -> method.getParameterCount() == 1
+        && !method.getDeclaringClass().equals(Object.class)
+        && !equals.test(method);
 }
