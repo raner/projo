@@ -18,19 +18,36 @@ package pro.projo.jackson;
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pro.projo.Projo;
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class JacksonTest
 {
+    static interface Time
+    {
+        Date time();
+    }
+
+    static interface Login extends Time
+    {
+        @JsonProperty("USERNAME")
+        String userName();
+    }
+
     private ObjectMapper mapper;
 
     @Before
@@ -176,6 +193,19 @@ public class JacksonTest
     {
         ComplexPojo value = mapper.readValue("{\"real\":3.14, \"imaginary\":2.71}", ComplexPojo.class);
         assertArrayEquals(new double[] {3.14, 2.71}, new double[] {value.getReal(), value.getImaginary()}, 1E-6);
+    }
+
+    @Test
+    public void testDeserializeTypeHierarchyWithJsonPropertyAnnotation() throws Exception
+    {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        mapper.setDateFormat(dateFormat);
+        mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+        Login value = mapper.readValue("{\"time\":\"2019-06-16T00:30:47.182Z\", \"USERNAME\":\"test\"}", Login.class);
+        Object[] expected = {dateFormat.parse("2019-06-16T00:30:47.182Z"), "test"};
+        Object[] actual = {value.time(), value.userName()};
+        assertArrayEquals(expected, actual);
     }
 
     private JsonNode json(String string) throws Exception
