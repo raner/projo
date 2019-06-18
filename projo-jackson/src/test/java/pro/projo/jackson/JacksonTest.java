@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.stream.Stream;
 import org.junit.Before;
@@ -40,12 +41,20 @@ public class JacksonTest
     static interface Time
     {
         Date time();
+
+        @Override
+        boolean equals(Object other);
     }
 
     static interface Login extends Time
     {
         @JsonProperty("USERNAME")
         String userName();
+    }
+
+    static interface TimeSeries
+    {
+        Map<String, Double> data();
     }
 
     private ObjectMapper mapper;
@@ -206,6 +215,17 @@ public class JacksonTest
         Object[] expected = {dateFormat.parse("2019-06-16T00:30:47.182Z"), "test"};
         Object[] actual = {value.time(), value.userName()};
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testDeserializeMap() throws Exception
+    {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        mapper.setDateFormat(dateFormat);
+        mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+        TimeSeries timeSeries = mapper.readValue("{\"data\":{\"seriesA\":42.42}}", TimeSeries.class);
+        assertEquals(Double.valueOf(42.42), timeSeries.data().get("seriesA"));
     }
 
     private JsonNode json(String string) throws Exception

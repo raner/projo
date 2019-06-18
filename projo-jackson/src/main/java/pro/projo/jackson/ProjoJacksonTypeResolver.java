@@ -27,7 +27,7 @@ public class ProjoJacksonTypeResolver extends AbstractTypeResolver
     public JavaType findTypeMapping(DeserializationConfig config, JavaType type)
     {
         JavaType typeMapping = super.findTypeMapping(config, type);
-        if (typeMapping == null && type.isInterface())
+        if (typeMapping == null && type.isInterface() && !type.isContainerType())
         {
             Class<?> rawClass = type.getRawClass();
             Class<?> implementation = Projo.getImplementationClass(rawClass);
