@@ -101,7 +101,7 @@ public class TypeConverterTest
                 return fullyQualifiedClassName;
             }
         };
-        converter = new TypeConverter(types, shortener, testPackage, interfaces);
+        converter = new TypeConverter(types, shortener, testPackage, Arrays.asList(interfaces));
     }
 
     /**

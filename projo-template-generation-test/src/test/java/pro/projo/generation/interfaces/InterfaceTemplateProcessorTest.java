@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 Mirko Raner                                               //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -17,6 +17,8 @@ package pro.projo.generation.interfaces;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,8 +28,10 @@ import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class InterfaceTemplateProcessorTest
 {
@@ -98,5 +102,30 @@ public class InterfaceTemplateProcessorTest
         Method selfMethod = classType.getMethod("self", classType);
         Class<?> returnType = selfMethod.getReturnType();
         assertEquals(classType, returnType);
+    }
+
+    @Test
+    public void testNestedClassesAreExcluded() throws Exception
+    {
+        Class<?> classNested = Class.forName("pro.projo.generation.interfaces.test.Nested");
+        Method[] expected = {classNested.getMethod("outer")};
+        Method[] actual = classNested.getDeclaredMethods();
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testEnumerationIsGenerated() throws Exception
+    {
+        Class<?> classEnumeration = Class.forName("pro.projo.generation.interfaces.test.Enumeration");
+        assertTrue(classEnumeration.isEnum());
+    }
+
+    @Test
+    public void testEnumerationOptionsAreGenerated() throws Exception
+    {
+        Class<?> classEnumeration = Class.forName("pro.projo.generation.interfaces.test.Enumeration");
+        Set<String> expected = new HashSet<>(Arrays.asList("YES", "NO", "MAYBE"));
+        Set<String> actual = Stream.of(classEnumeration.getEnumConstants()).map(Enum.class::cast).map(Enum::name).collect(toSet());
+        assertEquals(expected, actual);
     }
 }

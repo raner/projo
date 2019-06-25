@@ -52,7 +52,7 @@ public class TypeConverter implements TypeMirrorUtilities
     private Map<String, String> generates = new HashMap<>();
     private Set<String> imports = new HashSet<>();
 
-    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Interface... interfaces)
+    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, List<Interface> interfaces)
     {
         this.types = types;
         this.shortener = shortener;
@@ -70,7 +70,7 @@ public class TypeConverter implements TypeMirrorUtilities
             }
             throw new IllegalStateException("old=" + oldValue + ", new=" + newValue);
         };
-        generates = Stream.of(interfaces).collect(toMap(keyMapper, valueMapper, merger , HashMap::new));
+        generates = interfaces.stream().collect(toMap(keyMapper, valueMapper, merger , HashMap::new));
     }
 
     public String convert(TypeMirror element)

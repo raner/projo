@@ -16,6 +16,7 @@
 package pro.projo.generation.interfaces;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.lang.model.element.Modifier;
@@ -31,6 +32,7 @@ import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.interfaces.annotation.Map;
+import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
 public class InterfaceTypeConverterTest
@@ -97,7 +99,7 @@ public class InterfaceTypeConverterTest
                 return Stream.of(original.map()).map(testableMap).toArray(Map[]::new);
             }
         };
-        Interface[] testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).toArray(Interface[]::new);
+        List<Interface> testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).collect(toList());
         converter = new TypeConverter(types, shortener, testPackage, testableInterfaces);
     }
 

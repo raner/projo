@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2018 Mirko Raner                                               -->
+<!-- Copyright 2019 Mirko Raner                                               -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -69,13 +69,13 @@
 
  <modules>
   <module>projo</module>
-  <module>projo-jackson</module>
-  <module>projo-jax-rs</module>
   <module>projo-template-annotation</module>
   <module>projo-template-generation</module>
-  <module>projo-template-generation-test</module>
   <module>projo-template-configuration</module>
   <module>projo-runtime-code-generation</module>
+  <module>projo-jackson</module>
+  <module>projo-jax-rs</module>
+  <module>projo-template-generation-test</module>
  </modules>
 
  <build>

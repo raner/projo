@@ -23,6 +23,8 @@
 @Interface(generate="Mapper", from=Converter.class)
 @Interface(generate="Watchable", from=Watchable.class)
 @Interface(generate="Walker", from=Runner.class)
+@Interface(generate="Nested", from=Nested.class)
+@Enum(generate="Enumeration", from=Enumeration.class)
 package pro.projo.generation.interfaces.test;
 
 import static javax.lang.model.element.Modifier.FINAL;
@@ -31,11 +33,14 @@ import static javax.lang.model.element.Modifier.STATIC;
 import java.util.concurrent.Callable;
 import io.reactivex.Observable;
 import pro.projo.generation.interfaces.test.classes.Converter;
+import pro.projo.generation.interfaces.test.classes.Enumeration;
+import pro.projo.generation.interfaces.test.classes.Nested;
 import pro.projo.generation.interfaces.test.classes.ObjectFactory;
 import pro.projo.generation.interfaces.test.classes.Runner;
 import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.interfaces.test.classes.Type;
 import pro.projo.generation.interfaces.test.classes.Watchable;
+import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 
