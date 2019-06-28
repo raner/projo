@@ -128,4 +128,14 @@ public class InterfaceTemplateProcessorTest
         Set<String> actual = Stream.of(classEnumeration.getEnumConstants()).map(Enum.class::cast).map(Enum::name).collect(toSet());
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testEnumerationsAreProperlyImported() throws Exception
+    {
+        Class<?> classUseEnum = Class.forName("pro.projo.generation.interfaces.test.UseEnum");
+        Class<?> classEnumeration = Class.forName("pro.projo.generation.interfaces.test.Enumeration");
+        classUseEnum.getMethod("use", classEnumeration);
+        //String returnType = use.getReturnType().getName();
+        //assertEquals("pro.projo.generation.interfaces.test.Enumeration", returnType);
+    }
 }

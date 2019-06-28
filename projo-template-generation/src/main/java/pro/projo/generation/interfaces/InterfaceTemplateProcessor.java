@@ -59,6 +59,7 @@ import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.PackageShortener;
+import pro.projo.generation.utilities.Source;
 import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
@@ -222,7 +223,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             };
             typeElement.accept(scanner, methods);
             PackageShortener shortener = new PackageShortener();
-            TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, interfaces);
+            Stream<Source> sources = interfaces.stream().map(source -> new Source.SourceInterface(source));
+            TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources);
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());

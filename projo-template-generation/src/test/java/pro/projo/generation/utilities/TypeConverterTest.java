@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -101,7 +102,8 @@ public class TypeConverterTest
                 return fullyQualifiedClassName;
             }
         };
-        converter = new TypeConverter(types, shortener, testPackage, Arrays.asList(interfaces));
+        Stream<Source> sources = Stream.of(interfaces).map(source -> new Source.SourceInterface(source));
+        converter = new TypeConverter(types, shortener, testPackage, sources);
     }
 
     /**

@@ -24,13 +24,16 @@
 @Interface(generate="Watchable", from=Watchable.class)
 @Interface(generate="Walker", from=Runner.class)
 @Interface(generate="Nested", from=Nested.class)
+@Interface(generate="UseEnum", from=UseEnum.class)
 @Enum(generate="Enumeration", from=Enumeration.class)
+@Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 package pro.projo.generation.interfaces.test;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import java.util.concurrent.Callable;
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
 import pro.projo.generation.interfaces.test.classes.Converter;
 import pro.projo.generation.interfaces.test.classes.Enumeration;
@@ -39,6 +42,7 @@ import pro.projo.generation.interfaces.test.classes.ObjectFactory;
 import pro.projo.generation.interfaces.test.classes.Runner;
 import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.interfaces.test.classes.Type;
+import pro.projo.generation.interfaces.test.classes.UseEnum;
 import pro.projo.generation.interfaces.test.classes.Watchable;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;

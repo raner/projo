@@ -57,7 +57,7 @@ public interface TypeMirrorUtilities
     * @param map the {@link Interface} annotation instance
     * @return a map of {@link TypeMirror}s to class names
     **/
-    default Map<TypeMirror, String> getMap(Interface map)
+    default Map<TypeMirror, String> getMap(Source map)
     {
         return Stream.of(map.map()).collect(toMap(annotation -> getTypeMirror(annotation::type), pro.projo.interfaces.annotation.Map::to));
     }
