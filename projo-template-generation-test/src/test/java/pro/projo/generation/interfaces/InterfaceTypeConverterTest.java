@@ -29,6 +29,7 @@ import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.utilities.Name;
 import pro.projo.generation.utilities.PackageShortener;
 import pro.projo.generation.utilities.Source;
+import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
@@ -101,29 +102,7 @@ public class InterfaceTypeConverterTest
             }
         };
         List<Interface> testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).collect(toList());
-        Stream<Source> sources = testableInterfaces.stream().map(source -> new Source()
-        {
-
-          @Override
-          public Class<?> from()
-          {
-            return source.from();
-          }
-
-          @Override
-          public pro.projo.interfaces.annotation.Map[] map()
-          {
-            return source.map();
-          }
-
-          @Override
-          public String generate()
-          {
-            return source.generate();
-          }
-          
-        });
-
+        Stream<Source> sources = testableInterfaces.stream().map(InterfaceSource::new);
         converter = new TypeConverter(types, shortener, testPackage, sources);
     }
 
