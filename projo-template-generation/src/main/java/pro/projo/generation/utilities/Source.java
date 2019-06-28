@@ -19,6 +19,13 @@ import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 
+/**
+* As annotations in Java do not support inheritance, the {@link Source} interface acts as a unifying
+* wrapper around {@link Interface} and {@link Enum} objects. This allows both types of annotations
+* to be easily passed to the {@link TypeConverter}.
+*
+* @author Mirko Raner
+**/
 public interface Source
 {
     Class<?> from();
@@ -27,11 +34,11 @@ public interface Source
 
     String generate();
 
-    public static class SourceInterface implements Source
+    public static class InterfaceSource implements Source
     {
         private Interface source;
 
-        public SourceInterface(Interface source)
+        public InterfaceSource(Interface source)
         {
             this.source = source;
         }
@@ -55,11 +62,11 @@ public interface Source
         }
     }
 
-    public static class SourceEnum implements Source
+    public static class EnumSource implements Source
     {
         private Enum source;
 
-        public SourceEnum(Enum source)
+        public EnumSource(Enum source)
         {
             this.source = source;
         }

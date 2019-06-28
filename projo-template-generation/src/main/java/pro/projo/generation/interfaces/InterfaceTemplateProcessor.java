@@ -60,8 +60,11 @@ import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.PackageShortener;
 import pro.projo.generation.utilities.Source;
+import pro.projo.generation.utilities.Source.EnumSource;
+import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Enum;
+import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.singleton;
@@ -118,7 +121,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     }
 
     private <_Annotation_ extends Annotation> void process(RoundEnvironment round,
-        BiFunction<Name, List<_Annotation_>, Collection<? extends Configuration>> configurationFactory,
+        BiFunction<PackageElement, List<_Annotation_>, Collection<? extends Configuration>> configurationFactory,
         Class<_Annotation_> singleAnnotation,
         Class<?> templateClass)
     {
@@ -131,8 +134,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         {
             PackageElement packageElement = (PackageElement)element;
             List<_Annotation_> annotations = getAnnotations(packageElement, singleAnnotation, multiAnnotation);
-            Name packageName = packageElement.getQualifiedName();
-            Collection<? extends Configuration> configurations = configurationFactory.apply(packageName, annotations);
+            Collection<? extends Configuration> configurations = configurationFactory.apply(packageElement, annotations);
             messager.printMessage(NOTE, "Generating " + configurations.size() + " additional sources...");
             for (Configuration configuration: configurations)
             {
@@ -197,8 +199,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     * @param interfaces the set of {@link Interface @Interface} annotations containing the configuration data
     * @return a collection of code generation configurations, one for each generated interface
     **/
-    private Collection<? extends Configuration> getInterfaceConfiguration(Name packageName, List<Interface> interfaces)
+    private Collection<? extends Configuration> getInterfaceConfiguration(PackageElement element, List<Interface> interfaces)
     {
+        Name packageName = element.getQualifiedName();
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
             Set<String> imports = new HashSet<>();
@@ -223,7 +226,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             };
             typeElement.accept(scanner, methods);
             PackageShortener shortener = new PackageShortener();
-            Stream<Source> sources = interfaces.stream().map(source -> new Source.SourceInterface(source));
+
+            // Include both interfaces and enums in the TypeConverter, so that references to enums from
+            // within interfaces are handled properly:
+            //
+            Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
+            Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources);
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
@@ -266,8 +274,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return interfaces.stream().map(getConfiguration).collect(toList());
     }
 
-    private Collection<? extends Configuration> getEnumConfiguration(Name packageName, List<Enum> enums)
+    private Collection<? extends Configuration> getEnumConfiguration(PackageElement packageElement, List<Enum> enums)
     {
+        Name packageName = packageElement.getQualifiedName();
         Function<pro.projo.interfaces.annotation.Enum, Configuration> getConfiguration = annotation ->
         {
             TypeMirror originalClass = getTypeMirror(annotation::from);

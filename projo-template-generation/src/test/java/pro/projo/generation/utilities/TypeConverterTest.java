@@ -43,6 +43,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.test.utilities.Mutable;
+import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.expected.test.types.Pending;
 import pro.projo.generation.utilities.expected.test.types.Walkable;
 import pro.projo.interfaces.annotation.Interface;
@@ -102,7 +103,7 @@ public class TypeConverterTest
                 return fullyQualifiedClassName;
             }
         };
-        Stream<Source> sources = Stream.of(interfaces).map(source -> new Source.SourceInterface(source));
+        Stream<Source> sources = Stream.of(interfaces).map(InterfaceSource::new);
         converter = new TypeConverter(types, shortener, testPackage, sources);
     }
 
