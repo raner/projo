@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -67,10 +68,12 @@ import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.template.annotation.Configuration;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.SourceVersion.RELEASE_8;
+import static javax.lang.model.element.Modifier.STATIC;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
@@ -184,11 +187,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 messager.printMessage(ERROR, exception.getClass().getName() + ": " + exception.getMessage());
             }
         }
-        _Annotation_ individual = packageElement.getAnnotation(single);
-        if (individual != null)
-        {
-            annotations.add(individual);
-        }
+        Optional.ofNullable(packageElement.getAnnotation(single)).ifPresent(annotations::add);
         return annotations;
     }
 
@@ -210,7 +209,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
             TypeElement typeElement = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
-            final List<? extends TypeParameterElement> typeParameters = typeElement.getTypeParameters();
+            List<? extends TypeParameterElement> typeParameters;
+            typeParameters = modifiers.contains(STATIC)? emptyList():typeElement.getTypeParameters();
             ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
             {
                 @Override

@@ -45,7 +45,7 @@ import io.reactivex.functions.Function9;
 /* */
 @Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
 /* */
-public interface Observables<T>
+public interface Observables
 {
 /* */
     <T> Observable<T> amb(Iterable<? extends ObservableSource<? extends T>> sources);
