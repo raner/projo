@@ -61,7 +61,7 @@ import io.reactivex.schedulers.Timed;
 /* */
 @Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
 /* */
-public interface Observable<T>
+public interface Observable<T> extends ObservableSource<T>
 {
 /* */
     Single<Boolean> all(Predicate<? super T> predicate);

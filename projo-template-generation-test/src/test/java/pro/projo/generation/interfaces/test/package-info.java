@@ -20,6 +20,7 @@
 @Interface(generate="Observables", from=Observable.class, modifiers={PUBLIC, STATIC}, map=@Map(type=Observable.class, to="Observable"))
 @Interface(generate="NewType", from=Type.class)
 @Interface(generate="NewThing", from=Thing.class)
+@Interface(generate="EvenNewerThing", from=NewerThing.class)
 @Interface(generate="Mapper", from=Converter.class)
 @Interface(generate="Watchable", from=Watchable.class)
 @Interface(generate="Walker", from=Runner.class)
@@ -38,6 +39,7 @@ import io.reactivex.Observable;
 import pro.projo.generation.interfaces.test.classes.Converter;
 import pro.projo.generation.interfaces.test.classes.Enumeration;
 import pro.projo.generation.interfaces.test.classes.Nested;
+import pro.projo.generation.interfaces.test.classes.NewerThing;
 import pro.projo.generation.interfaces.test.classes.ObjectFactory;
 import pro.projo.generation.interfaces.test.classes.Runner;
 import pro.projo.generation.interfaces.test.classes.Thing;

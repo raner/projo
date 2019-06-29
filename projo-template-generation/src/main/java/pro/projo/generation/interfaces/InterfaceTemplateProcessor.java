@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
@@ -74,6 +74,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.lang.model.SourceVersion.RELEASE_8;
 import static javax.lang.model.element.Modifier.STATIC;
+import static javax.lang.model.type.TypeKind.NONE;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
@@ -200,6 +201,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     **/
     private Collection<? extends Configuration> getInterfaceConfiguration(PackageElement element, List<Interface> interfaces)
     {
+        String object = Object.class.getName();
         Name packageName = element.getQualifiedName();
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
@@ -207,16 +209,16 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             imports.add(Generated.class.getName());
             TypeMirror originalClass = getTypeMirror(annotation::from);
             Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
-            TypeElement typeElement = elements.getTypeElement(originalClass.toString());
+            TypeElement type = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
             List<? extends TypeParameterElement> typeParameters;
-            typeParameters = modifiers.contains(STATIC)? emptyList():typeElement.getTypeParameters();
+            typeParameters = modifiers.contains(STATIC)? emptyList():type.getTypeParameters();
             ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
             {
                 @Override
                 public Void visitExecutable(ExecutableElement method, List<ExecutableElement> executables)
                 {
-                    if (typeElement.equals(method.getEnclosingElement())
+                    if (type.equals(method.getEnclosingElement())
                     && (method.getModifiers().containsAll(modifiers)))
                     {
                         executables.add(method);
@@ -224,7 +226,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     return super.visitExecutable(method, executables);
                 }
             };
-            typeElement.accept(scanner, methods);
+            type.accept(scanner, methods);
             PackageShortener shortener = new PackageShortener();
 
             // Include both interfaces and enums in the TypeConverter, so that references to enums from
@@ -233,6 +235,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources);
+            Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
+            TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
+            Stream<String> supertypes = concat(type.getInterfaces(), superclass).map(typeConverter::convert);
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
@@ -247,8 +252,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public Map<String, Object> parameters()
                 {
-                    String javadoc = "This interface was extracted from " + originalClass + ".";
-                    Map<String, Object> parameters = getParameters(packageName, importNames, javadoc);
+                    Map<String, Object> parameters = getParameters(packageName, importNames);
+                    parameters.put("javadoc", "This interface was extracted from " + originalClass + ".");
                     parameters.put("InterfaceTemplate", interfaceSignature());
                     parameters.put("methods", declarations);
                     return parameters;
@@ -265,13 +270,24 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     String signature = annotation.generate();
                     if (!typeParameters.isEmpty())
                     {
-                        signature += "<" + typeParameters.stream().map(Object::toString).collect(Collectors.joining(",")) + ">";
+                        signature += "<" + typeParameters.stream().map(Object::toString).collect(joining(", ")) + ">";
+                    }
+                    String superinterfaces = supertypes.collect(joining(", "));
+                    if (!superinterfaces.isEmpty() && !modifiers.contains(STATIC))
+                    {
+                        signature += " extends " + superinterfaces;
                     }
                     return signature;
                 }
             };
         };
         return interfaces.stream().map(getConfiguration).collect(toList());
+    }
+
+    @SafeVarargs
+    private final <_Type_> Stream<_Type_> concat(Collection<? extends _Type_> initial, _Type_... additional)
+    {
+        return Stream.concat(initial.stream(), Stream.of(additional));
     }
 
     private Collection<? extends Configuration> getEnumConfiguration(PackageElement packageElement, List<Enum> enums)
@@ -301,8 +317,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public Map<String, Object> parameters()
                 {
-                    String javadoc = "This enum was extracted from " + originalClass + ".";
-                    Map<String, Object> parameters = getParameters(packageName, singleton(Generated.class.getName()), javadoc);
+                    Map<String, Object> parameters = getParameters(packageName, singleton(Generated.class.getName()));
+                    parameters.put("javadoc", "This enum was extracted from " + originalClass + ".");
                     parameters.put("EnumTemplate", annotation.generate());
                     parameters.put("values", values);
                     return parameters;
@@ -318,12 +334,11 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return enums.stream().map(getConfiguration).collect(toList());
     }
 
-    Map<String, Object> getParameters(Name packageName, Collection<String> imports, String javadoc)
+    Map<String, Object> getParameters(Name packageName, Collection<String> imports)
     {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("package", packageName);
         parameters.put("imports", imports);
-        parameters.put("javadoc", javadoc);
         parameters.put("generatedBy", getClass().getName());
         return parameters;
     }
