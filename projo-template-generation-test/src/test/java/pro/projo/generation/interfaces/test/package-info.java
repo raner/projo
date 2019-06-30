@@ -26,6 +26,7 @@
 @Interface(generate="Walker", from=Runner.class)
 @Interface(generate="Nested", from=Nested.class)
 @Interface(generate="UseEnum", from=UseEnum.class)
+@Interface(generate="FromOtherPackage", from=UseGeneratedClassFromOtherPackage.class, map=@Map(type=Other.class, to="pro.projo.generation.interfaces.test.additional.Other"))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 package pro.projo.generation.interfaces.test;
@@ -45,7 +46,9 @@ import pro.projo.generation.interfaces.test.classes.Runner;
 import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.interfaces.test.classes.Type;
 import pro.projo.generation.interfaces.test.classes.UseEnum;
+import pro.projo.generation.interfaces.test.classes.UseGeneratedClassFromOtherPackage;
 import pro.projo.generation.interfaces.test.classes.Watchable;
+import pro.projo.generation.interfaces.test.classes.additional.Other;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;

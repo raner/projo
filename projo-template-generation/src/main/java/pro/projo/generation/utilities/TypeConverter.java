@@ -17,12 +17,10 @@ package pro.projo.generation.utilities;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -48,29 +46,25 @@ import pro.projo.interfaces.annotation.Interface;
 public class TypeConverter implements TypeMirrorUtilities
 {
     private Types types;
+    private Name targetPackage;
     private PackageShortener shortener;
-    private Map<String, String> generates = new HashMap<>();
-    private Set<String> imports = new HashSet<>();
+    private Map<String, String> generates;
+    private Set<String> imports;
 
-    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources)
+    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources,
+    Source... primary)
     {
         this.types = types;
         this.shortener = shortener;
+        this.targetPackage = targetPackage;
         Function<Source, String> keyMapper = type -> getDeclaredType(type::from).toString();
         Function<Source, String> valueMapper = type ->
-        {
-            String className = getMap(type).getOrDefault(getTypeMirror(type::from), type.generate());
-            return targetPackage + "." + className;
-        };
-        BinaryOperator<String> merger = (oldValue, newValue) ->
-        {
-            if (oldValue.equals(newValue))
-            {
-                return oldValue;
-            }
-            throw new IllegalStateException("old=" + oldValue + ", new=" + newValue);
-        };
-        generates = sources.collect(toMap(keyMapper, valueMapper, merger , HashMap::new));
+            qualify(getMap(type).getOrDefault(getTypeMirror(type::from), type.generate()));
+        generates = Stream.of(primary)
+            .flatMap(source -> getMap(source).entrySet().stream())
+            .collect(toMap(entry -> entry.getKey().toString(), entry -> qualify(entry.getValue())));
+        imports = new HashSet<>(generates.values());
+        sources.collect(toMap(keyMapper, valueMapper, this::rejectDuplicates, () -> generates));
     }
 
     public String convert(TypeMirror element)
@@ -114,9 +108,7 @@ public class TypeConverter implements TypeMirrorUtilities
 
     public String convert(VariableElement variable)
     {
-        TypeMirror type = variable.asType();
-        String result = convert(type) + " " + variable.getSimpleName();
-        return result;
+        return convert(variable.asType()) + " " + variable.getSimpleName();
     }
 
     public DeclaredType getRawType(TypeMirror type)
@@ -146,6 +138,20 @@ public class TypeConverter implements TypeMirrorUtilities
     private DeclaredType getDeclaredType(Supplier<Class<?>> type)
     {
         return (DeclaredType)getTypeMirror(type);
+    }
+
+    private <_Type_> _Type_ rejectDuplicates(_Type_ oldValue, _Type_ newValue)
+    {
+        if (oldValue.equals(newValue))
+        {
+            return oldValue;
+        }
+        throw new IllegalStateException("old=" + oldValue + ", new=" + newValue);
+    }
+
+    private String qualify(String name)
+    {
+        return name.indexOf('.') != -1? name:targetPackage + "." + name;
     }
 
     private String shorten(String fqcn)

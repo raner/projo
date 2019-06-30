@@ -203,6 +203,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     {
         String object = Object.class.getName();
         Name packageName = element.getQualifiedName();
+        Predicate<String> notSamePackage = name -> !name.substring(0, name.lastIndexOf('.')).equals(String.valueOf(packageName));
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
             Set<String> imports = new HashSet<>();
@@ -232,9 +233,10 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             // Include both interfaces and enums in the TypeConverter, so that references to enums from
             // within interfaces are handled properly:
             //
+            InterfaceSource primary = new InterfaceSource(annotation);
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
-            TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources);
+            TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
             TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
             Stream<String> supertypes = concat(type.getInterfaces(), superclass).map(typeConverter::convert);
@@ -242,7 +244,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)
-                .filter(name -> !name.startsWith(packageName + ".") && !name.startsWith("java.lang."))
+                .filter(notSamePackage)
+                .filter(name -> !name.startsWith("java.lang."))
                 .map(pro.projo.generation.utilities.Name::new)
                 .sorted(new DefaultNameComparator())
                 .map(Name::toString)
