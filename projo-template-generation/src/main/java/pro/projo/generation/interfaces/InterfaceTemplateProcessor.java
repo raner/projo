@@ -240,7 +240,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
             TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
-            String supertypes = concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
+            String supertypes = modifiers.contains(STATIC)?
+                "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)
