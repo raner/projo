@@ -237,10 +237,10 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
+            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
             TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
-            Stream<String> supertypes = concat(type.getInterfaces(), superclass).map(typeConverter::convert);
-            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
+            String supertypes = concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)
@@ -275,10 +275,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     {
                         signature += "<" + typeParameters.stream().map(Object::toString).collect(joining(", ")) + ">";
                     }
-                    String superinterfaces = supertypes.collect(joining(", "));
-                    if (!superinterfaces.isEmpty() && !modifiers.contains(STATIC))
+                    if (!supertypes.isEmpty() && !modifiers.contains(STATIC))
                     {
-                        signature += " extends " + superinterfaces;
+                        signature += " extends " + supertypes;
                     }
                     return signature;
                 }
