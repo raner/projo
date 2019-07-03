@@ -63,9 +63,9 @@ import static pro.projo.Projo.create;
     Person person = create(Person.class);
 ```
 Projo will create a proxy object or generate an implementation class at runtime. This is similar to the mechanism that
-Mockito uses when creating mock objects, except Projo's getters and setters will be fully functional.
+[Mockito](https://site.mockito.org/) uses when creating mock objects, except Projo's getters and setters will be fully functional.
 
-The above example is only the beginning: what about factories for creating your objects? Also, if you want to safely use the
+The above example is only the beginning: what about factories or builders for creating your objects? Also, if you want to safely use the
 objects as keys in a hash map you will need ```equals()``` and ```hashCode()``` methods. And what about a ```toString()```
 method that actually produces readable information? Also, often times, a lot of the fields are mandatory and cannot be
 ```null``` or ```Optional```, so you'll need more code to enforce that...
@@ -88,12 +88,12 @@ If you are using [Maven](https://maven.apache.org/), simply add these two depend
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.0.0</version>
+   <version>1.1.0</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-runtime-code-generation</artifactId>
-   <version>1.0.0</version>
+   <version>1.1.0</version>
    <scope>runtime</scope>
   </dependency>
 ```
@@ -113,9 +113,12 @@ downside of Projo (if you want to call it that), is that you need to change your
 ```create(Pojo.class)```, as shown above. Is Projo better than Lombok, or vice versa? No, not really either way, they are
 just different approaches to the same problem. Your mileage may vary.
 
-**Disclaimer:** Projo itself is built using compile-time code generation (for example, to generate factory interfaces with
-varying numbers of parameters). As a user of Projo, however, you will not notice that at all, and at your own project's
-compile time no Projo code generation will take place.
+The Projo library itself is built using some compile-time code generation (for example, to generate factory interfaces with
+varying numbers of parameters). For the basic features of Projo, as demonstrated above, no Projo code generation will take place at compile time of a project that includes Projo on its class path. However, Projo's
+compile-time code generation features, such as annotation-based "API scraping" of interfaces and enums, can be
+leveraged in combination with Projo's runtime features. Generating POJO or DTO interfaces based on some
+templated structure (e.g., an XML schema) and then have them automatically implemented at runtime is one
+example of such a combined use of compile-time and runtime features of Projo.
 
 ### Does Projo support immutable objects?
 Yes, Projo does support immutable objects. As immutable objects need to be fully initialized when they are created this
@@ -175,7 +178,7 @@ not needed at compile time), i.e.:
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-jax-rs</artifactId>
-   <version>1.0.0</version>
+   <version>1.1.0</version>
    <scope>runtime</scope>
   </dependency>
 ```
@@ -183,5 +186,15 @@ The integration uses auto-discovery to modify your JAX-RS serialization and dese
 so that it becomes Projo-aware. Instead of trying to ```new``` up an interface, the deserializer will correctly use
 the Projo library to instantiate new objects.
 
-Currently, Projo only supports Jersey as the JAX-RS provider, in conjunction with the MOXy marshaller. Eventually, other
-JAX-RS implementations (such as CXF) and other marshallers (such as Jackson) will be supported as well.
+Currently, Projo only supports Jersey as the JAX-RS provider, in conjunction with the MOXy marshaller, as well
+as the Jackson marshaller, both in a limited fashion (i.e., not all Jersey/MOXy/Jackson features are
+supported or recognized). Eventually, there will be more complete support, and other
+JAX-RS implementations (such as CXF) will be supported as well.
+
+### What is new in Projo 1.1.0?
+Besides several bug fixes (e.g., [#1](https://github.com/raner/projo/issues/1), [#10](https://github.com/raner/projo/issues/10), [#11](https://github.com/raner/projo/issues/11)), Projo 1.1.0 also introduced two major new features:
+* [Annotation-based API generation ("API scraping")](https://github.com/raner/projo/issues/8)
+* [Support for Jackson serialization/deserialization](https://github.com/raner/projo/issues/12)
+
+Until more detailed documentation becomes available, please have a look at the test cases in the
+[projo-template-generation-test](https://github.com/raner/projo/tree/master/projo-template-generation-test/src/test/java/pro/projo/generation/interfaces) and [jackson](https://github.com/raner/projo/tree/master/projo-jackson/src/test/java/pro/projo/jackson) module to get a basic idea how these new features can be used.
