@@ -276,7 +276,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     {
                         signature += "<" + typeParameters.stream().map(Object::toString).collect(joining(", ")) + ">";
                     }
-                    if (!supertypes.isEmpty() && !modifiers.contains(STATIC))
+                    if (!supertypes.isEmpty())
                     {
                         signature += " extends " + supertypes;
                     }
