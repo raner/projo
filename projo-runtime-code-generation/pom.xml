@@ -33,7 +33,7 @@
   <dependency>
    <groupId>net.bytebuddy</groupId>
    <artifactId>byte-buddy</artifactId>
-   <version>1.6.3</version>
+   <version>1.9.0</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
@@ -45,6 +45,12 @@
    <artifactId>projo</artifactId>
    <version>1.1.0</version>
    <type>test-jar</type>
+   <scope>test</scope>
+  </dependency>
+  <dependency>
+   <groupId>javax.inject</groupId>
+   <artifactId>javax.inject</artifactId>
+   <version>1</version>
    <scope>test</scope>
   </dependency>
  </dependencies>

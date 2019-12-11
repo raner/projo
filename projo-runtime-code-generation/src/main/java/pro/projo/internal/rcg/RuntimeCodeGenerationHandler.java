@@ -15,15 +15,27 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.description.type.TypeDescription.ForLoadedType;
+import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.MethodCall;
 import pro.projo.Projo;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
@@ -32,7 +44,9 @@ import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
+import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.function.UnaryOperator.identity;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
@@ -62,6 +76,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * Also, if it were static the {@code _Artifact_} type parameter would not be accessible.
     **/
     private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache = new HashMap<>();
+
+    private Predicate<Annotation> injected = annotation -> annotation.annotationType().getName().equals("javax.inject.Inject");
 
     private final static String SUFFIX = "$Projo";
 
@@ -115,9 +131,75 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String methodName = method.getName();
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
-        Class<?> type = isGetter? method.getReturnType():void.class;
-        addFieldForGetter = isGetter? localBuilder -> localBuilder.defineField(propertyName, type, PRIVATE):identity();
-        return addFieldForGetter.apply(builder).method(named(methodName)).intercept(FieldAccessor.ofField(propertyName));
+        Optional<Annotation> inject = getInject(method);
+        Type returnType = method.getReturnType();
+        TypeDescription.Generic type = isGetter? getProcessedReturnType(inject, returnType):generic(ForLoadedType.of(void.class));
+        addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
+        Implementation implementation = inject.isPresent()? get(propertyName, returnType):FieldAccessor.ofField(propertyName);
+        return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
+    }
+
+    private MethodCall get(String field, Type type)
+    {
+        Class<?> provider = getClass("javax.inject.Provider");
+        Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
+        Generic typeParameter = genericProvider.getTypeArguments().get(0);
+        MethodDescription get = latent(genericProvider, typeParameter, "get");
+        return MethodCall.invoke(get).onField(field);
+    }
+
+    private MethodDescription.Latent latent(TypeDescription.Generic declaringType, TypeDescription.Generic returnType, String internalName)
+    {
+        return new MethodDescription.Latent(declaringType.asErasure(), internalName, PUBLIC, emptyList(), returnType, emptyList(), emptyList(), emptyList(), null, null);
+    }
+
+    private TypeDescription.Generic generic(TypeDescription type)
+    {
+        return TypeDescription.Generic.Builder.rawType(type).build();
+    }
+
+    private ByteBuddy codeGenerator()
+    {
+        return new ByteBuddy();
+    }
+
+    private Generic getProcessedReturnType(Optional<Annotation> inject, Type originalReturnType)
+    {
+        if (inject.isPresent())
+        {
+            Class<?> provider = getClass("javax.inject.Provider");
+            Generic genericType = Generic.Builder.parameterizedType(provider, originalReturnType).build();
+            return genericType;
+        }
+        else
+        {
+            Class<?> set = getClass("java.util.Set");
+            Generic genericType = Generic.Builder.parameterizedType(set, originalReturnType).build();
+            return genericType.getTypeArguments().get(0);
+        }
+    }
+
+    private <_ValuableBuilder_ extends Valuable<_Artifact_> & Builder<_Artifact_>>
+    Builder<_Artifact_> annotate(Optional<Annotation> annotation, _ValuableBuilder_ builder)
+    {
+        return annotation.isPresent()? builder.annotateField(annotation.get()):builder;
+    }
+
+    private Optional<Annotation> getInject(Method method)
+    {
+        return Stream.of(method.getAnnotations()).filter(injected).findFirst();
+    }
+
+    private Class<?> getClass(String name)
+    {
+        try
+        {
+            return Class.forName(name);
+        }
+        catch (ClassNotFoundException classNotFound)
+        {
+            throw new NoClassDefFoundError(classNotFound.getMessage());
+        }
     }
 
     private <_Any_> BinaryOperator<_Any_> sequentialOnly()
@@ -138,7 +220,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         List<Boolean> features = asList(Projo.isValueObject(type), Projo.hasCustomToString(type));
         Class<?> baseclass = baseClasses.get(features);
         @SuppressWarnings("unchecked")
-        Builder<_Artifact_> builder = (Builder<_Artifact_>)new ByteBuddy().subclass(baseclass).implement(type, ProjoObject.class);
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass).implement(type, ProjoObject.class);
         return builder;
     }
 }

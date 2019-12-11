@@ -36,6 +36,7 @@ import org.eclipse.persistence.oxm.XMLContext;
 @Provider
 public class ProjoJaxbContextResolver implements ContextResolver<JAXBContext>
 {
+    @SuppressWarnings("unchecked")
     @Override
     public JAXBContext getContext(Class<?> type)
     {
