@@ -37,9 +37,11 @@ public interface Predicates
         && String.class.equals(method.getReturnType());
     static Predicate<Method> getter = method -> method.getParameterCount() == 0
         && !method.getDeclaringClass().equals(Object.class)
+        && !method.isDefault()
         && !hashCode.test(method)
         && !toString.test(method);
     static Predicate<Method> setter = method -> method.getParameterCount() == 1
         && !method.getDeclaringClass().equals(Object.class)
+        && !method.isDefault()
         && !equals.test(method);
 }

@@ -29,6 +29,11 @@ public class PredicatesTest
         Number getImaginary();
         void setImaginary(Number imaginary);
 
+        default Number getZero()
+        {
+            return 0;
+        }
+
         @Override
         int hashCode();
     }
@@ -43,8 +48,15 @@ public class PredicatesTest
     @Test
     public void testGetterPredicateIsGetter() throws Exception
     {
-        Method getReal = Complex.class.getDeclaredMethod("getReal");
-        assertTrue(Predicates.getter.test(getReal));
+        Method getZero = Complex.class.getDeclaredMethod("getZero");
+        assertFalse(Predicates.getter.test(getZero));
+    }
+
+    @Test
+    public void testDefaultMethodIsNotAGetter() throws Exception
+    {
+      Method getReal = Complex.class.getDeclaredMethod("getReal");
+      assertTrue(Predicates.getter.test(getReal));
     }
 
     @Test
