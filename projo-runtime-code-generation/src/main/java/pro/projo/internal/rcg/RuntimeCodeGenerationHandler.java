@@ -49,7 +49,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.function.UnaryOperator.identity;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
+import static net.bytebuddy.description.type.TypeDescription.OBJECT;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
+import static net.bytebuddy.implementation.bytecode.assign.Assigner.DEFAULT;
+import static net.bytebuddy.implementation.bytecode.assign.Assigner.Typing.DYNAMIC;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static pro.projo.internal.Predicates.getter;
 import static pro.projo.internal.Predicates.setter;
@@ -139,18 +142,18 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
     }
 
-    private MethodCall get(String field, Type type)
+    private Implementation get(String field, Type type)
     {
         Class<?> provider = getClass("javax.inject.Provider");
         Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
         Generic typeParameter = genericProvider.getTypeArguments().get(0);
-        MethodDescription get = latent(genericProvider, typeParameter, "get");
-        return MethodCall.invoke(get).onField(field);
+        MethodDescription get = latent(genericProvider.asErasure(), typeParameter, "get");
+        return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
     }
 
-    private MethodDescription.Latent latent(TypeDescription.Generic declaringType, TypeDescription.Generic returnType, String internalName)
+    private MethodDescription.Latent latent(TypeDescription declaringType, Generic returnType, String name)
     {
-        return new MethodDescription.Latent(declaringType.asErasure(), internalName, PUBLIC, emptyList(), returnType, emptyList(), emptyList(), emptyList(), null, null);
+        return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), generic(OBJECT), emptyList(), emptyList(), emptyList(), null, null);
     }
 
     private TypeDescription.Generic generic(TypeDescription type)
@@ -165,18 +168,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Generic getProcessedReturnType(Optional<Annotation> inject, Type originalReturnType)
     {
-        if (inject.isPresent())
-        {
-            Class<?> provider = getClass("javax.inject.Provider");
-            Generic genericType = Generic.Builder.parameterizedType(provider, originalReturnType).build();
-            return genericType;
-        }
-        else
-        {
-            Class<?> set = getClass("java.util.Set");
-            Generic genericType = Generic.Builder.parameterizedType(set, originalReturnType).build();
-            return genericType.getTypeArguments().get(0);
-        }
+        boolean injected = inject.isPresent();
+        Class<?> container = getClass(injected? "javax.inject.Provider":"java.util.Set");
+        Generic generic = Generic.Builder.parameterizedType(container, originalReturnType).build();
+        return injected? generic:generic.getTypeArguments().get(0);
     }
 
     private <_ValuableBuilder_ extends Valuable<_Artifact_> & Builder<_Artifact_>>
