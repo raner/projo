@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -28,6 +28,7 @@
 @Interface(generate="UseEnum", from=UseEnum.class)
 @Interface(generate="FromOtherPackage", from=UseGeneratedClassFromOtherPackage.class, map=@Map(type=Other.class, to="pro.projo.generation.interfaces.test.additional.Other"))
 @Interface(generate="ExtendedMap", from=Extends.class)
+@Interface(generate="ShadowedTypeVariable", from=ShadowedTypeVariable.class)
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 package pro.projo.generation.interfaces.test;
@@ -42,6 +43,7 @@ import pro.projo.generation.interfaces.test.classes.Nested;
 import pro.projo.generation.interfaces.test.classes.NewerThing;
 import pro.projo.generation.interfaces.test.classes.ObjectFactory;
 import pro.projo.generation.interfaces.test.classes.Runner;
+import pro.projo.generation.interfaces.test.classes.ShadowedTypeVariable;
 import pro.projo.generation.interfaces.test.classes.Thing;
 import pro.projo.generation.interfaces.test.classes.Type;
 import pro.projo.generation.interfaces.test.classes.UseEnum;

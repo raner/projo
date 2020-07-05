@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -137,5 +138,30 @@ public class InterfaceTemplateProcessorTest
         classUseEnum.getMethod("use", classEnumeration);
         //String returnType = use.getReturnType().getName();
         //assertEquals("pro.projo.generation.interfaces.test.Enumeration", returnType);
+    }
+
+    @Test
+    public void testShadowedTypeVariablesAreRenamed() throws Exception
+    {
+    	Class<?> classShadowed = Class.forName("pro.projo.generation.interfaces.test.ShadowedTypeVariable");
+    	Method method = classShadowed.getDeclaredMethods()[0];
+    	String classLevelTypeVariable = classShadowed.getTypeParameters()[0].getName();
+    	String methodLevelTypeVariable = method.getTypeParameters()[0].getName();
+    	List<String> actual = asList(classLevelTypeVariable, methodLevelTypeVariable);
+    	List<String> expected = asList("T", "T0");
+    	assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testShadowedTypeVariablesAreUsedInMethodSignature() throws Exception
+    {
+    	Class<?> classShadowed = Class.forName("pro.projo.generation.interfaces.test.ShadowedTypeVariable");
+    	Method method = classShadowed.getDeclaredMethods()[0];
+    	String methodLevelTypeVariable = method.getTypeParameters()[0].getName();
+    	String returnType = method.getGenericReturnType().toString();
+    	String parameterType = method.getGenericParameterTypes()[0].toString();
+    	List<String> actual = asList(returnType, parameterType);
+    	List<String> expected = asList(methodLevelTypeVariable, methodLevelTypeVariable);
+    	assertEquals(expected, actual);
     }
 }

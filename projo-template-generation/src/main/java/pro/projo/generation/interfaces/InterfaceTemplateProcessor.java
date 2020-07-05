@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.Method;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -60,6 +62,7 @@ import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.PackageShortener;
+import pro.projo.generation.utilities.Reduction;
 import pro.projo.generation.utilities.Source;
 import pro.projo.generation.utilities.Source.EnumSource;
 import pro.projo.generation.utilities.Source.InterfaceSource;
@@ -70,8 +73,12 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Stream.iterate;
 import static javax.lang.model.SourceVersion.RELEASE_8;
 import static javax.lang.model.element.Modifier.STATIC;
 import static javax.lang.model.type.TypeKind.NONE;
@@ -81,6 +88,7 @@ import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interfaces;
+
 
 /**
 * The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects source files
@@ -237,7 +245,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
-            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter);
+            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter, typeParameters);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
             TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
             String supertypes = modifiers.contains(STATIC)?
@@ -346,7 +354,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return parameters;
     }
 
-    Function<ExecutableElement, String> convertToDeclaration(TypeConverter typeMap)
+    Function<ExecutableElement, String> convertToDeclaration(TypeConverter typeMap,
+        List<? extends TypeParameterElement> typeParameters)
     {
         return method ->
         {
@@ -354,24 +363,57 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     
             // Add type parameters, if any:
             List<? extends TypeParameterElement> typeParameterList = method.getTypeParameters();
+            Map<String, String> renamedTypeVariables = renameShadowedTypeVariables(typeParameters, typeParameterList);
             if (!typeParameterList.isEmpty())
             {
-                declaration.append("<");
-                declaration.append(typeParameterList.stream().map(TypeParameterElement::getSimpleName).collect(joining(", ")));
-                declaration.append("> ");
+                String localTypeParameters =
+                    typeParameterList.stream()
+                        .map(TypeParameterElement::getSimpleName)
+                        .map(Name::toString)
+                        .map(name -> renamedTypeVariables.getOrDefault(name, name))
+                        .collect(joining(", "));
+                declaration.append("<").append(localTypeParameters).append("> ");
             }
     
             // Add return type:
-            String returnType = typeMap.convert(method.getReturnType());
+            String returnType = typeMap.convert(method.getReturnType(), renamedTypeVariables);
             declaration.append(returnType).append(' ');
 
             // Add parameters:
             declaration.append(method.getSimpleName()).append('(');
             Stream<? extends VariableElement> parameters = method.getParameters().stream();
-            Stream<String> convertedParameters = parameters.map(typeMap::convert);
+            Stream<String> convertedParameters = parameters.map(parameter -> typeMap.convert(parameter, renamedTypeVariables));
             declaration.append(convertedParameters.collect(joining(", ")));
             return declaration.append(')').toString();
         };
+    }
+
+    Map<String, String> renameShadowedTypeVariables(
+        List<? extends TypeParameterElement> classLevelVariables,
+        List<? extends TypeParameterElement> methodLevelVariables)
+    {
+    	Map<String, Integer> typeVariableOccurrences = Stream.of(classLevelVariables, methodLevelVariables)
+            .flatMap(List::stream)
+            .map(TypeParameterElement::getSimpleName)
+            .map(Name::toString)
+            .collect(groupingBy(identity())).entrySet().stream()
+            .collect(toMap(Entry::getKey, entry -> entry.getValue().size()));
+        Stream<String> duplicates = typeVariableOccurrences.entrySet().stream()
+            .filter(entry -> entry.getValue() > 1)
+            .map(Entry::getKey);
+        Entry<Map<String, Integer>, Map<String, String>> typesAndRenames =
+            new SimpleEntry<>(typeVariableOccurrences, new HashMap<>());
+        Reduction<Entry<Map<String, Integer>, Map<String, String>>, String> renameDuplicates = (entry, type) ->
+        {
+        	Map<String, Integer> types = new HashMap<>(entry.getKey());
+            int suffixIndex = iterate(0, next -> next+1).filter(index -> !types.containsKey(type+index)).findFirst().get();
+            String rename = type + suffixIndex;
+            types.put(rename, 1);
+            Map<String, String> renames = new HashMap<>(entry.getValue());
+            renames.put(type, rename);
+            return new SimpleEntry<>(types, renames);
+        };
+        return duplicates.reduce(typesAndRenames, renameDuplicates, (a, b) -> b).getValue();
     }
 
     boolean realMethodsOnly(ExecutableElement method)

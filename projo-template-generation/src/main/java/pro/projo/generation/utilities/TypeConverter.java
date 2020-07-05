@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,8 +15,7 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,8 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import pro.projo.interfaces.annotation.Interface;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
 
 /**
 * The {@link TypeConverter} class converts types according to the mappings specified
@@ -69,6 +70,11 @@ public class TypeConverter implements TypeMirrorUtilities
 
     public String convert(TypeMirror element)
     {
+        return convert(element, Collections.emptyMap());
+    }
+
+    public String convert(TypeMirror element, Map<String, String> typeRenames)
+    {
         if (element == null)
         {
             return ""; // to deal with absent extends/super bounds
@@ -97,8 +103,12 @@ public class TypeConverter implements TypeMirrorUtilities
             bounds += superBound != null? " super " + convert(superBound) : "";
             return bounds;
         }
-        if (element instanceof TypeVariable
-        || (element instanceof NoType)
+        if (element instanceof TypeVariable)
+        {
+            String name = element.toString();
+            return typeRenames.getOrDefault(name, name);
+        }
+        if (element instanceof NoType
         || (element instanceof PrimitiveType))
         {
             return element.toString();
@@ -106,9 +116,9 @@ public class TypeConverter implements TypeMirrorUtilities
         throw new UnsupportedOperationException(element.getClass().getName());
     }
 
-    public String convert(VariableElement variable)
+    public String convert(VariableElement variable, Map<String, String> typeRenames)
     {
-        return convert(variable.asType()) + " " + variable.getSimpleName();
+        return convert(variable.asType(), typeRenames) + " " + variable.getSimpleName();
     }
 
     public DeclaredType getRawType(TypeMirror type)
