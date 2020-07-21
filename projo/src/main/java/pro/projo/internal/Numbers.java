@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -186,6 +186,7 @@ public class Numbers<_From_ extends Number, _To_ extends Number>
     * Returns a cast from of the given {@link Number}.
     *
     * @param number the number to be cast
+    * @param <_Numeric_> the type to be cast
     * @return a cast object
     **/
     public <_Numeric_ extends Number> Cast cast(_Numeric_ number)

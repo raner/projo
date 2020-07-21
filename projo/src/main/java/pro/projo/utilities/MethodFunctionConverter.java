@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -32,7 +32,10 @@ public class MethodFunctionConverter implements TryCatchUtilities
 {
     /**
     * Converts a {@link Function} to a {@link Method}.
+    * @param type the {@link Class} owning the method
     * @param method the method, represented as a {@link Function}
+    * @param <_ObjectType_> the type of the object
+    * @param <_ReturnValue_> the return value type
     * @return the corresponding {@link Method}
     **/
     public <_ObjectType_, _ReturnValue_> Method convert(Class<_ObjectType_> type, Function<_ObjectType_, _ReturnValue_> method)
@@ -53,6 +56,8 @@ public class MethodFunctionConverter implements TryCatchUtilities
     /**
     * Converts a {@link Function} to a {@link Method}.
     * @param method the method, represented as a {@link Function}
+    * @param <_ObjectType_> the type of the object
+    * @param <_ReturnValue_> the return value type
     * @return the corresponding {@link Method}
     **/
     public <_ObjectType_, _ReturnValue_> Function<_ObjectType_, _ReturnValue_> convert(Method method)

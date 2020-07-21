@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -17,6 +17,14 @@ package pro.projo;
 
 import java.util.function.Function;
 
+/**
+* The {@link Builder} interface is intended as an interface for immutable builders
+* for creating Projo objects.
+*
+* @param <_Artifact_> the type of the artifact being built by this builder
+*
+* @author Mirko Raner
+**/
 public interface Builder<_Artifact_>
 {
     /**
@@ -24,6 +32,7 @@ public interface Builder<_Artifact_>
     *
     * @param property the property's getter method
     * @param value the property value
+    * @param <_Property_> the type of the property being added
     * @return a new {@link Builder} that includes new property
     **/
     <_Property_> Builder<_Artifact_> with(Function<_Artifact_, _Property_> property, _Property_ value);
