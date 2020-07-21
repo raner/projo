@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -447,6 +447,12 @@ public class TypeConverterTest
             public Map[] map()
             {
                 return map;
+            }
+
+            @Override
+            public String selfTypeVariable()
+            {
+                return "";
             }
         };
     }

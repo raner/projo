@@ -29,11 +29,13 @@
 @Interface(generate="FromOtherPackage", from=UseGeneratedClassFromOtherPackage.class, map=@Map(type=Other.class, to="pro.projo.generation.interfaces.test.additional.Other"))
 @Interface(generate="ExtendedMap", from=Extends.class)
 @Interface(generate="ShadowedTypeVariable", from=ShadowedTypeVariable.class)
+@Interface(generate="SelfTypedBiPredicate", from=BiPredicate.class, selfTypeVariable="$")
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 package pro.projo.generation.interfaces.test;
 
 import java.util.concurrent.Callable;
+import java.util.function.BiPredicate;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
 import pro.projo.generation.interfaces.test.classes.Converter;

@@ -73,6 +73,7 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.Optional.empty;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -214,13 +215,15 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         Predicate<String> notSamePackage = name -> !name.substring(0, name.lastIndexOf('.')).equals(String.valueOf(packageName));
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
+            Optional<String> selfTypeVariable;
+            List<? extends TypeParameterElement> typeParameters;
             Set<String> imports = new HashSet<>();
             imports.add(Generated.class.getName());
             TypeMirror originalClass = getTypeMirror(annotation::from);
             Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
             TypeElement type = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
-            List<? extends TypeParameterElement> typeParameters;
+            selfTypeVariable = annotation.selfTypeVariable().isEmpty()? empty():Optional.of(annotation.selfTypeVariable());
             typeParameters = modifiers.contains(STATIC)? emptyList():type.getTypeParameters();
             ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
             {
@@ -293,6 +296,15 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             };
         };
         return interfaces.stream().map(getConfiguration).collect(toList());
+    }
+
+    private List<? extends TypeParameterElement> addSelfType(List<? extends TypeParameterElement> parameters, Optional<String> selfType)
+    {
+        if (selfType.isPresent())
+        {
+            //
+        }
+        return parameters;
     }
 
     @SafeVarargs

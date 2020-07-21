@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -99,6 +99,12 @@ public class InterfaceTypeConverterTest
             public Map[] map()
             {
                 return Stream.of(original.map()).map(testableMap).toArray(Map[]::new);
+            }
+
+            @Override
+            public String selfTypeVariable()
+            {
+                return "";
             }
         };
         List<Interface> testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).collect(toList());

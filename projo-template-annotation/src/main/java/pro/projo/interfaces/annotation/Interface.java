@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 Mirko Raner                                               //
+// Copyright 2018 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -64,4 +64,21 @@ public @interface Interface
     * @return optional type mappings, if any
     **/
     Map[] map() default {};
+
+    /**
+    * Indicates that the generated type should be generated with a "self" type variable that can
+    * be bound to the current type (independent of the inheritance hierarchy). If this attribute
+    * is non-empty a type {@code Data} (without parameters) will be generated as
+    * {@code Data&lt;$ extends Data&lt;$&gt;&gt;} (assuming that the self type variable was set to
+    * {@code $}. A type that already has type parameter, for example, {@code Pair&lt;K, V&gt;},
+    * will be generated with the self type variable inserted at the very first position, before
+    * the type's existing type parameters: {@code Pair&lt;$ extends Pair&lt;$, K, V&gt;, K, V&gt;}.
+    * The attribute's default value is the empty string, meaning that no self type variable will
+    * be inserted during code generation. The attribute must not contain any characters that would
+    * not be valid in a Java type variable name.
+    *
+    * @return the self type variable name, or the empty string if no self type variable should be
+    * generated
+    **/
+    String selfTypeVariable() default "";
 }
