@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -17,6 +17,7 @@ package pro.projo.internal.rcg;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -71,7 +72,20 @@ public class RuntimeCodeGenerationProjo extends Projo
                     {
                         try
                         {
-                            return projoHandler.getImplementationOf(type).newInstance();
+                            return projoHandler.getImplementationOf(type).getConstructor().newInstance();
+                        }
+                        catch (NoSuchMethodException exception)
+                        {
+                            throw new NoSuchMethodError(exception.getMessage());
+                        }
+                        catch (InvocationTargetException exception)
+                        {
+                            Throwable cause = exception.getCause();
+                            if (cause instanceof RuntimeException)
+                            {
+                                throw (RuntimeException)cause;
+                            }
+                            throw new RuntimeException(cause.getMessage(), cause);
                         }
                         catch (InstantiationException exception)
                         {

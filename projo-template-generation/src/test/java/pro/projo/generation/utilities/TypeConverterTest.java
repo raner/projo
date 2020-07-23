@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -73,7 +73,7 @@ public class TypeConverterTest
         return Arrays.asList(parameters);
     }
 
-    Elements elements = proxy(Elements.class, Elements::getTypeElement, name ->
+    Elements elements = proxy(Elements.class, (Elements elements, CharSequence method) -> elements.getTypeElement(method), name ->
     {
         try
         {
