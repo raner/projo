@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -53,6 +53,8 @@ import static java.util.stream.Collectors.toMap;
 **/
 public class ProjoJacksonValueInstantiator<_Artifact_> extends ValueInstantiator.Base implements TryCatchUtilities
 {
+    private final static long serialVersionUID = -1973890909956713842L;
+
     private PropertyMatcher propertyMatcher = new PropertyMatcher();
     private MethodFunctionConverter converter = new MethodFunctionConverter();
 
@@ -96,6 +98,7 @@ public class ProjoJacksonValueInstantiator<_Artifact_> extends ValueInstantiator
         return builder.build();
     }
 
+    @SuppressWarnings("deprecation")
     private SettableBeanProperty getSettableBeanProperty(Entry<Integer, Method> method, DeserializationConfig configuration)
     {
         Method getter = method.getValue();

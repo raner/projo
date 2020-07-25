@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -48,6 +48,7 @@ import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.function.UnaryOperator.identity;
+import static net.bytebuddy.ClassFileVersion.JAVA_V8;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.description.type.TypeDescription.OBJECT;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
@@ -163,7 +164,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private ByteBuddy codeGenerator()
     {
-        return new ByteBuddy();
+        return new ByteBuddy(JAVA_V8);
     }
 
     private Generic getProcessedReturnType(Optional<Annotation> inject, Type originalReturnType)

@@ -18,6 +18,7 @@
 @Interface(generate="ObjectFactory", from=ObjectFactory.class, modifiers={PUBLIC, STATIC})
 @Interface(generate="Observable", from=Observable.class, modifiers={PUBLIC, FINAL})
 @Interface(generate="Observables", from=Observable.class, modifiers={PUBLIC, STATIC}, map=@Map(type=Observable.class, to="Observable"))
+@Interface(generate="GroupedObservable", from=GroupedObservable.class, modifiers={PUBLIC})
 @Interface(generate="NewType", from=Type.class)
 @Interface(generate="NewThing", from=Thing.class)
 @Interface(generate="EvenNewerThing", from=NewerThing.class)
@@ -36,6 +37,7 @@ package pro.projo.generation.interfaces.test;
 import java.util.concurrent.Callable;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
+import io.reactivex.observables.GroupedObservable;
 import pro.projo.generation.interfaces.test.classes.Converter;
 import pro.projo.generation.interfaces.test.classes.Enumeration;
 import pro.projo.generation.interfaces.test.classes.Extends;
