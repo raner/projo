@@ -116,7 +116,7 @@
     <executions>
      <execution>
       <id>sign-artifacts</id>
-      <phase>verify</phase>
+      <phase>deploy</phase>
       <goals>
        <goal>sign</goal>
       </goals>
@@ -131,7 +131,7 @@
     <configuration>
      <serverId>central</serverId>
      <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-     <autoReleaseAfterClose>false</autoReleaseAfterClose>
+     <autoReleaseAfterClose>true</autoReleaseAfterClose>
     </configuration>
    </plugin>
   </plugins>
