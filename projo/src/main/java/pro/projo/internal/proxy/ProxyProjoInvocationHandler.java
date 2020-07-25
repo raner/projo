@@ -52,6 +52,8 @@ import static pro.projo.Projo.isValueObject;
 **/
 public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artifact_> implements Predicates, InvocationHandler
 {
+	private final static String DELEGATE = "/delegate";
+
     private static PropertyMatcher matcher = new PropertyMatcher();
 
     private Map<String, Object> state = new HashMap<>();
@@ -85,6 +87,28 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         public final ProjoMembers members(Function<_Artifact_, ?>... members)
         {
             return new Members(members);
+        }
+
+        @Override
+        public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate)
+        {
+            return new ProjoMembers()
+            {
+                @Override
+                public _Artifact_ returnInstance()
+                {
+                    invoker = ProxyProjoInvocationHandler.this.delegateInvoker;
+                    state.put(DELEGATE, delegate);
+                    initializationStack = null;
+                    return instance;
+                }
+                
+                @Override
+                public _Artifact_ with(Object... values)
+                {
+                    throw new UnsupportedOperationException("with" + Arrays.asList(values));
+                }
+            };
         }
 
         class Members extends ProjoMembers
@@ -123,6 +147,39 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
     InvocationHandler regularInvoker = (Object proxy, Method method, Object... arguments) ->
     {
+        if (setter.test(method))
+        {
+            return state.put(matcher.propertyName(method.getName()), arguments[0]);
+        }
+        if (getter.test(method))
+        {
+            Object value = state.get(matcher.propertyName(method.getName()));
+            return value != null? value:Default.VALUES.get(method.getReturnType());
+        }
+        if (equals.test(method))
+        {
+            return isValueObject(reifiedType)? isEqual(artifact(proxy), artifact(arguments[0])):proxy == arguments[0];
+        }
+        if (hashCode.test(method))
+        {
+            @SuppressWarnings("unchecked")
+            _Artifact_ artifact = (_Artifact_)proxy;
+            return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
+        }
+        if (toString.test(method))
+        {
+            @SuppressWarnings("unchecked")
+            _Artifact_ artifact = (_Artifact_)proxy;
+            return toString(artifact);
+        }
+        throw new NoSuchMethodError(String.valueOf(method));
+    };
+
+    InvocationHandler delegateInvoker = (Object proxy, Method method, Object... arguments) ->
+    {
+    	String methodName = method.getName();
+    	Class<?>[] parameterTypes = method.getParameterTypes();
+    	//...
         if (setter.test(method))
         {
             return state.put(matcher.propertyName(method.getName()), arguments[0]);

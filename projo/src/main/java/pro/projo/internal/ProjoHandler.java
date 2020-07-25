@@ -63,6 +63,14 @@ public abstract class ProjoHandler<_Artifact_>
         * @return the {@link ProjoMembers}
         **/
         public abstract ProjoMembers members(@SuppressWarnings("unchecked") Function<_Artifact_, ?>... getters);
+
+        /**
+        * Creates a {@link ProjoMembers} object based on a delegate object.
+        *
+        * @param delegate the delegate object
+        * @return the {@link ProjoMembers}
+        **/
+        public abstract ProjoMembers delegate(Object delegate);
     }
 
     /**
