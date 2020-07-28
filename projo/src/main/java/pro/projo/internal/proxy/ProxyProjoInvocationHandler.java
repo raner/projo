@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -30,6 +30,7 @@ import java.util.Stack;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import pro.projo.Mapping;
 import pro.projo.Projo;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
@@ -90,14 +91,14 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
 
         @Override
-        public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate)
+        public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate, Mapping mapping)
         {
             return new ProjoMembers()
             {
                 @Override
                 public _Artifact_ returnInstance()
                 {
-                    invoker = ProxyProjoInvocationHandler.this.delegateInvoker;
+                    invoker = ProxyProjoInvocationHandler.this.delegateInvoker(mapping);
                     state.put(DELEGATE, delegate);
                     initializationStack = null;
                     return instance;
@@ -175,38 +176,42 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         throw new NoSuchMethodError(String.valueOf(method));
     };
 
-    InvocationHandler delegateInvoker = (Object proxy, Method method, Object... arguments) ->
+    InvocationHandler delegateInvoker(Mapping mapping)
     {
-    	String methodName = method.getName();
-    	Class<?>[] parameterTypes = method.getParameterTypes();
-    	//...
-        if (setter.test(method))
+        return (Object proxy, Method method, Object... arguments) ->
         {
-            return state.put(matcher.propertyName(method.getName()), arguments[0]);
-        }
-        if (getter.test(method))
-        {
-            Object value = state.get(matcher.propertyName(method.getName()));
-            return value != null? value:Default.VALUES.get(method.getReturnType());
-        }
-        if (equals.test(method))
-        {
-            return isValueObject(reifiedType)? isEqual(artifact(proxy), artifact(arguments[0])):proxy == arguments[0];
-        }
-        if (hashCode.test(method))
-        {
-            @SuppressWarnings("unchecked")
-            _Artifact_ artifact = (_Artifact_)proxy;
-            return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
-        }
-        if (toString.test(method))
-        {
-            @SuppressWarnings("unchecked")
-            _Artifact_ artifact = (_Artifact_)proxy;
-            return toString(artifact);
-        }
-        throw new NoSuchMethodError(String.valueOf(method));
-    };
+            // If this is call to the getDelegate() method, return the delegate immediately:
+            //
+            if (getDelegate.test(method))
+            {
+                return state.get(DELEGATE);
+            }
+
+            // Get the delegate object and its type (e.g. BigInteger):
+            //
+            Object delegate = state.get(DELEGATE);
+            Class<?> delegateType = delegate.getClass();
+
+            // Find the corresponding method in the delegate type (e.g., BigInteger):
+            //
+            Stream<Class<?>> parameterTypes = Stream.of(method.getParameterTypes());
+            Stream<Class<?>> delegateParameterTypes = parameterTypes.map(mapping::getDelegate);
+            Method delegateMethod = delegateType.getMethod(method.getName(), delegateParameterTypes.toArray(Class[]::new));
+
+            // Convert the arguments to their corresponding delegate (non-synthetic) types (i.e., unwrap them):
+            //
+            Stream<Object> unwrappedArguments = stream(arguments).map(Projo::unwrap);
+
+            // Invoke the delegate method:
+            //
+            Object result = delegateMethod.invoke(delegate, unwrappedArguments.toArray());
+
+            // Convert the result back to the synthetic type:
+            //
+            Object wrappedResult = Projo.delegate(method.getReturnType(), result, mapping);
+            return wrappedResult;
+        };
+    }
 
     public ProxyProjoInvocationHandler(Class<_Artifact_> type)
     {
@@ -227,11 +232,18 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     @Override
     public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
     {
+        // TODO: some code overlap with ProxyProjo.initializer(Class)
         Class<?>[] interfaces = {type, ProjoObject.class};
         ClassLoader classLoader = Projo.getImplementation().getClassLoader();
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "deprecation"})
         Class<? extends _Artifact_> proxyClass = (Class<? extends _Artifact_>)getProxyClass(classLoader, interfaces);
         return proxyClass;
+    }
+
+    @SafeVarargs
+    private final <_Any_> Stream<_Any_> stream(_Any_... items)
+    {
+        return items == null? Stream.empty():Stream.of(items);
     }
 
     private String toString(_Artifact_ proxy)

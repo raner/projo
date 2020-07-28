@@ -19,11 +19,9 @@ package pro.projo;
 * The {@link Delegated} interface represents objects whose implementation is delegated
 * to another object. This interface also allows to retrieve the delegate.
 *
-* @param <_Delegate_> the type of the delegate
-* 
 * @author Mirko Raner
 **/
 public interface Delegated
 {
-	<_Delegate_> _Delegate_ unwrapAs(Class<_Delegate_> delegate);
+	<_Delegate_> _Delegate_ getDelegate();
 }

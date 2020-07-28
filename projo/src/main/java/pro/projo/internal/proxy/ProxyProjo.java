@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,9 +15,12 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
+import java.util.ArrayList;
+import java.util.List;
 import pro.projo.Projo;
 import pro.projo.internal.ProjoObject;
 import static java.lang.reflect.Proxy.newProxyInstance;
+import static java.util.Arrays.asList;
 
 /**
 * {@link ProxyProjo} is Projo's rather inefficient default implementation based on Java proxies.
@@ -42,12 +45,13 @@ public class ProxyProjo extends Projo
     }
 
     @Override
-    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type)
+    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, Class<?>... additionalInterfaces)
     {
-        Class<?>[] interfaces = {type, ProjoObject.class};
+        List<Class<?>> interfaces = new ArrayList<Class<?>>(asList(type, ProjoObject.class));
+        interfaces.addAll(asList(additionalInterfaces));
         ProxyProjoInvocationHandler<_Artifact_> handler = getHandler(type);
         @SuppressWarnings("unchecked")
-        _Artifact_ instance = (_Artifact_)newProxyInstance(getClassLoader(), interfaces, handler);
+        _Artifact_ instance = (_Artifact_)newProxyInstance(getClassLoader(), interfaces.toArray(Class<?>[]::new), handler);
         return handler.initialize(instance);
     }
 }

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import pro.projo.Mapping;
 import pro.projo.Projo;
 import pro.projo.internal.Default;
 import pro.projo.internal.ProjoHandler;
@@ -55,7 +56,7 @@ public class RuntimeCodeGenerationProjo extends Projo
     }
 
     @Override
-    public <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type)
+    public <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type, Class<?>... additionalInterfaces)
     {
         @SuppressWarnings("unchecked")
         RuntimeCodeGenerationHandler<_Artifact_> projoHandler = (RuntimeCodeGenerationHandler<_Artifact_>)handler;
@@ -128,6 +129,13 @@ public class RuntimeCodeGenerationProjo extends Projo
                         throw new RuntimeException("Mismatch: " + getters.length + " getters, " + values.length + " values");
                     }
                 };
+            }
+
+            @Override
+            public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate, Mapping mapping)
+            {
+                // TODO
+                return null;
             }
         };
     }

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,7 +24,7 @@ import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
 * This class is at the same time a completely valid Java class and a valid Apache Velocity template (which is why
 * the specific definition of its template references may appear a little funky at first glance).
 *#
-* The {@link pro.projo.${template}.Factory} interface defines Projo's generic factory for objects with $n field$s.
+* This interface defines Projo's generic factory for objects with $n field$s.
 *#*
 * @param <$AdditionalTypeParameters> placeholder for type parameters 2 to n
 *#

@@ -186,6 +186,7 @@ public class Numbers<_From_ extends Number, _To_ extends Number>
     * Returns a cast from of the given {@link Number}.
     *
     * @param number the number to be cast
+    * @param <_Numeric_> the type of the number to be cast
     * @return a cast object
     **/
     public <_Numeric_ extends Number> Cast cast(_Numeric_ number)

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,7 @@
 package pro.projo.internal;
 
 import java.util.function.Function;
+import pro.projo.Mapping;
 
 /**
 * The {@link ProjoHandler} and its nested member classes {@link ProjoHandler.ProjoInitializer ProjoInitializer} and
@@ -68,9 +69,10 @@ public abstract class ProjoHandler<_Artifact_>
         * Creates a {@link ProjoMembers} object based on a delegate object.
         *
         * @param delegate the delegate object
+        * @param mapping the type mapping to be used for delegation
         * @return the {@link ProjoMembers}
         **/
-        public abstract ProjoMembers delegate(Object delegate);
+        public abstract ProjoMembers delegate(Object delegate, Mapping mapping);
     }
 
     /**

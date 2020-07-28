@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2020 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,24 +15,19 @@
 //                                                                          //
 package pro.projo;
 
-import java.util.function.Function;
+import java.math.BigInteger;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
-public interface Builder<_Artifact_>
+public class MappingTest implements AbstractTypeMappingTest
 {
-    /**
-    * Adds a new property to the build process.
-    *
-    * @param property the property's getter method
-    * @param value the property value
-    * @param <_Property_> the property type
-    * @return a new {@link Builder} that includes new property
-    **/
-    <_Property_> Builder<_Artifact_> with(Function<_Artifact_, _Property_> property, _Property_ value);
-
-    /**
-    * Instantiates the object based on the {@link Builder}'s current description.
-    *
-    * @return the new object
-    **/
-    _Artifact_ build();
+    @Test
+    public void createSimpleMapping()
+    {
+        Mapping mapping = Projo.mapping()
+            .map(Integer.class).to(BigInteger.class)
+            .map(String.class).to(java.lang.String.class);
+        assertEquals(BigInteger.class, mapping.getDelegate(Integer.class));
+        assertEquals(java.lang.String.class, mapping.getDelegate(String.class));
+    }
 }

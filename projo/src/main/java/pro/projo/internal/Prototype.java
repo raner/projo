@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,15 +29,18 @@ import pro.projo.Projo;
 public interface Prototype<_Artifact_>
 {
     /**
+    * Returns the nominal interface type of the object.
     * @return the object type
     **/
     public Class<_Artifact_> type();
 
     /**
+    * Creates a {@link ProjoHandler.ProjoInitializer}.
+    * @param additionalInterfaces additional interfaces (if any) that should be implemented by the Projo object
     * @return an {@link ProjoHandler.ProjoInitializer Initializer} that creates a new Projo object
     **/
-    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize()
+    public default ProjoHandler<_Artifact_>.ProjoInitializer initialize(Class<?>... additionalInterfaces)
     {
-        return Projo.getImplementation().initializer(type());
+        return Projo.getImplementation().initializer(type(), additionalInterfaces);
     }
 }
