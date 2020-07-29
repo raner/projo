@@ -51,7 +51,7 @@ public class ProxyProjo extends Projo
         interfaces.addAll(asList(additionalInterfaces));
         ProxyProjoInvocationHandler<_Artifact_> handler = getHandler(type);
         @SuppressWarnings("unchecked")
-        _Artifact_ instance = (_Artifact_)newProxyInstance(getClassLoader(), interfaces.toArray(Class<?>[]::new), handler);
+        _Artifact_ instance = (_Artifact_)newProxyInstance(getClassLoader(), interfaces.toArray(new Class<?>[] {}), handler);
         return handler.initialize(instance);
     }
 }
