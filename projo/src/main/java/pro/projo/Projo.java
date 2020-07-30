@@ -17,9 +17,17 @@ package pro.projo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -32,6 +40,7 @@ import pro.projo.internal.ProjoObject;
 import pro.projo.utilities.MethodFunctionConverter;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
 /**
@@ -216,6 +225,55 @@ public abstract class Projo
         @SuppressWarnings("unchecked")
         _Delegate_ delegate = (_Delegate_)((Delegated)artifact).getDelegate();
         return delegate;
+    }
+
+    /**
+    * Finds a type's "self" type parameter (if present). A "self" type parameter is a type variable
+    * that is recursively bound to the owning type itself. For example, in the following interface,
+    * {@code S} is the type's "self" type variable:
+    * <pre>
+    * interface Pair&lt;S extends Pair&lt;S, L, R&gt;, L, R&gt;
+    * </pre>
+    * "Self" type variables can occur at any position, but are typically either the first or the last
+    * type parameter.
+    *
+    * @param type the {@link Class} whose self type variable is to be identified
+    * @return an {@link Optional} {@link TypeVariable}, or {@link Optional#empty()} if no self type
+    *         parameter was found
+    **/
+    public static Optional<TypeVariable<?>> getSelfType(Class<?> type)
+    {
+        Stream<TypeVariable<?>> typeParameters = Stream.of(type.getTypeParameters());
+        Stream<Entry<TypeVariable<?>, Type>> upperBounds =
+            typeParameters.flatMap(variable ->
+                Stream.of(variable.getBounds()).map(it -> new SimpleEntry<>(variable, it)));
+        List<TypeVariable<?>> candidates = upperBounds
+            .filter(entry -> isSelfType(entry.getKey(), entry.getValue(), type))
+            .map(Entry::getKey)
+            .collect(toList());
+        return candidates.size() == 1? Optional.of(candidates.get(0)):Optional.empty();
+    }
+
+    /**
+    * Determines if given type bounds describe a type's "self" type variable.
+    * For example, given the bounded type variable {@code S extends Example<S>} of the raw type
+    * {@code Example}, {@link TypeVariable} {@code S} would be passed as the first parameter,
+    * {@code Example<S>} as the second parameter, and {@code Example} as the third parameter. The
+    * result for this example would be {@code true}, because (1) {@code Example<S>} is a
+    * {@link ParameterizedType}, (2) the raw type of {@code Example<S>} is {@code Example}, and
+    * (3) the type arguments of {@code Example<S>} do contain the type variable {@code S}.
+    *
+    * @param parameter the type variable
+    * @param bounds the type variables's upper bounds to be checked (could be the only one or one of many)
+    * @param selfTypeCandidate the raw type 
+    * @return {@code true} if and only if the bounds' raw type is the same raw type as provided and
+    * the bounds' list of type arguments contains the provided type variable
+    **/
+    public static boolean isSelfType(TypeVariable<?> parameter, Type bounds, Class<?> selfTypeCandidate)
+    {
+        return bounds instanceof ParameterizedType
+            && ((ParameterizedType)bounds).getRawType().equals(selfTypeCandidate)
+            && Arrays.asList(((ParameterizedType)bounds).getActualTypeArguments()).contains(parameter);
     }
 
     /**

@@ -15,6 +15,8 @@
 //                                                                          //
 package pro.projo;
 
+import java.util.Optional;
+
 /**
 * {@link AbstractTypeMappingTest} provides a set of test classes for testing
 * type mapping and delegation.
@@ -66,6 +68,7 @@ public interface AbstractTypeMappingTest
     {
         S add(S other);
         S multiply(S other);
+        Optional<S> subtract(S other); // TODO
     }
 
     public static interface Natural<S extends Natural<S>> extends Comparable<S>, Number<S>

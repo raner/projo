@@ -17,6 +17,9 @@ package pro.projo.internal.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -178,6 +182,9 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
     InvocationHandler delegateInvoker(Mapping mapping)
     {
+        // TODO: ensure that self type variables are handled correctly when different classes use
+        //       different variable names
+        //
         return (Object proxy, Method method, Object... arguments) ->
         {
             // If this is call to the getDelegate() method, return the delegate immediately:
@@ -194,7 +201,12 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
             // Find the corresponding method in the delegate type (e.g., BigInteger):
             //
-            Stream<Class<?>> parameterTypes = Stream.of(method.getParameterTypes());
+            Class<?> declaringClass = method.getDeclaringClass();
+            Optional<TypeVariable<?>> self = Projo.getSelfType(declaringClass);
+            Type primaryProxyType = proxy.getClass().getGenericInterfaces()[0];
+            Stream<Type> genericParameterTypes = Stream.of(method.getGenericParameterTypes());
+            Stream<Class<?>> parameterTypes = genericParameterTypes
+                .map(parameter -> getEffectiveType(parameter, self, primaryProxyType));
             Stream<Class<?>> delegateParameterTypes = parameterTypes.map(mapping::getDelegate);
             Method delegateMethod = delegateType.getMethod(method.getName(), delegateParameterTypes.toArray(Class[]::new));
 
@@ -208,9 +220,23 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
             // Convert the result back to the synthetic type:
             //
-            Object wrappedResult = Projo.delegate(method.getReturnType(), result, mapping);
+            Class<?> returnType = getEffectiveType(method.getGenericReturnType(), self, primaryProxyType);
+            Object wrappedResult = Projo.delegate(returnType, result, mapping);
             return wrappedResult;
         };
+    }
+
+    Class<?> getEffectiveType(Type type, Optional<TypeVariable<?>> self, Type substitute)
+    {
+        if (self.isPresent() && self.get().equals(type))
+        {
+            return (Class<?>)substitute;
+        }
+        if (type instanceof ParameterizedType)
+        {
+            return (Class<?>)((ParameterizedType)type).getRawType();
+        }
+        return (Class<?>)type;
     }
 
     public ProxyProjoInvocationHandler(Class<_Artifact_> type)

@@ -22,7 +22,18 @@ import static org.junit.Assert.assertEquals;
 public class DelegateTest implements AbstractTypeMappingTest
 {
     @Test
-    public void testIntegers()
+    public void testIntegerAdd()
+    {
+        Mapping mapping = Projo.mapping().map(IntegerImpl.class).to(BigInteger.class);
+        IntegerImpl one = Projo.delegate(IntegerImpl.class, BigInteger.ONE, mapping);
+        IntegerImpl ten = Projo.delegate(IntegerImpl.class, BigInteger.TEN, mapping);
+        IntegerImpl eleven = ten.add(one);
+        BigInteger result = Projo.unwrap(eleven);
+        assertEquals(new BigInteger("11"), result);
+    }
+
+    @Test
+    public void testIntegerSubtract()
     {
         Mapping mapping = Projo.mapping().map(Integer.class).to(BigInteger.class);
         Integer<?> one = Projo.delegate(Integer.class, BigInteger.ONE, mapping);
