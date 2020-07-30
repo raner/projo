@@ -19,7 +19,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
 * The {@link SelfTypeTest} verifies {@link Projo} methods that are related to the concept
@@ -99,20 +99,20 @@ public class SelfTypeTest implements AbstractTypeMappingTest
     public void testNonrecursiveTypeParametersAreNotConsideredSelfTypes()
     {
         Optional<TypeVariable<?>> self = Projo.getSelfType(Map4.class);
-        assertTrue(self.isEmpty());
+        assertFalse(self.isPresent());
     }
 
     @Test
     public void testNoParameterExtendsTheTypeItselfNotConsideredSelfType()
     {
         Optional<TypeVariable<?>> self = Projo.getSelfType(Map5.class);
-        assertTrue(self.isEmpty());
+        assertFalse(self.isPresent());
     }
 
     @Test
     public void testTypeWithoutParametersCannotHaveASelfTypeVariable()
     {
         Optional<TypeVariable<?>> self = Projo.getSelfType(Map6.class);
-        assertTrue(self.isEmpty());
+        assertFalse(self.isPresent());
     }
 }
