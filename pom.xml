@@ -124,6 +124,27 @@
     </executions>
    </plugin>
    <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>animal-sniffer-maven-plugin</artifactId>
+    <version>1.19</version>
+    <configuration>
+     <signature>
+      <groupId>org.codehaus.mojo.signature</groupId>
+      <artifactId>java18</artifactId>
+      <version>1.0</version>
+     </signature>
+    </configuration>
+    <executions>
+     <execution>
+      <id>animal-sniffer</id>
+      <phase>verify</phase>
+      <goals>
+       <goal>check</goal>
+      </goals>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
     <groupId>org.sonatype.plugins</groupId>
     <artifactId>nexus-staging-maven-plugin</artifactId>
     <version>1.6.7</version>
