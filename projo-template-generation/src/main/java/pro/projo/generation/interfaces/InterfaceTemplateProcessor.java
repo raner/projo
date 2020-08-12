@@ -57,7 +57,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementScanner8;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.tools.JavaFileObject;
+import javax.tools.FileObject;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
@@ -70,6 +70,7 @@ import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
+import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
@@ -88,7 +89,6 @@ import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interfaces;
-
 
 /**
 * The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects source files
@@ -155,7 +155,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 try
                 {
                     String templateClassName = templateClass.getName();
-                    JavaFileObject sourceFile = filer.createSourceFile(className, typeElement);
+                    FileObject sourceFile = createFile(filer, configuration, className, typeElement);
                     String resourceName = "/" + templateClassName.replace('.', '/') + ".java";
                     try (PrintWriter writer = new PrintWriter(sourceFile.openWriter(), true))
                     {
@@ -175,6 +175,20 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 }
             }
         }
+    }
+
+    private FileObject createFile(Filer filer, Configuration configuration, String className, Element typeElement)
+    throws IOException
+    {
+        if (configuration.isDefault(Options::fileExtension))
+        {
+            return filer.createSourceFile(className, typeElement);
+        }
+        Options options = configuration.options();
+        String fileExtension = options.fileExtension();
+        String sourceFileName = className.substring(className.lastIndexOf('.')+1) + fileExtension;
+        String packageName = className.substring(0, className.lastIndexOf('.'));
+        return filer.createResource(options.outputLocation(), packageName, sourceFileName, typeElement);
     }
 
     private <_Annotation_ extends Annotation> List<_Annotation_> getAnnotations(Element packageElement,
@@ -275,6 +289,13 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 public String fullyQualifiedClassName()
                 {
                     return packageName.toString() + '.' + annotation.generate();
+                }
+
+                @Override
+                public Options options()
+                {
+                    Options packageOptions = element.getAnnotation(Options.class);
+                    return packageOptions != null? packageOptions:Configuration.super.options();
                 }
 
                 private String interfaceSignature()

@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.interfaces;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -163,5 +164,13 @@ public class InterfaceTemplateProcessorTest
     	List<String> actual = asList(returnType, parameterType);
     	List<String> expected = asList(methodLevelTypeVariable, methodLevelTypeVariable);
     	assertEquals(expected, actual);
+    }
+
+    @Test
+    public void resourcesWithCustomFileExtensionAreGenerated() throws Exception
+    {
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream file = classLoader.getResourceAsStream("pro/projo/generation/interfaces/test/options/Runnable.kava");
+        assertNotNull(file);
     }
 }
