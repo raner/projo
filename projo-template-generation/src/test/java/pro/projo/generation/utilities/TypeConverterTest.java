@@ -48,6 +48,7 @@ import pro.projo.generation.utilities.expected.test.types.Pending;
 import pro.projo.generation.utilities.expected.test.types.Walkable;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
+import pro.projo.interfaces.annotation.Options;
 import static java.util.Collections.singleton;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -447,6 +448,12 @@ public class TypeConverterTest
             public Map[] map()
             {
                 return map;
+            }
+
+            @Override
+            public Options options()
+            {
+                return Options.class.getPackage().getAnnotation(Options.class);
             }
         };
     }

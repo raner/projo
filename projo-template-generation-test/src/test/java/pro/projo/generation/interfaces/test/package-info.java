@@ -30,10 +30,13 @@
 @Interface(generate="FromOtherPackage", from=UseGeneratedClassFromOtherPackage.class, map=@Map(type=Other.class, to="pro.projo.generation.interfaces.test.additional.Other"))
 @Interface(generate="ExtendedMap", from=Extends.class)
 @Interface(generate="ShadowedTypeVariable", from=ShadowedTypeVariable.class)
+@Interface(generate="Runnable", from=Runnable.class, options=@Options(fileExtension=".kava"))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
+@Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
 package pro.projo.generation.interfaces.test;
 
+import java.math.RoundingMode;
 import java.util.concurrent.Callable;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
@@ -55,6 +58,7 @@ import pro.projo.generation.interfaces.test.classes.additional.Other;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
+import pro.projo.interfaces.annotation.Options;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;

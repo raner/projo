@@ -59,7 +59,12 @@ public interface Configuration
     **/
     default boolean isDefault(Function<Options, ?> option)
     {
-        return option.apply(defaults(null)).equals(option.apply(options()));
+        return isDefault(options(), option);
+    }
+
+    default boolean isDefault(Options options, Function<Options, ?> option)
+    {
+        return option.apply(defaults(null)).equals(option.apply(options));
     }
 
     default Options defaults(PackagePrivate doNotImplementThisMethod)

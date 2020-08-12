@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -34,6 +34,7 @@ import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.interfaces.annotation.Map;
+import pro.projo.interfaces.annotation.Options;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
@@ -99,6 +100,12 @@ public class InterfaceTypeConverterTest
             public Map[] map()
             {
                 return Stream.of(original.map()).map(testableMap).toArray(Map[]::new);
+            }
+
+            @Override
+            public Options options()
+            {
+                return Options.class.getPackage().getAnnotation(Options.class);
             }
         };
         List<Interface> testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).collect(toList());

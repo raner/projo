@@ -273,7 +273,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 .sorted(new DefaultNameComparator())
                 .map(Name::toString)
                 .collect(toList());
-            return new Configuration()
+            return new TemplateConfiguration(packageName, annotation.generate(), element, annotation.options())
             {
                 @Override
                 public Map<String, Object> parameters()
@@ -283,19 +283,6 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     parameters.put("InterfaceTemplate", interfaceSignature());
                     parameters.put("methods", declarations);
                     return parameters;
-                }
-
-                @Override
-                public String fullyQualifiedClassName()
-                {
-                    return packageName.toString() + '.' + annotation.generate();
-                }
-
-                @Override
-                public Options options()
-                {
-                    Options packageOptions = element.getAnnotation(Options.class);
-                    return packageOptions != null? packageOptions:Configuration.super.options();
                 }
 
                 private String interfaceSignature()
@@ -344,7 +331,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 }
             };
             typeElement.accept(scanner, values);
-            return new Configuration()
+            return new TemplateConfiguration(packageName, annotation.generate(), packageElement, annotation.options())
             {
                 @Override
                 public Map<String, Object> parameters()
@@ -354,12 +341,6 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     parameters.put("EnumTemplate", annotation.generate());
                     parameters.put("values", values);
                     return parameters;
-                }
-                
-                @Override
-                public String fullyQualifiedClassName()
-                {
-                    return packageName.toString() + '.' + annotation.generate();
                 }
             };
         };
