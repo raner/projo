@@ -15,6 +15,7 @@
 //                                                                          //
 @Options(fileExtension=".kava", outputLocation=CLASS_OUTPUT)
 @Interface(generate="Runnable", from=Runnable.class)
+@Interface(generate="AutoCloseable", from=AutoCloseable.class, options=@Options(fileExtension=".lava"))
 package pro.projo.generation.interfaces.test.options;
 
 import pro.projo.interfaces.annotation.Interface;
@@ -23,7 +24,7 @@ import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
 /**
 * This {@code package-info} class contains additional annotations that are tested by the
-* {@link pro.projo.generation.interfaces.InterfaceTemplateProcessorTest} class.
+* option-related tests in {@link pro.projo.generation.interfaces.InterfaceTemplateProcessorTest}.
 *
 * <b>NOTE:</b> generating files in the {@link StandardLocation#CLASS_OUTPUT} location
 * (instead of {@link StandardLocation#SOURCE_OUTPUT}) is the only option that allows for

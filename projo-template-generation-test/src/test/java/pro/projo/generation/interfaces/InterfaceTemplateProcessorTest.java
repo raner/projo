@@ -173,4 +173,12 @@ public class InterfaceTemplateProcessorTest
         InputStream file = classLoader.getResourceAsStream("pro/projo/generation/interfaces/test/options/Runnable.kava");
         assertNotNull(file);
     }
+
+    @Test
+    public void annotationLevelOptionsOverridePackageLevelOptions() throws Exception
+    {
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream file = classLoader.getResourceAsStream("pro/projo/generation/interfaces/test/options/AutoCloseable.lava");
+        assertNotNull(file);
+    }
 }

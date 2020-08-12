@@ -13,37 +13,28 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
-
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
+package pro.projo.generation.interfaces.test;
+/* */
+import javax.annotation.Generated;
+/* */
 /**
-* The {@link Enum} annotation captures the necessary information for generating an {@code enum}
-* from an existing an existing one.
 *
-* @author Mirko Raner
+* This enum was extracted from java.math.RoundingMode.
+*
 **/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-@Repeatable(Enums.class)
-public @interface Enum
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public enum RoundingMode
 {
-    /**
-    * @return the simple name of the enum to be generated
-    **/
-    String generate();
-
-    /**
-    * @return the original {@code enum} from which the new {@code enum} will be generated
-    **/
-    Class<? extends java.lang.Enum<?>> from();
-
-    /**
-    * @return additional code generation options for this enum
-    **/
-    Options options() default @Options;
+/* */
+    UP, 
+    DOWN, 
+    CEILING, 
+    FLOOR, 
+    HALF_UP, 
+    HALF_DOWN, 
+    HALF_EVEN, 
+    UNNECESSARY
+/* */
 }
