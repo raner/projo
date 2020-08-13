@@ -108,8 +108,11 @@ public class TypeConverter implements TypeMirrorUtilities
             String name = element.toString();
             return typeRenames.getOrDefault(name, name);
         }
-        if (element instanceof NoType
-        || (element instanceof PrimitiveType))
+        if (element instanceof PrimitiveType)
+        {
+            return shorten(generates.getOrDefault(element.toString(), element.toString()));
+        }
+        if (element instanceof NoType)
         {
             return element.toString();
         }

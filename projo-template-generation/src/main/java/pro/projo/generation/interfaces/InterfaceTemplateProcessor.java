@@ -72,8 +72,10 @@ import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -105,6 +107,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     final static String Enums = "pro.projo.interfaces.annotation.Enums";
     final static String Interface = "pro.projo.interfaces.annotation.Interface";
     final static String Interfaces = "pro.projo.interfaces.annotation.Interfaces";
+    final static Set<String> primitives =
+        unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean")));
+    final static Predicate<String> notPrimitive = not(primitives::contains);
 
     private Filer filer;
     private Types types;
@@ -267,6 +272,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)
+                .filter(notPrimitive)
                 .filter(notSamePackage)
                 .filter(name -> !name.startsWith("java.lang."))
                 .map(pro.projo.generation.utilities.Name::new)
@@ -426,5 +432,10 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     TypeElement typeElement(TypeMirror type)
     {
         return elements.getTypeElement(type.toString());
+    }
+
+    private static <T> Predicate<T> not(Predicate<T> target)
+    {
+        return target.negate();
     }
 }
