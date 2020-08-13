@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -58,7 +57,7 @@ public class TypeConverter implements TypeMirrorUtilities
         this.types = types;
         this.shortener = shortener;
         this.targetPackage = targetPackage;
-        Function<Source, String> keyMapper = type -> getDeclaredType(type::from).toString();
+        Function<Source, String> keyMapper = type -> getTypeMirror(type::from).toString();
         Function<Source, String> valueMapper = type ->
             qualify(getMap(type).getOrDefault(getTypeMirror(type::from), type.generate()));
         generates = Stream.of(primary)
@@ -146,11 +145,6 @@ public class TypeConverter implements TypeMirrorUtilities
     public Set<String> getImports()
     {
         return imports;
-    }
-
-    private DeclaredType getDeclaredType(Supplier<Class<?>> type)
-    {
-        return (DeclaredType)getTypeMirror(type);
     }
 
     private <_Type_> _Type_ rejectDuplicates(_Type_ oldValue, _Type_ newValue)

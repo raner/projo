@@ -240,21 +240,28 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             TypeElement type = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
             List<? extends TypeParameterElement> typeParameters;
-            typeParameters = modifiers.contains(STATIC)? emptyList():type.getTypeParameters();
-            ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
+            if (type != null) // type does not represent a primitive
             {
-                @Override
-                public Void visitExecutable(ExecutableElement method, List<ExecutableElement> executables)
+                typeParameters = modifiers.contains(STATIC)? emptyList():type.getTypeParameters();
+                ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
                 {
-                    if (type.equals(method.getEnclosingElement())
-                    && (method.getModifiers().containsAll(modifiers)))
+                    @Override
+                    public Void visitExecutable(ExecutableElement method, List<ExecutableElement> executables)
                     {
-                        executables.add(method);
+                        if (type.equals(method.getEnclosingElement())
+                        && (method.getModifiers().containsAll(modifiers)))
+                        {
+                            executables.add(method);
+                        }
+                        return super.visitExecutable(method, executables);
                     }
-                    return super.visitExecutable(method, executables);
-                }
-            };
-            type.accept(scanner, methods);
+                };
+                type.accept(scanner, methods);
+            }
+            else
+            {
+                typeParameters = emptyList();
+            }
             PackageShortener shortener = new PackageShortener();
 
             // Include both interfaces and enums in the TypeConverter, so that references to enums from
@@ -266,9 +273,17 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter, typeParameters);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
-            TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
-            String supertypes = modifiers.contains(STATIC)?
-                "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
+            String supertypes;
+            if (type != null)
+            {
+                TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
+                supertypes = modifiers.contains(STATIC)?
+                        "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
+            }
+            else
+            {
+                supertypes = "";
+            }
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)

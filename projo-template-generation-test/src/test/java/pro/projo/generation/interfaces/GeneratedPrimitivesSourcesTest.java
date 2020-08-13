@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2020 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,18 +24,18 @@ import org.junit.runners.Parameterized.Parameters;
 import static java.util.stream.Collectors.toList;
 
 /**
-* {@link GeneratedSourcesTest} is a parameterized test that checks that all files
-* in {@code src/test/resources/pro/projo/generation/interfaces/expected} match their
+* {@link GeneratedPrimitivesSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/primitives/expected} match their
 * corresponding generated files.
 *
 * @author Mirko Raner
 **/
-public class GeneratedSourcesTest extends AbstractGeneratedSourcesTest
+public class GeneratedPrimitivesSourcesTest extends AbstractGeneratedSourcesTest
 {
-    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/{0}");
-    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/expected/{0}");
+    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/primitives/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/primitives/expected/{0}");
 
-    public GeneratedSourcesTest()
+    public GeneratedPrimitivesSourcesTest()
     {
         super(comparison, generated);
     }
