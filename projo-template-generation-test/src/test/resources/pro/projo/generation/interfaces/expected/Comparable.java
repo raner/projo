@@ -15,26 +15,19 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test;
 /* */
-import java.util.stream.IntStream;
 import javax.annotation.Generated;
 /* */
 /**
 *
-* This interface was extracted from java.lang.CharSequence.
+* This interface was extracted from java.lang.Comparable.
 *
 **/
 /* */
 @Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
 /* */
-public interface CharSequence
+public interface Comparable<T>
 {
 /* */
-    Integer length();
-    char charAt(Integer arg0);
-    CharSequence subSequence(Integer arg0, Integer arg1);
-    String toString();
-    IntStream chars();
-    IntStream codePoints();
-    Integer compare(CharSequence cs1, CharSequence cs2);
+    Integer compareTo(T arg0);
 /* */
 }

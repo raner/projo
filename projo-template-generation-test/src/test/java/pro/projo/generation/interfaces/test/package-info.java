@@ -32,7 +32,7 @@
 @Interface(generate="ShadowedTypeVariable", from=ShadowedTypeVariable.class)
 @Interface(generate="Runnable", from=Runnable.class, options=@Options(fileExtension=".kava"))
 @Interface(generate="Integer", from=Number.class, modifiers={PUBLIC})
-@Interface(generate="CharSequence", from=CharSequence.class, map=@Map(type=int.class, to="Integer"))
+@Interface(generate="Comparable", from=Comparable.class, map=@Map(type=int.class, to="Integer"))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
