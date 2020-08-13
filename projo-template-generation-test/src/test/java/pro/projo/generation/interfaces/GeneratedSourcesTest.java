@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -43,13 +43,13 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class GeneratedSourcesTest
 {
-    Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/{0}");
-    Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/expected/{0}");
+    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/expected/{0}");
 
     @Parameters(name="{0}")
     public static Collection<Object[]> testSources()
     {
-        File expected = new File("src/test/resources/pro/projo/generation/interfaces/expected");
+        File expected = new File(comparison.format(new Object[] {""}));
         return Stream.of(expected.list()).map(file -> new Object[] {file}).collect(toList());
     }
 
@@ -60,8 +60,8 @@ public class GeneratedSourcesTest
     public void test() throws Exception
     {
         Object[] file = {className};
-        String expected = read(new File(this.comparison.format(file)));
-        String actual = read(new File(this.generated.format(file)));
+        String expected = read(new File(comparison.format(file)));
+        String actual = read(new File(generated.format(file)));
         assertEquals(expected, actual);
     }
 
