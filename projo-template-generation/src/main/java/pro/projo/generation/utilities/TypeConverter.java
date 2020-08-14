@@ -83,7 +83,7 @@ public class TypeConverter implements TypeMirrorUtilities
             DeclaredType declaredType = getRawType(element);
             List<? extends TypeMirror> typeArguments = ((DeclaredType)element).getTypeArguments();
             String string = generates.getOrDefault(declaredType.toString(), declaredType.toString());
-            String[] arguments = typeArguments.stream().map(this::convert).toArray(String[]::new);
+            String[] arguments = typeArguments.stream().map(type -> convert(type, typeRenames)).toArray(String[]::new);
             boolean hasArguments = arguments.length > 0;
             return shorten(string) + Stream.of(arguments).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
         }
