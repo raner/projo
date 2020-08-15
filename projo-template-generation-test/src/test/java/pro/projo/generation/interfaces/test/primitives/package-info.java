@@ -16,11 +16,15 @@
 @Interface(generate="Double", from=double.class)
 @Interface(generate="DoubleFunction", from=DoubleFunction.class)
 @Interface(generate="DoublePredicate", from=DoublePredicate.class)
+@Interface(generate="CharSequence", from=CharSequence.class)
+@Interface(generate="Appendable", from=Appendable.class, options=@Options(skip=@Unmapped(includingPrimitives=true)))
 package pro.projo.generation.interfaces.test.primitives;
 
 import java.util.function.DoubleFunction;
 import java.util.function.DoublePredicate;
 import pro.projo.interfaces.annotation.Interface;
+import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Unmapped;
 
 /**
 * This {@code package-info} class contains additional annotations that are used by the

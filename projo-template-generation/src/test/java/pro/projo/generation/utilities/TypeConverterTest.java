@@ -115,7 +115,7 @@ public class TypeConverterTest
     public void convertSimpleTypeWithoutTranslation()
     {
         TypeElement closeable = typeElementFactory.apply(AutoCloseable.class);
-        String element = converter.convert(closeable.asType());
+        String element = converter.convert(closeable.asType()).signature();
         String expected = shorten("java.lang.AutoCloseable");
         assertEquals(expected, element);
     }
@@ -128,7 +128,7 @@ public class TypeConverterTest
     {
         TypeElement runnable = typeElementFactory.apply(Runnable.class);
         String expected = shorten(Walkable.class.getName());
-        String element = converter.convert(runnable.asType());
+        String element = converter.convert(runnable.asType()).signature();
         assertEquals(expected, element);
     }
 
@@ -139,7 +139,7 @@ public class TypeConverterTest
     public void convertParameterizedTypeWithoutTranslation()
     {
         DeclaredType callable = (DeclaredType)typeElementFactory.apply(Callable.class).asType();
-        String element = converter.convert(callable);
+        String element = converter.convert(callable).signature();
         String expected = shorten(Callable.class.getName()) + "<V>";
         assertEquals(expected, element);
     }
@@ -155,7 +155,7 @@ public class TypeConverterTest
             abstract Callable<?> method();
         }
         TypeMirror type = typeMirrorFactory.apply(Class.class.getDeclaredMethod("method").getGenericReturnType());
-        String element = converter.convert(type);
+        String element = converter.convert(type).signature();
         String expected = shorten(Callable.class.getName()) + "<?>";
         assertEquals(expected, element);
     }
@@ -167,7 +167,7 @@ public class TypeConverterTest
     public void convertParameterizedTypeWithTranslation()
     {
         DeclaredType future = (DeclaredType)typeElementFactory.apply(Future.class).asType();
-        String element = converter.convert(future);
+        String element = converter.convert(future).signature();
         String expected = shorten(Pending.class.getName()) + "<V>";
         assertEquals(expected, element);
     }
@@ -182,7 +182,7 @@ public class TypeConverterTest
         TypeElement callable = typeElementFactory.apply(Callable.class);
         TypeMirror runnable = typeMirrorFactory.apply(Runnable.class);
         DeclaredType callableOfRunnable = types.getDeclaredType(callable, runnable);
-        String element = converter.convert(callableOfRunnable);
+        String element = converter.convert(callableOfRunnable).signature();
         String expected = shorten(Callable.class.getName()) + "<" + shorten(Walkable.class.getName()) + ">";
         assertEquals(expected, element);
     }
@@ -199,7 +199,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfRunnable = types.getDeclaredType(typeCallable, runnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfRunnable = types.getDeclaredType(typeFuture, typeCallableOfRunnable);
-        String result = converter.convert(typeFutureOfCallableOfRunnable);
+        String result = converter.convert(typeFutureOfCallableOfRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<" + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -217,7 +217,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfExtendsRunnable = types.getDeclaredType(typeCallable, extendsRunnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfExtendsRunnable = types.getDeclaredType(typeFuture, typeCallableOfExtendsRunnable);
-        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable);
+        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<? extends " + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -235,7 +235,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfSuperRunnable = types.getDeclaredType(typeCallable, superRunnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfExtendsRunnable = types.getDeclaredType(typeFuture, typeCallableOfSuperRunnable);
-        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable);
+        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<? super " + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -253,7 +253,7 @@ public class TypeConverterTest
         WildcardType typeExtendsCallableOfRunnable = types.getWildcardType(typeCallableOfRunnable, null);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfExtendsCallableOfRunnable = types.getDeclaredType(typeFuture, typeExtendsCallableOfRunnable);
-        String result = converter.convert(typeFutureOfExtendsCallableOfRunnable).toString();
+        String result = converter.convert(typeFutureOfExtendsCallableOfRunnable).signature();
         String expected = shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<? extends " + shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Walkable") + ">>";
@@ -275,7 +275,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<? extends T>>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -293,7 +293,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Walkable")
             + "[]>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -311,7 +311,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<?>[]>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -323,7 +323,7 @@ public class TypeConverterTest
     {
         TypeMirror type = typeMirrorFactory.apply(int.class);
         TypeMirror expected = typeMirrorFactory.apply(int.class);
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -335,7 +335,7 @@ public class TypeConverterTest
     {
         TypeMirror type = types.getNoType(TypeKind.VOID);
         TypeMirror expected = types.getNoType(TypeKind.VOID);
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 

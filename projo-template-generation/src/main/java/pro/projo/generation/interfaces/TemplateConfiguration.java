@@ -16,10 +16,12 @@
 package pro.projo.generation.interfaces;
 
 import java.lang.annotation.Annotation;
+import java.util.function.Function;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.tools.StandardLocation;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Unmapped;
 import pro.projo.template.annotation.Configuration;
 
 /**
@@ -74,17 +76,26 @@ public abstract class TemplateConfiguration implements Configuration
             @Override
             public String fileExtension()
             {
-                return isDefault(annotationLevelOptions, Options::fileExtension)?
-                    packageLevelOptions.fileExtension():
-                    annotationLevelOptions.fileExtension();
+                return option(Options::fileExtension);
             }
 
             @Override
             public StandardLocation outputLocation()
             {
-                return isDefault(annotationLevelOptions, Options::outputLocation)?
-                    packageLevelOptions.outputLocation():
-                    annotationLevelOptions.outputLocation();
+                return option(Options::outputLocation);
+            }
+
+            @Override
+            public Unmapped skip()
+            {
+                return option(Options::skip);
+            }
+
+            private <_Option_> _Option_ option(Function<Options, _Option_> option)
+            {
+                return isDefault(annotationLevelOptions, option)?
+                    option.apply(packageLevelOptions):
+                    option.apply(annotationLevelOptions);
             }
         };
     }

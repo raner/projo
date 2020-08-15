@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -18,6 +18,7 @@ package pro.projo.generation.utilities;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
+import pro.projo.interfaces.annotation.Options;
 
 /**
 * As annotations in Java do not support inheritance, the {@link Source} interface acts as a unifying
@@ -33,6 +34,8 @@ public interface Source
     Map[] map();
 
     String generate();
+
+    Options options();
 
     public static class InterfaceSource implements Source
     {
@@ -59,6 +62,12 @@ public interface Source
         public String generate()
         {
             return source.generate();
+        }
+
+        @Override
+        public Options options()
+        {
+            return source.options();
         }
     }
 
@@ -87,6 +96,12 @@ public interface Source
         public String generate()
         {
             return source.generate();
+        }
+
+        @Override
+        public Options options()
+        {
+            return source.options();
         }
     }
 }

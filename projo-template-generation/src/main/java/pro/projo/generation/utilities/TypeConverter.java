@@ -16,6 +16,7 @@
 package pro.projo.generation.utilities;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,64 +34,109 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
-import pro.projo.interfaces.annotation.Interface;
+import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Unmapped;
+import pro.projo.template.annotation.Configuration;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 /**
 * The {@link TypeConverter} class converts types according to the mappings specified
-* in a set of {@link Interface}s.
+* in a set of {@link pro.projo.interfaces.annotation.Interface}s. An individual {@link TypeConverter}
+* will be created for each interface being processed, but the mappings for all other interfaces in the
+* same package are passed along as well.
 *
 * @author Mirko Raner
 **/
 public class TypeConverter implements TypeMirrorUtilities
 {
+    public static class Type
+    {
+        private final String signature;
+        private final boolean unmapped;
+
+        Type(String signature)
+        {
+            this(signature, false);
+        }
+
+        Type(String signature, boolean unmapped)
+        {
+            this.signature = signature;
+            this.unmapped = unmapped;
+        }
+
+        public String signature()
+        {
+            return signature;
+        }
+
+        public boolean unmapped()
+        {
+            return unmapped;
+        }
+    }
+
+    public final static Set<String> primitives =
+        unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean")));
+
     private Types types;
+    private Options options;
     private Name targetPackage;
     private PackageShortener shortener;
     private Map<String, String> generates;
     private Set<String> imports;
 
+    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources)
+    {
+        this(types, shortener, targetPackage, sources, null);
+    }
+
     public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources,
-    Source... primary)
+    Source primary)
     {
         this.types = types;
         this.shortener = shortener;
         this.targetPackage = targetPackage;
+        options = primary != null? primary.options():Configuration.defaults(); // TODO: merge with package-wide options
         Function<Source, String> keyMapper = type -> getTypeMirror(type::from).toString();
         Function<Source, String> valueMapper = type ->
             qualify(getMap(type).getOrDefault(getTypeMirror(type::from), type.generate()));
-        generates = Stream.of(primary)
+        generates = primary == null? new HashMap<>():Stream.of(primary)
             .flatMap(source -> getMap(source).entrySet().stream())
             .collect(toMap(entry -> entry.getKey().toString(), entry -> qualify(entry.getValue())));
         imports = new HashSet<>(generates.values());
         sources.collect(toMap(keyMapper, valueMapper, this::rejectDuplicates, () -> generates));
     }
 
-    public String convert(TypeMirror element)
+    public Type convert(TypeMirror element)
     {
-        return convert(element, Collections.emptyMap());
+        return convert(element, Collections.emptyMap(), false);
     }
 
-    public String convert(TypeMirror element, Map<String, String> typeRenames)
+    public Type convert(TypeMirror element, Map<String, String> typeRenames, final boolean unmapped)
     {
         if (element == null)
         {
-            return ""; // to deal with absent extends/super bounds
+            return new Type("", unmapped); // to deal with absent extends/super bounds
         }
         if (element instanceof DeclaredType)
         {
             DeclaredType declaredType = getRawType(element);
             List<? extends TypeMirror> typeArguments = ((DeclaredType)element).getTypeArguments();
-            String string = generates.getOrDefault(declaredType.toString(), declaredType.toString());
-            String[] arguments = typeArguments.stream().map(type -> convert(type, typeRenames)).toArray(String[]::new);
+            Type mainType = getOrDefault(declaredType.toString());
+            Type[] arguments = typeArguments.stream().map(type -> convert(type, typeRenames, unmapped)).toArray(Type[]::new);
             boolean hasArguments = arguments.length > 0;
-            return shorten(string) + Stream.of(arguments).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
+            String signature = shorten(mainType.signature)
+                + Stream.of(arguments).map(Type::signature).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
+            return new Type(signature, unmapped || Stream.of(arguments).map(Type::unmapped).reduce(false, Boolean::logicalOr));
         }
         if (element instanceof ArrayType)
         {
-            ArrayType arrayType = (ArrayType)element;
-            return convert(arrayType.getComponentType()) + "[]";
+            Type arrayType = convert(((ArrayType)element).getComponentType(), typeRenames, unmapped);
+            return new Type(arrayType.signature + "[]", unmapped || arrayType.unmapped);
         }
         if (element instanceof WildcardType)
         {
@@ -98,29 +144,41 @@ public class TypeConverter implements TypeMirrorUtilities
             TypeMirror extendsBound = wildcard.getExtendsBound();
             TypeMirror superBound = wildcard.getSuperBound();
             String bounds = "?";
-            bounds += extendsBound != null? " extends " + convert(extendsBound) : "";
-            bounds += superBound != null? " super " + convert(superBound) : "";
-            return bounds;
+            boolean unmappedWildcard = unmapped;
+            if (extendsBound != null)
+            {
+                Type extendsType = convert(extendsBound, typeRenames, unmapped);
+                bounds += " extends " + extendsType.signature;
+                unmappedWildcard |= extendsType.unmapped;
+            }
+            if (superBound != null)
+            {
+                Type superType = convert(superBound, typeRenames, unmapped);
+                bounds += " super " + superType.signature;
+                unmappedWildcard |= superType.unmapped;
+            }
+            return new Type(bounds, unmappedWildcard);
         }
         if (element instanceof TypeVariable)
         {
             String name = element.toString();
-            return typeRenames.getOrDefault(name, name);
+            return new Type(typeRenames.getOrDefault(name, name), unmapped);
         }
         if (element instanceof PrimitiveType)
         {
-            return shorten(generates.getOrDefault(element.toString(), element.toString()));
+            Type type = getOrDefault(element.toString());
+            return new Type(shorten(type.signature), type.unmapped);
         }
         if (element instanceof NoType)
         {
-            return element.toString();
+            return new Type(element.toString(), unmapped);
         }
         throw new UnsupportedOperationException(element.getClass().getName());
     }
 
-    public String convert(VariableElement variable, Map<String, String> typeRenames)
+    public Type convert(VariableElement variable, Map<String, String> typeRenames)
     {
-        return convert(variable.asType(), typeRenames) + " " + variable.getSimpleName();
+        return convert(variable.asType(), typeRenames, false);
     }
 
     public DeclaredType getRawType(TypeMirror type)
@@ -145,6 +203,14 @@ public class TypeConverter implements TypeMirrorUtilities
     public Set<String> getImports()
     {
         return imports;
+    }
+
+    private Type getOrDefault(String element)
+    {
+        Unmapped unmapped = options.skip();
+        boolean skip = unmapped.value() && (!primitives.contains(element) || unmapped.includingPrimitives());
+        String result = generates.get(element);
+        return result != null? new Type(result, false):new Type(element, skip);
     }
 
     private <_Type_> _Type_ rejectDuplicates(_Type_ oldValue, _Type_ newValue)

@@ -46,7 +46,7 @@ public interface Configuration
     **/
     default Options options()
     {
-        return defaults(null);
+        return defaults();
     }
 
     /**
@@ -64,10 +64,10 @@ public interface Configuration
 
     default boolean isDefault(Options options, Function<Options, ?> option)
     {
-        return option.apply(defaults(null)).equals(option.apply(options));
+        return option.apply(defaults()).equals(option.apply(options));
     }
 
-    default Options defaults(PackagePrivate doNotImplementThisMethod)
+    static Options defaults()
     {
         return Options.class.getPackage().getAnnotation(Options.class);
     }
