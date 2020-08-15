@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2019 Mirko Raner                                               -->
+<!-- Copyright 2019 - 2020 Mirko Raner                                        -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -72,7 +72,6 @@
  <build>
   <plugins>
    <plugin>
-    <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
     <configuration>
      <showWarnings>true</showWarnings>
@@ -83,6 +82,30 @@
       <arg>-Xlint</arg>
       <arg>-J-verbose</arg>
      </compilerArgs>
+    </configuration>
+   </plugin>
+   <plugin>
+    <!-- This module contains only tests; no need to build a JAR file -->
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+     <skipIfEmpty>true</skipIfEmpty>
+    </configuration>
+   </plugin>
+   <plugin>
+    <!-- As no jar is generated there is nothing to install either -->
+    <artifactId>maven-install-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>default-install</id>
+      <phase/> <!-- not attached to any phase -->
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <!-- ...and nothing to deploy either... -->
+    <artifactId>maven-deploy-plugin</artifactId>
+    <configuration>
+     <skip>true</skip>
     </configuration>
    </plugin>
   </plugins>
