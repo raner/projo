@@ -15,10 +15,8 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -26,11 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -41,28 +36,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.test.utilities.Mutable;
-import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.expected.test.types.Pending;
 import pro.projo.generation.utilities.expected.test.types.Walkable;
-import pro.projo.interfaces.annotation.Interface;
-import pro.projo.interfaces.annotation.Map;
-import pro.projo.interfaces.annotation.Options;
 import static java.util.Collections.singleton;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 @RunWith(Parameterized.class)
-public class TypeConverterTest
+public class TypeConverterTest extends AbstractTypeConverterTest
 {
     public enum Naming {FQCN, SHORT}
-
-    Name testPackage = new Name("pro.projo.generation.utilities.expected.test.types");
-    ReflectionTypes types = ReflectionTypes.getInstance();
-    Function<Class<?>, TypeElement> typeElementFactory = types::typeElement;
-    Function<Type, TypeMirror> typeMirrorFactory = types::typeMirror;
 
     @Parameter
     public Naming naming;
@@ -86,26 +71,10 @@ public class TypeConverterTest
         }
     });
 
-    Interface[] interfaces =
-    {
-        createInterface(Runnable.class, "Walkable"),
-        createInterface(Future.class, "Pending")
-    };
-
-    TypeConverter converter;
-
     @Before
     public void initializeTypeConverterUnderTest()
     {
-        PackageShortener shortener = naming == Naming.SHORT? new PackageShortener() : new PackageShortener()
-        {
-            @Override
-            public String shorten(String fullyQualifiedClassName) {
-                return fullyQualifiedClassName;
-            }
-        };
-        Stream<Source> sources = Stream.of(interfaces).map(InterfaceSource::new);
-        converter = new TypeConverter(types, shortener, testPackage, sources);
+        converter = new TypeConverter(types, shortener(), testPackage, sources());
     }
 
     /**
@@ -394,6 +363,19 @@ public class TypeConverterTest
         assertEquals(new HashSet<>(Arrays.asList(expected)), converter.getImports());
     }
 
+    @Override
+    protected PackageShortener shortener()
+    {
+        return naming == Naming.SHORT? new PackageShortener() : new PackageShortener()
+        {
+            @Override
+            public String shorten(String fullyQualifiedClassName)
+            {
+                return fullyQualifiedClassName;
+            }
+        };
+    }
+
     private String shorten(String string)
     {
         if (naming == Naming.SHORT)
@@ -401,61 +383,6 @@ public class TypeConverterTest
             return converter.getPackageShortener().shorten(string);
         }
         return string;
-    }
-
-    private Interface createInterface(Class<?> from, String generate, Modifier... modifiers)
-    {
-        return createInterface(from, generate, modifiers, new Map[] {});
-    }
-
-    private Interface createInterface(Class<?> from, String generate, Modifier[] modifiers, Map[] map)
-    {
-        return new Interface()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-              return Interface.class;
-            }
-
-            /**
-            * Provides the source {@link Class} ("from" class) of the annotation.
-            * Note that this method behaves exactly like annotations behave at compile time
-            * (during compile-time annotation processing), i.e. it actually throws a
-            * {@link MirroredTypeException}.
-            *
-            * @throws MirroredTypeException containing the class's {@link TypeMirror}
-            **/
-            @Override
-            public Class<?> from()
-            {
-                throw new MirroredTypeException(typeMirrorFactory.apply(from));
-            }
-  
-            @Override
-            public String generate()
-            {
-                return generate;
-            }
-
-            @Override
-            public Modifier[] modifiers()
-            {
-                return modifiers;
-            }
-
-            @Override
-            public Map[] map()
-            {
-                return map;
-            }
-
-            @Override
-            public Options options()
-            {
-                return Options.class.getPackage().getAnnotation(Options.class);
-            }
-        };
     }
 
     private <_Type_, _Input_, _Output_> _Type_ proxy(Class<_Type_> functionalInterface, BiFunction<_Type_, _Input_, _Output_> method, Function<_Input_, _Output_> implementation)

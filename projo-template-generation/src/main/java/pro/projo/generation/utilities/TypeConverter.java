@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.annotation.processing.Messager;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -34,6 +38,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Unmapped;
 import pro.projo.template.annotation.Configuration;
@@ -79,10 +84,19 @@ public class TypeConverter implements TypeMirrorUtilities
         }
     }
 
+    private static class DummyMessager implements Messager
+    {
+        @Override public void printMessage(Kind kind, CharSequence msg) {}
+        @Override public void printMessage(Kind kind, CharSequence msg, Element e) {}
+        @Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a) {}
+        @Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a, AnnotationValue v) {}
+    }
+
     public final static Set<String> primitives =
         unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean")));
 
     private Types types;
+    private Messager debug;
     private Options options;
     private Name targetPackage;
     private PackageShortener shortener;
@@ -97,7 +111,14 @@ public class TypeConverter implements TypeMirrorUtilities
     public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources,
     Source primary)
     {
+        this(types, shortener, targetPackage, sources, primary, new DummyMessager());
+    }
+
+    public TypeConverter(Types types, PackageShortener shortener, Name targetPackage, Stream<Source> sources,
+    Source primary, Messager debug)
+    {
         this.types = types;
+        this.debug = debug;
         this.shortener = shortener;
         this.targetPackage = targetPackage;
         options = primary != null? primary.options():Configuration.defaults(); // TODO: merge with package-wide options
@@ -127,11 +148,13 @@ public class TypeConverter implements TypeMirrorUtilities
             DeclaredType declaredType = getRawType(element);
             List<? extends TypeMirror> typeArguments = ((DeclaredType)element).getTypeArguments();
             Type mainType = getOrDefault(declaredType.toString());
+            debug.printMessage(Kind.NOTE, "declared type " + declaredType + " unmapped? " + mainType.unmapped);
             Type[] arguments = typeArguments.stream().map(type -> convert(type, typeRenames, unmapped)).toArray(Type[]::new);
             boolean hasArguments = arguments.length > 0;
             String signature = shorten(mainType.signature)
                 + Stream.of(arguments).map(Type::signature).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
-            return new Type(signature, unmapped || Stream.of(arguments).map(Type::unmapped).reduce(false, Boolean::logicalOr));
+            return new Type(signature, unmapped || mainType.unmapped 
+                || Stream.of(arguments).map(Type::unmapped).reduce(false, Boolean::logicalOr));
         }
         if (element instanceof ArrayType)
         {
@@ -205,7 +228,12 @@ public class TypeConverter implements TypeMirrorUtilities
         return imports;
     }
 
-    private Type getOrDefault(String element)
+    public Unmapped getUnmapped()
+    {
+        return options.skip();
+    }
+
+    Type getOrDefault(String element)
     {
         Unmapped unmapped = options.skip();
         boolean skip = unmapped.value() && (!primitives.contains(element) || unmapped.includingPrimitives());
