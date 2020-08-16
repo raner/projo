@@ -29,7 +29,6 @@ import org.junit.Test;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -195,6 +194,6 @@ public class InterfaceTemplateProcessorTest
             "public abstract " + math + "Integer " + math + "Integer.valueOf(long)",
             "public abstract " + math + "Integer " + math + "Integer.probablePrime(" + math + "Integer," + math + "Random)"
         };
-        assertEquals(asList(expected), methodSignatures.collect(toList()));
+        assertEquals(new HashSet<>(asList(expected)), methodSignatures.collect(toSet()));
     }
 }
