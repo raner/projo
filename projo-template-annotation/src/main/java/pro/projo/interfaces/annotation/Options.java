@@ -53,4 +53,13 @@ public @interface Options
     * @return the output location
     **/
     StandardLocation outputLocation() default SOURCE_OUTPUT;
+
+    /**
+    * The option for skipping generation of methods that use unmapped types. The default
+    * value is {@code @Unmapped(false)}, i.e., no methods are skipped, even if they use
+    * unmapped types.
+    *
+    * @return the option for skipping methods using {@link Unmapped} types
+    **/
+    Unmapped skip() default @Unmapped(false);
 }

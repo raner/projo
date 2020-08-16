@@ -117,7 +117,7 @@ public class InterfaceTypeConverterTest
     public void test()
     {
         TypeMirror typeMirror = types.typeMirror(Thing.class);
-        String result = converter.convert(typeMirror);
+        String result = converter.convert(typeMirror).signature();
         assertEquals("NewThing", result);
     }
 }

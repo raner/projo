@@ -15,10 +15,9 @@
 //                                                                          //
 package pro.projo.generation.interfaces;
 
-import java.lang.annotation.Annotation;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
-import javax.tools.StandardLocation;
+import pro.projo.generation.utilities.MergeOptions;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
 
@@ -28,64 +27,21 @@ import pro.projo.template.annotation.Configuration;
 *
 * @author Mirko Raner
 **/
-public abstract class TemplateConfiguration implements Configuration
+public abstract class TemplateConfiguration extends MergeOptions implements Configuration
 {
     private Name packageName;
     private String generatedName;
-    private Options packageLevelOptions;
-    private Options annotationLevelOptions;
 
     public TemplateConfiguration(Name packageName, String generatedName, PackageElement element, Options options)
     {
+        super(element.getAnnotation(Options.class), options);
         this.packageName = packageName;
         this.generatedName = generatedName;
-        packageLevelOptions = element.getAnnotation(Options.class);
-        annotationLevelOptions = options;
     }
 
     @Override
     public String fullyQualifiedClassName()
     {
         return packageName + "." + generatedName;
-    }
-
-    @Override
-    public Options options()
-    {
-        if (packageLevelOptions == null)
-        {
-            // No need to worry about merging package-level and annotation-level; simply return
-            // annotation-level options (which may or may not be all default values):
-            //
-            return annotationLevelOptions;
-        }
-
-        // Both package-level and annotation-level options are present; merge option values from
-        // both sources so that non-default annotation-level options override package-level options:
-        //
-        return new Options()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-                return Options.class;
-            }
-
-            @Override
-            public String fileExtension()
-            {
-                return isDefault(annotationLevelOptions, Options::fileExtension)?
-                    packageLevelOptions.fileExtension():
-                    annotationLevelOptions.fileExtension();
-            }
-
-            @Override
-            public StandardLocation outputLocation()
-            {
-                return isDefault(annotationLevelOptions, Options::outputLocation)?
-                    packageLevelOptions.outputLocation():
-                    annotationLevelOptions.outputLocation();
-            }
-        };
     }
 }

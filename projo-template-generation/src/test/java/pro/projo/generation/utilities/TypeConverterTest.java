@@ -15,10 +15,8 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -26,11 +24,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Stream;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -41,28 +36,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.test.utilities.Mutable;
-import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.expected.test.types.Pending;
 import pro.projo.generation.utilities.expected.test.types.Walkable;
-import pro.projo.interfaces.annotation.Interface;
-import pro.projo.interfaces.annotation.Map;
-import pro.projo.interfaces.annotation.Options;
 import static java.util.Collections.singleton;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeThat;
 
 @RunWith(Parameterized.class)
-public class TypeConverterTest
+public class TypeConverterTest extends AbstractTypeConverterTest
 {
     public enum Naming {FQCN, SHORT}
-
-    Name testPackage = new Name("pro.projo.generation.utilities.expected.test.types");
-    ReflectionTypes types = ReflectionTypes.getInstance();
-    Function<Class<?>, TypeElement> typeElementFactory = types::typeElement;
-    Function<Type, TypeMirror> typeMirrorFactory = types::typeMirror;
 
     @Parameter
     public Naming naming;
@@ -86,26 +71,10 @@ public class TypeConverterTest
         }
     });
 
-    Interface[] interfaces =
-    {
-        createInterface(Runnable.class, "Walkable"),
-        createInterface(Future.class, "Pending")
-    };
-
-    TypeConverter converter;
-
     @Before
     public void initializeTypeConverterUnderTest()
     {
-        PackageShortener shortener = naming == Naming.SHORT? new PackageShortener() : new PackageShortener()
-        {
-            @Override
-            public String shorten(String fullyQualifiedClassName) {
-                return fullyQualifiedClassName;
-            }
-        };
-        Stream<Source> sources = Stream.of(interfaces).map(InterfaceSource::new);
-        converter = new TypeConverter(types, shortener, testPackage, sources);
+        converter = new TypeConverter(types, shortener(), testPackage, sources());
     }
 
     /**
@@ -115,7 +84,7 @@ public class TypeConverterTest
     public void convertSimpleTypeWithoutTranslation()
     {
         TypeElement closeable = typeElementFactory.apply(AutoCloseable.class);
-        String element = converter.convert(closeable.asType());
+        String element = converter.convert(closeable.asType()).signature();
         String expected = shorten("java.lang.AutoCloseable");
         assertEquals(expected, element);
     }
@@ -128,7 +97,7 @@ public class TypeConverterTest
     {
         TypeElement runnable = typeElementFactory.apply(Runnable.class);
         String expected = shorten(Walkable.class.getName());
-        String element = converter.convert(runnable.asType());
+        String element = converter.convert(runnable.asType()).signature();
         assertEquals(expected, element);
     }
 
@@ -139,7 +108,7 @@ public class TypeConverterTest
     public void convertParameterizedTypeWithoutTranslation()
     {
         DeclaredType callable = (DeclaredType)typeElementFactory.apply(Callable.class).asType();
-        String element = converter.convert(callable);
+        String element = converter.convert(callable).signature();
         String expected = shorten(Callable.class.getName()) + "<V>";
         assertEquals(expected, element);
     }
@@ -155,7 +124,7 @@ public class TypeConverterTest
             abstract Callable<?> method();
         }
         TypeMirror type = typeMirrorFactory.apply(Class.class.getDeclaredMethod("method").getGenericReturnType());
-        String element = converter.convert(type);
+        String element = converter.convert(type).signature();
         String expected = shorten(Callable.class.getName()) + "<?>";
         assertEquals(expected, element);
     }
@@ -167,7 +136,7 @@ public class TypeConverterTest
     public void convertParameterizedTypeWithTranslation()
     {
         DeclaredType future = (DeclaredType)typeElementFactory.apply(Future.class).asType();
-        String element = converter.convert(future);
+        String element = converter.convert(future).signature();
         String expected = shorten(Pending.class.getName()) + "<V>";
         assertEquals(expected, element);
     }
@@ -182,7 +151,7 @@ public class TypeConverterTest
         TypeElement callable = typeElementFactory.apply(Callable.class);
         TypeMirror runnable = typeMirrorFactory.apply(Runnable.class);
         DeclaredType callableOfRunnable = types.getDeclaredType(callable, runnable);
-        String element = converter.convert(callableOfRunnable);
+        String element = converter.convert(callableOfRunnable).signature();
         String expected = shorten(Callable.class.getName()) + "<" + shorten(Walkable.class.getName()) + ">";
         assertEquals(expected, element);
     }
@@ -199,7 +168,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfRunnable = types.getDeclaredType(typeCallable, runnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfRunnable = types.getDeclaredType(typeFuture, typeCallableOfRunnable);
-        String result = converter.convert(typeFutureOfCallableOfRunnable);
+        String result = converter.convert(typeFutureOfCallableOfRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<" + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -217,7 +186,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfExtendsRunnable = types.getDeclaredType(typeCallable, extendsRunnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfExtendsRunnable = types.getDeclaredType(typeFuture, typeCallableOfExtendsRunnable);
-        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable);
+        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<? extends " + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -235,7 +204,7 @@ public class TypeConverterTest
         DeclaredType typeCallableOfSuperRunnable = types.getDeclaredType(typeCallable, superRunnable);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfCallableOfExtendsRunnable = types.getDeclaredType(typeFuture, typeCallableOfSuperRunnable);
-        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable);
+        String result = converter.convert(typeFutureOfCallableOfExtendsRunnable).signature();
         String expected = shorten(Pending.class.getName()) + "<" + shorten(Callable.class.getName()) + "<? super " + shorten(Walkable.class.getName()) + ">>";
         assertEquals(expected, result);
     }
@@ -253,7 +222,7 @@ public class TypeConverterTest
         WildcardType typeExtendsCallableOfRunnable = types.getWildcardType(typeCallableOfRunnable, null);
         TypeElement typeFuture = typeElementFactory.apply(Future.class);
         DeclaredType typeFutureOfExtendsCallableOfRunnable = types.getDeclaredType(typeFuture, typeExtendsCallableOfRunnable);
-        String result = converter.convert(typeFutureOfExtendsCallableOfRunnable).toString();
+        String result = converter.convert(typeFutureOfExtendsCallableOfRunnable).signature();
         String expected = shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<? extends " + shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Walkable") + ">>";
@@ -275,7 +244,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<? extends T>>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -293,7 +262,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Walkable")
             + "[]>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -311,7 +280,7 @@ public class TypeConverterTest
         String expected = shorten("java.util.concurrent.Callable")
             + "<" + shorten("pro.projo.generation.utilities.expected.test.types.Pending")
             + "<?>[]>";
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -323,7 +292,7 @@ public class TypeConverterTest
     {
         TypeMirror type = typeMirrorFactory.apply(int.class);
         TypeMirror expected = typeMirrorFactory.apply(int.class);
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -335,7 +304,7 @@ public class TypeConverterTest
     {
         TypeMirror type = types.getNoType(TypeKind.VOID);
         TypeMirror expected = types.getNoType(TypeKind.VOID);
-        String result = converter.convert(type);
+        String result = converter.convert(type).signature();
         assertEquals(expected.toString(), result);
     }
 
@@ -394,6 +363,19 @@ public class TypeConverterTest
         assertEquals(new HashSet<>(Arrays.asList(expected)), converter.getImports());
     }
 
+    @Override
+    protected PackageShortener shortener()
+    {
+        return naming == Naming.SHORT? new PackageShortener() : new PackageShortener()
+        {
+            @Override
+            public String shorten(String fullyQualifiedClassName)
+            {
+                return fullyQualifiedClassName;
+            }
+        };
+    }
+
     private String shorten(String string)
     {
         if (naming == Naming.SHORT)
@@ -401,61 +383,6 @@ public class TypeConverterTest
             return converter.getPackageShortener().shorten(string);
         }
         return string;
-    }
-
-    private Interface createInterface(Class<?> from, String generate, Modifier... modifiers)
-    {
-        return createInterface(from, generate, modifiers, new Map[] {});
-    }
-
-    private Interface createInterface(Class<?> from, String generate, Modifier[] modifiers, Map[] map)
-    {
-        return new Interface()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-              return Interface.class;
-            }
-
-            /**
-            * Provides the source {@link Class} ("from" class) of the annotation.
-            * Note that this method behaves exactly like annotations behave at compile time
-            * (during compile-time annotation processing), i.e. it actually throws a
-            * {@link MirroredTypeException}.
-            *
-            * @throws MirroredTypeException containing the class's {@link TypeMirror}
-            **/
-            @Override
-            public Class<?> from()
-            {
-                throw new MirroredTypeException(typeMirrorFactory.apply(from));
-            }
-  
-            @Override
-            public String generate()
-            {
-                return generate;
-            }
-
-            @Override
-            public Modifier[] modifiers()
-            {
-                return modifiers;
-            }
-
-            @Override
-            public Map[] map()
-            {
-                return map;
-            }
-
-            @Override
-            public Options options()
-            {
-                return Options.class.getPackage().getAnnotation(Options.class);
-            }
-        };
     }
 
     private <_Type_, _Input_, _Output_> _Type_ proxy(Class<_Type_> functionalInterface, BiFunction<_Type_, _Input_, _Output_> method, Function<_Input_, _Output_> implementation)

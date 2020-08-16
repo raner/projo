@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,23 +13,21 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Interface(generate="Double", from=double.class)
-@Interface(generate="DoubleFunction", from=DoubleFunction.class)
-@Interface(generate="DoublePredicate", from=DoublePredicate.class)
-@Interface(generate="CharSequence", from=CharSequence.class)
-@Interface(generate="Appendable", from=Appendable.class, options=@Options(skip=@Unmapped(includingPrimitives=true)))
 package pro.projo.generation.interfaces.test.primitives;
-
-import java.util.function.DoubleFunction;
-import java.util.function.DoublePredicate;
-import pro.projo.interfaces.annotation.Interface;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.Unmapped;
-
+/* */
+import javax.annotation.Generated;
+/* */
 /**
-* This {@code package-info} class contains additional annotations that are used by the
-* {@link pro.projo.generation.interfaces.GeneratedSourcesTest} for testing package-wide
-* conversion of primitive types.
 *
-* @author Mirko Raner
+* This interface was extracted from java.lang.Appendable.
+*
 **/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface Appendable
+{
+/* */
+    Appendable append(CharSequence arg0);
+/* */
+}

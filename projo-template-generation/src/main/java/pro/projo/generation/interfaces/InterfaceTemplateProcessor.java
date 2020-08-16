@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -67,15 +68,14 @@ import pro.projo.generation.utilities.Source;
 import pro.projo.generation.utilities.Source.EnumSource;
 import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.TypeConverter;
+import pro.projo.generation.utilities.TypeConverter.Type;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
@@ -91,6 +91,7 @@ import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interfaces;
+import static pro.projo.generation.utilities.TypeConverter.primitives;
 
 /**
 * The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects source files
@@ -107,8 +108,6 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     final static String Enums = "pro.projo.interfaces.annotation.Enums";
     final static String Interface = "pro.projo.interfaces.annotation.Interface";
     final static String Interfaces = "pro.projo.interfaces.annotation.Interfaces";
-    final static Set<String> primitives =
-        unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean")));
     final static Predicate<String> notPrimitive = not(primitives::contains);
 
     private Filer filer;
@@ -267,7 +266,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             // Include both interfaces and enums in the TypeConverter, so that references to enums from
             // within interfaces are handled properly:
             //
-            InterfaceSource primary = new InterfaceSource(annotation);
+            InterfaceSource primary = new InterfaceSource(annotation, element.getAnnotation(Options.class));
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
@@ -278,13 +277,13 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             {
                 TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
                 supertypes = modifiers.contains(STATIC)?
-                        "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).collect(joining(", "));
+                    "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature).collect(joining(", "));
             }
             else
             {
                 supertypes = "";
             }
-            String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).toArray(String[]::new);
+            String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).filter(Objects::nonNull).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
             List<String> importNames = imports.stream().map(Object::toString)
                 .filter(notPrimitive)
@@ -399,15 +398,22 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             }
     
             // Add return type:
-            String returnType = typeMap.convert(method.getReturnType(), renamedTypeVariables);
-            declaration.append(returnType).append(' ');
+            Type returnType = typeMap.convert(method.getReturnType(), renamedTypeVariables, false);
+            declaration.append(returnType.signature()).append(' ');
 
             // Add parameters:
             declaration.append(method.getSimpleName()).append('(');
             Stream<? extends VariableElement> parameters = method.getParameters().stream();
-            Stream<String> convertedParameters = parameters.map(parameter -> typeMap.convert(parameter, renamedTypeVariables));
-            declaration.append(convertedParameters.collect(joining(", ")));
-            return declaration.append(')').toString();
+            Stream<Entry<Type, Name>> convertedParameters = parameters.map(parameter ->
+            {
+                Type parameterType = typeMap.convert(parameter, renamedTypeVariables);
+                Name parameterName = parameter.getSimpleName();
+                return new SimpleEntry<>(parameterType, parameterName);
+            });
+            List<Entry<Type, Name>> convertedParameterList = convertedParameters.collect(toList());
+            declaration.append(convertedParameterList.stream().map(entry -> entry.getKey().signature() + " " + entry.getValue()).collect(joining(", ")));
+            boolean methodUsesUnmappedTypes = returnType.unmapped() || convertedParameterList.stream().map(Entry::getKey).map(Type::unmapped).reduce(false, Boolean::logicalOr);
+            return methodUsesUnmappedTypes? null:declaration.append(')').toString();
         };
     }
 

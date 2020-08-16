@@ -181,4 +181,19 @@ public class InterfaceTemplateProcessorTest
         InputStream file = classLoader.getResourceAsStream("pro/projo/generation/interfaces/test/options/AutoCloseable.lava");
         assertNotNull(file);
     }
+
+    @Test
+    public void annotationLevelOptionsOverridePackageLevelOptionsInMath() throws Exception
+    {
+        Class<?> classInteger = Class.forName("pro.projo.generation.interfaces.test.math.Integer");
+        Stream<Method> methods = Stream.of(classInteger.getDeclaredMethods());
+        Stream<String> methodSignatures = methods.map(Method::toString);
+        String math = "pro.projo.generation.interfaces.test.math.";
+        String[] expected =
+        {
+            "public abstract " + math + "Integer " + math + "Integer.valueOf(long)",
+            "public abstract " + math + "Integer " + math + "Integer.probablePrime(" + math + "Integer," + math + "Random)"
+        };
+        assertEquals(new HashSet<>(asList(expected)), methodSignatures.collect(toSet()));
+    }
 }

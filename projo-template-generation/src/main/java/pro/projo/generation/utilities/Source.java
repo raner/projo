@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -18,6 +18,7 @@ package pro.projo.generation.utilities;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
+import pro.projo.interfaces.annotation.Options;
 
 /**
 * As annotations in Java do not support inheritance, the {@link Source} interface acts as a unifying
@@ -34,15 +35,23 @@ public interface Source
 
     String generate();
 
-    public static class InterfaceSource implements Source
+    Options options();
+
+    public static class InterfaceSource extends MergeOptions implements Source
     {
         private Interface source;
 
         public InterfaceSource(Interface source)
         {
+            this(source, null);
+        }
+
+        public InterfaceSource(Interface source, Options packageLevelOptions)
+        {
+            super(packageLevelOptions, source.options());
             this.source = source;
         }
-      
+
         @Override
         public Class<?> from()
         {
@@ -62,15 +71,21 @@ public interface Source
         }
     }
 
-    public static class EnumSource implements Source
+    public static class EnumSource extends MergeOptions implements Source
     {
         private Enum source;
 
         public EnumSource(Enum source)
         {
+            this(source, null);
+        }
+
+        public EnumSource(Enum source, Options packageLevelOptions)
+        {
+            super(packageLevelOptions, source.options());
             this.source = source;
         }
-      
+
         @Override
         public Class<?> from()
         {

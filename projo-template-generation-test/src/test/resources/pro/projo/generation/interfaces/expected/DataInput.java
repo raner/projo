@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2019 - 2020 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,16 +13,33 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.template.annotation;
-
+package pro.projo.generation.interfaces.test;
+/* */
+import javax.annotation.Generated;
+/* */
 /**
-* The {@link PackagePrivate} interface is designed to prevent implementors from
-* implementing/overriding certain methods that are intended to be left with their
-* original implementation.
 *
-* @author Mirko Raner
+* This interface was extracted from java.io.DataInput.
+*
 **/
-interface PackagePrivate
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface DataInput
 {
-    // Marker interface; no methods defined...
+/* */
+    void readFully(byte[] arg0);
+    void readFully(byte[] arg0, int arg1, int arg2);
+    int skipBytes(int arg0);
+    boolean readBoolean();
+    byte readByte();
+    int readUnsignedByte();
+    short readShort();
+    int readUnsignedShort();
+    char readChar();
+    int readInt();
+    long readLong();
+    float readFloat();
+    double readDouble();
+/* */
 }

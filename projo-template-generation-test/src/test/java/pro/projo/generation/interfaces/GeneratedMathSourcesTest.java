@@ -13,23 +13,37 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Interface(generate="Double", from=double.class)
-@Interface(generate="DoubleFunction", from=DoubleFunction.class)
-@Interface(generate="DoublePredicate", from=DoublePredicate.class)
-@Interface(generate="CharSequence", from=CharSequence.class)
-@Interface(generate="Appendable", from=Appendable.class, options=@Options(skip=@Unmapped(includingPrimitives=true)))
-package pro.projo.generation.interfaces.test.primitives;
+package pro.projo.generation.interfaces;
 
-import java.util.function.DoubleFunction;
-import java.util.function.DoublePredicate;
-import pro.projo.interfaces.annotation.Interface;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.Unmapped;
+import java.io.File;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.stream.Stream;
+import org.junit.runners.Parameterized.Parameters;
+import static java.util.stream.Collectors.toList;
 
 /**
-* This {@code package-info} class contains additional annotations that are used by the
-* {@link pro.projo.generation.interfaces.GeneratedSourcesTest} for testing package-wide
-* conversion of primitive types.
+* {@link GeneratedMathSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/primitives/expected} match their
+* corresponding generated files.
 *
 * @author Mirko Raner
 **/
+public class GeneratedMathSourcesTest extends AbstractGeneratedSourcesTest
+{
+    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/math/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/math/expected/{0}");
+
+    public GeneratedMathSourcesTest()
+    {
+        super(comparison, generated);
+    }
+
+    @Parameters(name="{0}")
+    public static Collection<Object[]> testSources()
+    {
+        File expected = new File(comparison.format(new Object[] {""}));
+        return Stream.of(expected.list()).map(file -> new Object[] {file}).collect(toList());
+    }
+}

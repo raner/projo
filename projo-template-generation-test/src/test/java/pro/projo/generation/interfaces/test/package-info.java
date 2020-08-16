@@ -36,15 +36,16 @@
 @Interface(generate="Integer", from=Number.class, modifiers={PUBLIC})
 @Interface(generate="Comparable", from=Comparable.class, map=@Map(type=int.class, to="Integer"))
 @Interface(generate="Function", from=Function.class)
+@Interface(generate="DataInput", from=DataInput.class, options=@Options(skip=@Unmapped))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
 package pro.projo.generation.interfaces.test;
 
+import java.io.DataInput;
 import java.math.RoundingMode;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
 import io.reactivex.observables.GroupedObservable;
@@ -68,6 +69,7 @@ import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Unmapped;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
