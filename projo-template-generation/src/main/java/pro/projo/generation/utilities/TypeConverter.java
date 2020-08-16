@@ -134,10 +134,15 @@ public class TypeConverter implements TypeMirrorUtilities
 
     public Type convert(TypeMirror element)
     {
-        return convert(element, Collections.emptyMap(), false);
+        return convert(element, Collections.emptyMap(), false, true);
     }
 
     public Type convert(TypeMirror element, Map<String, String> typeRenames, final boolean unmapped)
+    {
+        return convert(element, typeRenames, unmapped, false);
+    }
+
+    public Type convert(TypeMirror element, Map<String, String> typeRenames, final boolean unmapped, boolean supertype)
     {
         if (element == null)
         {
@@ -151,7 +156,7 @@ public class TypeConverter implements TypeMirrorUtilities
             debug.printMessage(Kind.NOTE, "declared type " + declaredType + " unmapped? " + mainType.unmapped);
             Type[] arguments = typeArguments.stream().map(type -> convert(type, typeRenames, unmapped)).toArray(Type[]::new);
             boolean hasArguments = arguments.length > 0;
-            String signature = shorten(mainType.signature)
+            String signature = shorten(new Type(mainType.signature, mainType.unmapped & !supertype))
                 + Stream.of(arguments).map(Type::signature).collect(joining(", ", hasArguments? "<":"", hasArguments? ">":""));
             return new Type(signature, unmapped || mainType.unmapped 
                 || Stream.of(arguments).map(Type::unmapped).reduce(false, Boolean::logicalOr));
@@ -190,7 +195,7 @@ public class TypeConverter implements TypeMirrorUtilities
         if (element instanceof PrimitiveType)
         {
             Type type = getOrDefault(element.toString());
-            return new Type(shorten(type.signature), type.unmapped);
+            return new Type(shorten(type), type.unmapped);
         }
         if (element instanceof NoType)
         {
@@ -255,9 +260,12 @@ public class TypeConverter implements TypeMirrorUtilities
         return name.indexOf('.') != -1? name:targetPackage + "." + name;
     }
 
-    private String shorten(String fqcn)
+    private String shorten(Type type)
     {
-        imports.add(fqcn);
-        return shortener.shorten(fqcn);
+        if (!type.unmapped)
+        {
+            imports.add(type.signature);
+        }
+        return shortener.shorten(type.signature);
     }
 }

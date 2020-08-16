@@ -37,15 +37,21 @@ public interface Source
 
     Options options();
 
-    public static class InterfaceSource implements Source
+    public static class InterfaceSource extends MergeOptions implements Source
     {
         private Interface source;
 
         public InterfaceSource(Interface source)
         {
+            this(source, null);
+        }
+
+        public InterfaceSource(Interface source, Options packageLevelOptions)
+        {
+            super(packageLevelOptions, source.options());
             this.source = source;
         }
-      
+
         @Override
         public Class<?> from()
         {
@@ -63,23 +69,23 @@ public interface Source
         {
             return source.generate();
         }
-
-        @Override
-        public Options options()
-        {
-            return source.options();
-        }
     }
 
-    public static class EnumSource implements Source
+    public static class EnumSource extends MergeOptions implements Source
     {
         private Enum source;
 
         public EnumSource(Enum source)
         {
+            this(source, null);
+        }
+
+        public EnumSource(Enum source, Options packageLevelOptions)
+        {
+            super(packageLevelOptions, source.options());
             this.source = source;
         }
-      
+
         @Override
         public Class<?> from()
         {
@@ -96,12 +102,6 @@ public interface Source
         public String generate()
         {
             return source.generate();
-        }
-
-        @Override
-        public Options options()
-        {
-            return source.options();
         }
     }
 }

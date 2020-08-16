@@ -15,33 +15,35 @@
 //                                                                          //
 package pro.projo.generation.interfaces;
 
-import javax.lang.model.element.Name;
-import javax.lang.model.element.PackageElement;
-import pro.projo.generation.utilities.MergeOptions;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.template.annotation.Configuration;
+import java.io.File;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.stream.Stream;
+import org.junit.runners.Parameterized.Parameters;
+import static java.util.stream.Collectors.toList;
 
 /**
-* {@link TemplateConfiguration} is an abstract base class that encapsulates some of the
-* commonalities between interface configurations and enum configurations.
+* {@link GeneratedMathSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/primitives/expected} match their
+* corresponding generated files.
 *
 * @author Mirko Raner
 **/
-public abstract class TemplateConfiguration extends MergeOptions implements Configuration
+public class GeneratedMathSourcesTest extends AbstractGeneratedSourcesTest
 {
-    private Name packageName;
-    private String generatedName;
+    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/math/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/math/expected/{0}");
 
-    public TemplateConfiguration(Name packageName, String generatedName, PackageElement element, Options options)
+    public GeneratedMathSourcesTest()
     {
-        super(element.getAnnotation(Options.class), options);
-        this.packageName = packageName;
-        this.generatedName = generatedName;
+        super(comparison, generated);
     }
 
-    @Override
-    public String fullyQualifiedClassName()
+    @Parameters(name="{0}")
+    public static Collection<Object[]> testSources()
     {
-        return packageName + "." + generatedName;
+        File expected = new File(comparison.format(new Object[] {""}));
+        return Stream.of(expected.list()).map(file -> new Object[] {file}).collect(toList());
     }
 }

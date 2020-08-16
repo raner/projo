@@ -266,7 +266,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             // Include both interfaces and enums in the TypeConverter, so that references to enums from
             // within interfaces are handled properly:
             //
-            InterfaceSource primary = new InterfaceSource(annotation);
+            InterfaceSource primary = new InterfaceSource(annotation, element.getAnnotation(Options.class));
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
