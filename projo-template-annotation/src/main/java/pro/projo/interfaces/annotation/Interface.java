@@ -21,6 +21,10 @@ import java.lang.annotation.Target;
 import javax.lang.model.element.Modifier;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static pro.projo.interfaces.annotation.Ternary.EITHER;
+import static pro.projo.interfaces.annotation.Visibility.PUBLIC;
+import static pro.projo.interfaces.annotation.Visibility.PRIVATE;
+import static pro.projo.interfaces.annotation.Visibility.PROTECTED;
 
 /**
 * The {@link Interface} annotation captures the necessary information for generating an interface
@@ -52,7 +56,9 @@ public @interface Interface
     * multiple {@code @Interface} annotations need to be used.
     *
     * @return the method modifiers to be used for filtering
+    * @deprecated use {@link #isStatic()} and {@link #visibility()} instead
     **/
+    @Deprecated
     Modifier[] modifiers() default {};
 
     /**
@@ -69,4 +75,23 @@ public @interface Interface
     * @return additional code generation options for this interface
     **/
     Options options() default @Options;
+
+    /**
+    * @return indication whether only static ({@link Ternary#TRUE TRUE}), only non-static
+    * ({@link Ternary#FALSE FALSE}), or both static and non-static methods
+    * ({@link Ternary#EITHER EITHER}) should be included.
+    **/
+    Ternary isStatic() default EITHER;
+
+    /**
+    * @return the visibilities to be included for method generation (for example,
+    * {@link Visibility#PUBLIC PUBLIC} will only include public methods,
+    * {@link Visibility#PACKAGE &#123;PACKAGE, }{@link Visibility#PROTECTED PROTECTED&#125;}
+    * will include protected and default/package visibility methods; there is no
+    * direct way to express "not private", but as every method has to have one of
+    * the four supported visibilities this can easily be expressed by listing all
+    * visibilities that <i>should</i> be included, i.e.
+    * {@link Visibility#PUBLIC &#123;PUBLIC, }{@link Visibility#PACKAGE PACKAGE, }{@link Visibility#PROTECTED PROTECTED&#125;})
+    **/
+    Visibility[] visibility() default {Visibility.PACKAGE, PUBLIC, PROTECTED, PRIVATE};
 }

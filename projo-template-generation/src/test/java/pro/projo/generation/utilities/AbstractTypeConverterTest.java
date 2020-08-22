@@ -29,6 +29,8 @@ import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Ternary;
+import pro.projo.interfaces.annotation.Visibility;
 import static pro.projo.template.annotation.Configuration.defaults;
 
 /**
@@ -118,6 +120,18 @@ public abstract class AbstractTypeConverterTest
             public Options options()
             {
                 return options;
+            }
+
+            @Override
+            public Ternary isStatic()
+            {
+                return Ternary.EITHER;
+            }
+
+            @Override
+            public Visibility[] visibility()
+            {
+                return new Visibility[] {};
             }
         };
     }

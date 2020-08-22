@@ -93,7 +93,7 @@ public class TypeConverter implements TypeMirrorUtilities
     }
 
     public final static Set<String> primitives =
-        unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean")));
+        unmodifiableSet(new HashSet<>(asList("byte", "short", "int", "long", "float", "double", "char", "boolean", "void")));
 
     private Types types;
     private Messager debug;
@@ -199,7 +199,7 @@ public class TypeConverter implements TypeMirrorUtilities
         }
         if (element instanceof NoType)
         {
-            return new Type(element.toString(), unmapped);
+            return getOrDefault(element.toString()); // handle mapped/unmapped void
         }
         throw new UnsupportedOperationException(element.getClass().getName());
     }
