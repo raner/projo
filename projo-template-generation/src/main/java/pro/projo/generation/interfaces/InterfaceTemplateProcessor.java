@@ -48,7 +48,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -62,6 +61,7 @@ import javax.tools.FileObject;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
+import pro.projo.generation.utilities.MethodFilter;
 import pro.projo.generation.utilities.PackageShortener;
 import pro.projo.generation.utilities.Reduction;
 import pro.projo.generation.utilities.Source;
@@ -92,6 +92,7 @@ import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interfaces;
 import static pro.projo.generation.utilities.TypeConverter.primitives;
+import static pro.projo.interfaces.annotation.Ternary.TRUE;
 
 /**
 * The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects source files
@@ -235,20 +236,20 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Set<String> imports = new HashSet<>();
             imports.add(Generated.class.getName());
             TypeMirror originalClass = getTypeMirror(annotation::from);
-            Set<Modifier> modifiers = new HashSet<>(Arrays.asList(annotation.modifiers()));
+            MethodFilter methodFilter = new MethodFilter(annotation);
             TypeElement type = elements.getTypeElement(originalClass.toString());
             List<ExecutableElement> methods = new ArrayList<>();
             List<? extends TypeParameterElement> typeParameters;
             if (type != null) // type does not represent a primitive
             {
-                typeParameters = modifiers.contains(STATIC)? emptyList():type.getTypeParameters();
+                typeParameters = staticMethodsOnly(annotation)? emptyList():type.getTypeParameters();
                 ElementScanner8<Void, List<ExecutableElement>> scanner = new ElementScanner8<Void, List<ExecutableElement>>()
                 {
                     @Override
                     public Void visitExecutable(ExecutableElement method, List<ExecutableElement> executables)
                     {
                         if (type.equals(method.getEnclosingElement())
-                        && (method.getModifiers().containsAll(modifiers)))
+                        && (methodFilter.matches(method)))
                         {
                             executables.add(method);
                         }
@@ -276,7 +277,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             if (type != null)
             {
                 TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
-                supertypes = modifiers.contains(STATIC)?
+                supertypes = staticMethodsOnly(annotation)?
                     "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature).collect(joining(", "));
             }
             else
@@ -445,6 +446,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return duplicates.reduce(typesAndRenames, renameDuplicates, (a, b) -> b).getValue();
     }
 
+    @SuppressWarnings("deprecation")
+    boolean staticMethodsOnly(Interface annotation)
+    {
+        return annotation.isStatic() == TRUE || set(annotation.modifiers()).contains(STATIC);
+    }
+
     boolean realMethodsOnly(ExecutableElement method)
     {
         return method.getSimpleName().charAt(0) != '<';
@@ -453,6 +460,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     TypeElement typeElement(TypeMirror type)
     {
         return elements.getTypeElement(type.toString());
+    }
+
+    @SafeVarargs
+    private final <_Any_> Set<_Any_> set(_Any_... elements)
+    {
+        return new HashSet<>(Arrays.asList(elements));
     }
 
     private static <T> Predicate<T> not(Predicate<T> target)

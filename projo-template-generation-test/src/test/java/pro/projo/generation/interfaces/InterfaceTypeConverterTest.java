@@ -35,6 +35,8 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Interfaces;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Ternary;
+import pro.projo.interfaces.annotation.Visibility;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
@@ -85,6 +87,7 @@ public class InterfaceTypeConverterTest
             }
 
             @Override
+            @SuppressWarnings("deprecation")
             public Modifier[] modifiers()
             {
                 return original.modifiers();
@@ -105,7 +108,19 @@ public class InterfaceTypeConverterTest
             @Override
             public Options options()
             {
-                return Options.class.getPackage().getAnnotation(Options.class);
+                return original.options();
+            }
+
+            @Override
+            public Ternary isStatic()
+            {
+                return original.isStatic();
+            }
+
+            @Override
+            public Visibility[] visibility()
+            {
+                return original.visibility();
             }
         };
         List<Interface> testableInterfaces = Stream.of(interfaces.value()).map(testableInterface).collect(toList());

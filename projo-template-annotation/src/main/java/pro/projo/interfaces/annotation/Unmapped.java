@@ -45,6 +45,8 @@ public @interface Unmapped
 
     /**
     * Indicates whether to also skip methods that use unmapped primitives.
+    * Notably, enabling this option will also skip methods that have a {@code void}
+    * return type (unless {@code void} is mapped to some other type).
     *
     * @return {@code true} if methods using unmapped primitives should be skipped,
     * {@code false} otherwise
