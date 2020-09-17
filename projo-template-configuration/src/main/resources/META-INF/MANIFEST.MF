@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: projo-template-configuration
+Bundle-Vendor: Mirko Raner
+Bundle-Version: 1.2.0
+Bundle-SymbolicName: projo-template-configuration; singleton:=true
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: projo-template-configuration
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: pro.projo.template.configuration
+Require-Bundle: projo; bundle-version="1.2.0"
