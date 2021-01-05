@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -37,11 +37,13 @@
 @Interface(generate="Comparable", from=Comparable.class, map=@Map(type=int.class, to="Integer"))
 @Interface(generate="Function", from=Function.class)
 @Interface(generate="DataInput", from=DataInput.class, options=@Options(skip=@Unmapped))
+@Interface(generate="Closeable", from=Closeable.class, options=@Options(addAnnotations=false))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
 package pro.projo.generation.interfaces.test;
 
+import java.io.Closeable;
 import java.io.DataInput;
 import java.math.RoundingMode;
 import java.util.concurrent.Callable;
