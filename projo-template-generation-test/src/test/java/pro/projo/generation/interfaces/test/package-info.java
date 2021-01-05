@@ -41,11 +41,13 @@
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
+@Enum(generate="Protocol", from=StandardProtocolFamily.class, options=@Options(addAnnotations=false))
 package pro.projo.generation.interfaces.test;
 
 import java.io.Closeable;
 import java.io.DataInput;
 import java.math.RoundingMode;
+import java.net.StandardProtocolFamily;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import io.reactivex.BackpressureStrategy;
