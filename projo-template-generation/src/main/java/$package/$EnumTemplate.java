@@ -32,7 +32,7 @@ import $import;
 *#
 **/
 /* *#**#/
-@Generated("$generatedBy")
+$generatedBy
 /* */
 public enum $EnumTemplate
 {

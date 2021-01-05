@@ -234,7 +234,10 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
             Set<String> imports = new HashSet<>();
-            imports.add(Generated.class.getName());
+            if (annotation.options().addAnnotations())
+            {
+                imports.add(Generated.class.getName());
+            }
             TypeMirror originalClass = getTypeMirror(annotation::from);
             MethodFilter methodFilter = new MethodFilter(annotation);
             TypeElement type = elements.getTypeElement(originalClass.toString());
@@ -299,7 +302,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public Map<String, Object> parameters()
                 {
-                    Map<String, Object> parameters = getParameters(packageName, importNames);
+                    Map<String, Object> parameters = getParameters(packageName, importNames, options());
                     parameters.put("javadoc", "This interface was extracted from " + originalClass + ".");
                     parameters.put("InterfaceTemplate", interfaceSignature());
                     parameters.put("methods", declarations);
@@ -357,7 +360,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public Map<String, Object> parameters()
                 {
-                    Map<String, Object> parameters = getParameters(packageName, singleton(Generated.class.getName()));
+                    Collection<String> imports = options().addAnnotations()? singleton(Generated.class.getName()):emptyList();
+                    Map<String, Object> parameters = getParameters(packageName, imports, options());
                     parameters.put("javadoc", "This enum was extracted from " + originalClass + ".");
                     parameters.put("EnumTemplate", annotation.generate());
                     parameters.put("values", values);
@@ -368,12 +372,13 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         return enums.stream().map(getConfiguration).collect(toList());
     }
 
-    Map<String, Object> getParameters(Name packageName, Collection<String> imports)
+    Map<String, Object> getParameters(Name packageName, Collection<String> imports, Options options)
     {
+        String generatedBy = options.addAnnotations()? "@Generated(\"" + getClass().getName() + "\")":"";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("package", packageName);
         parameters.put("imports", imports);
-        parameters.put("generatedBy", getClass().getName());
+        parameters.put("generatedBy", generatedBy);
         return parameters;
     }
 

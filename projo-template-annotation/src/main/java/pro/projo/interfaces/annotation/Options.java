@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -62,4 +62,11 @@ public @interface Options
     * @return the option for skipping methods using {@link Unmapped} types
     **/
     Unmapped skip() default @Unmapped(false);
+
+    /**
+    * The option for adding annotations (such as {@code @Generated}). Defaults to {@code true}.
+    *
+    * @return whether annotations should be added to the generated code
+    **/
+    boolean addAnnotations() default true;
 }
