@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 Mirko Raner                                               //
+// Copyright 2018 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -14,12 +14,13 @@
 // limitations under the License.                                           //
 //                                                                          //
 @Interface(generate="Callable", from=Callable.class)
-@Interface(generate="Math", from=Math.class, modifiers={PUBLIC, STATIC})
-package pro.projo.interfaces.annotation;
+@Interface(generate="Math", from=Math.class, isStatic=TRUE, visibility=PUBLIC)
+package pro.projo.interfaces.annotations;
 
 import java.util.concurrent.Callable;
-import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
+import pro.projo.interfaces.annotation.Interface;
+import static pro.projo.interfaces.annotation.Ternary.TRUE;
+import static pro.projo.interfaces.annotation.Visibility.PUBLIC;
 
 /**
 * This {@code package-info} class contains the annotations that are tested by the
