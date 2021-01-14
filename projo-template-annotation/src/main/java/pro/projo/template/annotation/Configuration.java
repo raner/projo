@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 - 2020 Mirko Raner                                        //
+// Copyright 2018 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,8 +15,10 @@
 //                                                                          //
 package pro.projo.template.annotation;
 
+import java.io.Writer;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import pro.projo.interfaces.annotation.Options;
 
 /**
@@ -37,6 +39,14 @@ public interface Configuration
     * @return additional parameters that need to be inserted into the code generation template
     **/
     Map<String, Object> parameters();
+
+    /**
+    * @return an operator that wraps the output writer into a filtering writer for post-processing
+    **/
+    default UnaryOperator<Writer> postProcessor()
+    {
+        return UnaryOperator.identity();
+    }
 
     /**
     * Retrieves additional configuration options that were provided as an annotation parameter or

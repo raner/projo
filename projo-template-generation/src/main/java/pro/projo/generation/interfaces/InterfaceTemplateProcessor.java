@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.Method;
@@ -37,6 +38,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
@@ -166,7 +168,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     {
                         try (Reader reader = new InputStreamReader(getClass().getResourceAsStream(resourceName)))
                         {
-                            generator.generate(reader, resourceName, configuration.parameters(), writer);
+                            generator.generate(reader, resourceName, configuration.parameters(), configuration.postProcessor().apply(writer));
                         }
                     }
                     messager.printMessage(NOTE, "Generated " + className);
@@ -307,6 +309,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     parameters.put("InterfaceTemplate", interfaceSignature());
                     parameters.put("methods", declarations);
                     return parameters;
+                }
+
+                @Override
+                public UnaryOperator<Writer> postProcessor()
+                {
+                    return super.postProcessor();
                 }
 
                 private String interfaceSignature()
