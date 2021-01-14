@@ -15,9 +15,12 @@
 //                                                                          //
 package pro.projo.interfaces.annotation;
 
+import java.io.Writer;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.function.UnaryOperator;
 import javax.tools.StandardLocation;
+import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
@@ -69,4 +72,11 @@ public @interface Options
     * @return whether annotations should be added to the generated code
     **/
     boolean addAnnotations() default true;
+
+    /**
+    * The option for specifying a post-processor class.
+    *
+    * @return the post-processor class
+    **/
+    Class<? extends UnaryOperator<Writer>> postProcessor() default IdentityPostProcessor.class;
 }

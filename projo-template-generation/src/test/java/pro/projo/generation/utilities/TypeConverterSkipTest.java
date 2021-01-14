@@ -15,7 +15,9 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
+import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.util.function.UnaryOperator;
 import javax.tools.StandardLocation;
 import org.junit.Test;
 import pro.projo.generation.utilities.Source.InterfaceSource;
@@ -23,6 +25,7 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Unmapped;
+import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static pro.projo.template.annotation.Configuration.defaults;
@@ -122,6 +125,12 @@ public class TypeConverterSkipTest extends AbstractTypeConverterTest
             public boolean addAnnotations()
             {
                 return true;
+            }
+
+            @Override
+            public Class<? extends UnaryOperator<Writer>> postProcessor()
+            {
+                return IdentityPostProcessor.class;
             }
         };
     }

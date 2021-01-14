@@ -15,11 +15,14 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javax.tools.StandardLocation;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Unmapped;
+import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static pro.projo.template.annotation.Configuration.defaults;
 
 /**
@@ -94,6 +97,12 @@ public class MergeOptions
             boolean isDefault(Options options, Function<Options, ?> option)
             {
                 return option.apply(defaults()).equals(option.apply(options));
+            }
+
+            @Override
+            public Class<? extends UnaryOperator<Writer>> postProcessor()
+            {
+                return IdentityPostProcessor.class;
             }
         };
     }
