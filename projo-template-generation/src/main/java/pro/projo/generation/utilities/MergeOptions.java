@@ -22,7 +22,6 @@ import java.util.function.UnaryOperator;
 import javax.tools.StandardLocation;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Unmapped;
-import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static pro.projo.template.annotation.Configuration.defaults;
 
 /**
@@ -40,6 +39,16 @@ public class MergeOptions
     {
         this.packageLevelOptions = packageLevelOptions;
         this.annotationLevelOptions = annotationLevelOptions;
+    }
+
+    public Options packageLevelOptions()
+    {
+        return packageLevelOptions;
+    }
+
+    public Options annotationLevelOptions()
+    {
+        return annotationLevelOptions;
     }
 
     public Options options()
@@ -82,9 +91,15 @@ public class MergeOptions
             }
 
             @Override
+            public Class<? extends UnaryOperator<Writer>> postProcessor()
+            {
+                return option(Options::postProcessor);
+            }
+
+            @Override
             public boolean addAnnotations()
             {
-                return true;
+                return option(Options::addAnnotations);
             }
 
             <_Option_> _Option_ option(Function<Options, _Option_> option)
@@ -97,12 +112,6 @@ public class MergeOptions
             boolean isDefault(Options options, Function<Options, ?> option)
             {
                 return option.apply(defaults()).equals(option.apply(options));
-            }
-
-            @Override
-            public Class<? extends UnaryOperator<Writer>> postProcessor()
-            {
-                return IdentityPostProcessor.class;
             }
         };
     }

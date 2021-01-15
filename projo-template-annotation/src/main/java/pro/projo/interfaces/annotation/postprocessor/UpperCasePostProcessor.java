@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.generation.interfaces.test.postprocessor;
+package pro.projo.interfaces.annotation.postprocessor;
 
 import java.io.FilterWriter;
 import java.io.IOException;
@@ -21,12 +21,12 @@ import java.io.Writer;
 import java.util.function.UnaryOperator;
 
 /**
-* {@link PostProcessorUpperCase} is a simple Projo template post-processor that converts
+* {@link UpperCasePostProcessor} is a simple Projo template post-processor that converts
 * all letters to upper case. This functionality is mainly provided for demo purposes.
 *
 * @author Mirko Raner
 **/
-public class PostProcessorUpperCase implements UnaryOperator<Writer>
+public class UpperCasePostProcessor implements UnaryOperator<Writer>
 {
     @Override
     public Writer apply(Writer writer)

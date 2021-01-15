@@ -14,11 +14,12 @@
 // limitations under the License.                                           //
 //                                                                          //
 @Options(fileExtension=".lava")
-@Interface(generate="Runnable", from=Runnable.class)
+@Interface(generate="Runnable", from=Runnable.class, options=@Options(postProcessor=UpperCasePostProcessor.class))
 package pro.projo.generation.interfaces.test.postprocessor;
 
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.postprocessor.UpperCasePostProcessor;
 
 /**
 * This {@code package-info} class contains additional annotations that are tested by the
