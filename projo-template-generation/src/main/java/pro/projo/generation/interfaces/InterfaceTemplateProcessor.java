@@ -314,7 +314,18 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public UnaryOperator<Writer> postProcessor()
                 {
-                    return super.postProcessor();
+                    TypeMirror postProcessorType = getTypeMirror(options()::postProcessor);
+                    try
+                    {
+                        Class<?> postProcessorClass = Class.forName(postProcessorType.toString());
+                        @SuppressWarnings("unchecked")
+                        UnaryOperator<Writer> postProcessor = (UnaryOperator<Writer>)postProcessorClass.getConstructor().newInstance();
+                        return postProcessor;
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new RuntimeException(exception);
+                    }
                 }
 
                 private String interfaceSignature()

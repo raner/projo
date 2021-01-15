@@ -30,7 +30,6 @@ import static java.util.stream.Collectors.toList;
 *
 * @author Mirko Raner
 **/
-@org.junit.Ignore
 public class GeneratedPostProcessorSourcesTest extends AbstractGeneratedSourcesTest
 {
     static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/postprocessor/{0}");
