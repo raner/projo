@@ -30,7 +30,7 @@ import static pro.projo.template.annotation.Configuration.defaults;
 *
 * @author Mirko Raner
 **/
-public class MergeOptions
+public class MergeOptions implements TypeMirrorUtilities
 {
     private Options packageLevelOptions;
     private Options annotationLevelOptions;
@@ -93,7 +93,7 @@ public class MergeOptions
             @Override
             public Class<? extends UnaryOperator<Writer>> postProcessor()
             {
-                return option(Options::postProcessor);
+                return option(options -> getType(options::postProcessor));
             }
 
             @Override
