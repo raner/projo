@@ -23,7 +23,7 @@ import javax.annotation.generated;
 *
 **/
 /* */
-
+@generated("pro.projo.generation.interfaces.interfacetemplateprocessor")
 /* */
 public interface runnable
 {
