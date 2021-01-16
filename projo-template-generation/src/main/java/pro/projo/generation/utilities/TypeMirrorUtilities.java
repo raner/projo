@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -48,6 +48,37 @@ public interface TypeMirrorUtilities
             return mirroredTypeException.getTypeMirror();
         }
         return null;
+    }
+
+    /**
+    * Resolves a possibly type-mirrored {@link Class}. If the class is indeed type-mirrored, this
+    * method will first construct the {@link TypeMirror} and then use the type name to create the
+    * corresponding {@link Class} object. If the class is not type-mirrored the method will simply
+    * return the {@link Class} object provided by the {@link Supplier}.
+    *
+    * @param <_Type_> the type represented by the class
+    * @param supplier a possibly type-mirrored {@link Class} {@link Supplier}
+    * @return the {@link Class} (constructed directly, or via an intermediate {@link TypeMirror} if necessary)
+    **/
+    default <_Type_> Class<_Type_> getType(Supplier<Class<?>> supplier)
+    {
+        TypeMirror typeMirror = getTypeMirror(supplier);
+        if (typeMirror != null)
+        {
+            try
+            {
+                @SuppressWarnings("unchecked")
+                Class<_Type_> type = (Class<_Type_>)Class.forName(typeMirror.toString());
+                return type;
+            }
+            catch (Exception exception)
+            {
+                throw new RuntimeException(exception);
+            }
+        }
+        @SuppressWarnings("unchecked")
+        Class<_Type_> type = (Class<_Type_>)supplier.get();
+        return type;
     }
 
     /**
