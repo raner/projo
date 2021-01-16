@@ -24,6 +24,7 @@ import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
+import static pro.projo.interfaces.annotation.Ternary.EITHER;
 
 /**
 * The {@link Options @Options} annotation captures various settings that affect the compile-time
@@ -67,11 +68,15 @@ public @interface Options
     Unmapped skip() default @Unmapped(false);
 
     /**
-    * The option for adding annotations (such as {@code @Generated}). Defaults to {@code true}.
+    * The option for adding annotations (such as {@code @Generated}). Defaults to {@link Ternary#EITHER},
+    * which is interpreted as {@code true}. The {@link Ternary} type is used to make it distinguishable
+    * if a boolean option is set to a non-default value at the package level, but is set back to the
+    * default value at annotation level. Using plain {@link boolean}s, this scenario would not be
+    * distinguishable.
     *
     * @return whether annotations should be added to the generated code
     **/
-    boolean addAnnotations() default true;
+    Ternary addAnnotations() default EITHER;
 
     /**
     * The option for specifying a post-processor class.

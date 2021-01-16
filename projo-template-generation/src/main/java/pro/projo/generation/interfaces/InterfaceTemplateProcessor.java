@@ -63,6 +63,7 @@ import javax.tools.FileObject;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.utilities.DefaultNameComparator;
+import pro.projo.generation.utilities.MergeOptions;
 import pro.projo.generation.utilities.MethodFilter;
 import pro.projo.generation.utilities.PackageShortener;
 import pro.projo.generation.utilities.Reduction;
@@ -94,6 +95,7 @@ import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interfaces;
 import static pro.projo.generation.utilities.TypeConverter.primitives;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
 import static pro.projo.interfaces.annotation.Ternary.TRUE;
 
 /**
@@ -236,7 +238,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         Function<Interface, Configuration> getConfiguration = annotation ->
         {
             Set<String> imports = new HashSet<>();
-            if (annotation.options().addAnnotations())
+            if (new MergeOptions(element.getAnnotation(Options.class), annotation.options()).options().addAnnotations() != FALSE)
             {
                 imports.add(Generated.class.getName());
             }
@@ -376,7 +378,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 @Override
                 public Map<String, Object> parameters()
                 {
-                    Collection<String> imports = options().addAnnotations()? singleton(Generated.class.getName()):emptyList();
+                    Collection<String> imports = options().addAnnotations() != FALSE? singleton(Generated.class.getName()):emptyList();
                     Map<String, Object> parameters = getParameters(packageName, imports, options());
                     parameters.put("javadoc", "This enum was extracted from " + originalClass + ".");
                     parameters.put("EnumTemplate", annotation.generate());
@@ -390,7 +392,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
 
     Map<String, Object> getParameters(Name packageName, Collection<String> imports, Options options)
     {
-        String generatedBy = options.addAnnotations()? "@Generated(\"" + getClass().getName() + "\")":"";
+        String generatedBy = options.addAnnotations() != FALSE? "@Generated(\"" + getClass().getName() + "\")":"";
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("package", packageName);
         parameters.put("imports", imports);

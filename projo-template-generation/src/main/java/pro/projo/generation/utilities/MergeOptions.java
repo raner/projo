@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.tools.StandardLocation;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Ternary;
 import pro.projo.interfaces.annotation.Unmapped;
 import static pro.projo.template.annotation.Configuration.defaults;
 
@@ -97,16 +98,14 @@ public class MergeOptions implements TypeMirrorUtilities
             }
 
             @Override
-            public boolean addAnnotations()
+            public Ternary addAnnotations()
             {
                 return option(Options::addAnnotations);
             }
 
             <_Option_> _Option_ option(Function<Options, _Option_> option)
             {
-                return isDefault(annotationLevelOptions, option)?
-                    option.apply(packageLevelOptions):
-                    option.apply(annotationLevelOptions);
+                return option.apply(isDefault(annotationLevelOptions, option)? packageLevelOptions:annotationLevelOptions);
             }
 
             boolean isDefault(Options options, Function<Options, ?> option)

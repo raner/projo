@@ -37,11 +37,11 @@
 @Interface(generate="Comparable", from=Comparable.class, map=@Map(type=int.class, to="Integer"))
 @Interface(generate="Function", from=Function.class)
 @Interface(generate="DataInput", from=DataInput.class, options=@Options(skip=@Unmapped))
-@Interface(generate="Closeable", from=Closeable.class, options=@Options(addAnnotations=false))
+@Interface(generate="Closeable", from=Closeable.class, options=@Options(addAnnotations=FALSE))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
-@Enum(generate="Protocol", from=StandardProtocolFamily.class, options=@Options(addAnnotations=false))
+@Enum(generate="Protocol", from=StandardProtocolFamily.class, options=@Options(addAnnotations=FALSE))
 package pro.projo.generation.interfaces.test;
 
 import java.io.Closeable;
@@ -77,6 +77,7 @@ import pro.projo.interfaces.annotation.Unmapped;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
 
 /**
 * This {@code package-info} class contains the annotations that are tested by the

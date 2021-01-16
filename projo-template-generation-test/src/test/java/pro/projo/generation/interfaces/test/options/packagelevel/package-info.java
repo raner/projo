@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Options(fileExtension=".kava", postProcessor=UpperCasePostProcessor.class, addAnnotations=false)
-@Interface(generate="Runnable", from=Runnable.class, options=@Options(addAnnotations=true, postProcessor=LowerCasePostProcessor.class))
+@Options(fileExtension=".kava", postProcessor=UpperCasePostProcessor.class, addAnnotations=FALSE)
+@Interface(generate="Runnable", from=Runnable.class, options=@Options(addAnnotations=TRUE, postProcessor=LowerCasePostProcessor.class))
 @Interface(generate="AutoCloseable", from=AutoCloseable.class)
 package pro.projo.generation.interfaces.test.options.packagelevel;
 
@@ -22,6 +22,8 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.postprocessor.LowerCasePostProcessor;
 import pro.projo.interfaces.annotation.postprocessor.UpperCasePostProcessor;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
+import static pro.projo.interfaces.annotation.Ternary.TRUE;
 
 /**
 * This {@code package-info} class contains additional annotations that are tested by the option-related tests

@@ -24,6 +24,7 @@ import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
+import pro.projo.interfaces.annotation.Ternary;
 import pro.projo.interfaces.annotation.Unmapped;
 import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static org.junit.Assert.assertFalse;
@@ -122,9 +123,9 @@ public class TypeConverterSkipTest extends AbstractTypeConverterTest
             }
 
             @Override
-            public boolean addAnnotations()
+            public Ternary addAnnotations()
             {
-                return true;
+                return Ternary.EITHER;
             }
 
             @Override
