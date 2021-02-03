@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 - 2020 Mirko Raner                                        //
+// Copyright 2018 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -45,6 +45,11 @@ public @interface Interface
     * @return the simple name of the interface to be generated
     **/
     String generate();
+
+    /**
+    * @return the (optional, hence possibly empty) list of base interfaces to extend
+    **/
+    String[] extend() default {};
 
     /**
     * Indicates which modifiers a method in the original class must have so that it will be

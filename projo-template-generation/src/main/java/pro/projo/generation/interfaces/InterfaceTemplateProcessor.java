@@ -284,12 +284,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             if (type != null)
             {
                 TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
-                supertypes = staticMethodsOnly(annotation)?
-                    "":concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature).collect(joining(", "));
+                supertypes = staticMethodsOnly(annotation)? "":
+                    Stream.concat(concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature), Stream.of(annotation.extend())).collect(joining(", "));
             }
             else
             {
-                supertypes = "";
+                supertypes = Stream.of(annotation.extend()).collect(joining(", "));
             }
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).filter(Objects::nonNull).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());

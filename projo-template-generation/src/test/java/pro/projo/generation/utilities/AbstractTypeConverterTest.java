@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -102,6 +102,12 @@ public abstract class AbstractTypeConverterTest
             public String generate()
             {
                 return generate;
+            }
+
+            @Override
+            public String[] extend()
+            {
+                return new String[] {};
             }
 
             @Override

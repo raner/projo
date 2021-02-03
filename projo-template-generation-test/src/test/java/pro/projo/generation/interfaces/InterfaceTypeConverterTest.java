@@ -87,6 +87,12 @@ public class InterfaceTypeConverterTest
             }
 
             @Override
+            public String[] extend()
+            {
+                return original.extend();
+            }
+
+            @Override
             @SuppressWarnings("deprecation")
             public Modifier[] modifiers()
             {

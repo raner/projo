@@ -38,6 +38,7 @@
 @Interface(generate="Function", from=Function.class)
 @Interface(generate="DataInput", from=DataInput.class, options=@Options(skip=@Unmapped))
 @Interface(generate="Closeable", from=Closeable.class, options=@Options(addAnnotations=FALSE))
+@Interface(generate="SerializableReadable", from=Readable.class, extend="java.io.Serializable")
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
