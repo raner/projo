@@ -280,16 +280,19 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
             Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter, typeParameters);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
+            Stream<TypeMirror> baseInterfaces = Stream.of(annotation.extend()).map(this::typeMirror);
+            Stream<String> baseInterfaceNames = baseInterfaces.map(typeConverter::convert).map(Type::signature);
+            // TODO: do we need to pass unmapped or superclass flagged when converting base interfaces?
             String supertypes;
             if (type != null)
             {
                 TypeMirror[] superclass = Stream.of(type.getSuperclass()).filter(validSuperclass).toArray(TypeMirror[]::new);
                 supertypes = staticMethodsOnly(annotation)? "":
-                    Stream.concat(concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature), Stream.of(annotation.extend())).collect(joining(", "));
+                    Stream.concat(concat(type.getInterfaces(), superclass).map(typeConverter::convert).map(Type::signature), baseInterfaceNames).collect(joining(", "));
             }
             else
             {
-                supertypes = Stream.of(annotation.extend()).collect(joining(", "));
+                supertypes = baseInterfaceNames.collect(joining(", "));
             }
             String[] declarations = methods.stream().filter(this::realMethodsOnly).map(toDeclaration).filter(Objects::nonNull).toArray(String[]::new);
             imports.addAll(typeConverter.getImports());
@@ -483,6 +486,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     TypeElement typeElement(TypeMirror type)
     {
         return elements.getTypeElement(type.toString());
+    }
+
+    TypeMirror typeMirror(String className)
+    {
+        TypeElement element = elements.getTypeElement(className);
+        return element.asType();
     }
 
     @SafeVarargs
