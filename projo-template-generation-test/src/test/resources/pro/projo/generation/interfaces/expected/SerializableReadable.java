@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test;
 /* */
+import java.io.Serializable;
 import java.nio.CharBuffer;
 import javax.annotation.Generated;
 /* */
@@ -26,7 +27,7 @@ import javax.annotation.Generated;
 /* */
 @Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
 /* */
-public interface SerializableReadable extends java.io.Serializable
+public interface SerializableReadable extends Serializable
 {
 /* */
     int read(CharBuffer arg0);
