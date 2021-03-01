@@ -39,6 +39,7 @@
 @Interface(generate="DataInput", from=DataInput.class, options=@Options(skip=@Unmapped))
 @Interface(generate="Closeable", from=Closeable.class, options=@Options(addAnnotations=FALSE))
 @Interface(generate="SerializableReadable", from=Readable.class, extend="java.io.Serializable")
+@Interface(generate="Transformer", from=ObservableTransformer.class, options=@Options(typeVariableTransformer=UpperCasePostProcessor.class))
 @Enum(generate="Enumeration", from=Enumeration.class)
 @Enum(generate="BackpressureStrategy", from=BackpressureStrategy.class)
 @Enum(generate="RoundingMode", from=RoundingMode.class, options=@Options(fileExtension=".kava"))
@@ -53,6 +54,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.observables.GroupedObservable;
 import pro.projo.generation.interfaces.test.classes.Converter;
 import pro.projo.generation.interfaces.test.classes.Enumeration;
@@ -75,6 +77,7 @@ import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Unmapped;
+import pro.projo.interfaces.annotation.postprocessor.UpperCasePostProcessor;
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;

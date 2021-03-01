@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
@@ -278,7 +279,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             Stream<Source> enums = getAnnotations(element, Enum.class, Enums.class).stream().map(EnumSource::new);
             Stream<Source> sources = Stream.concat(interfaces.stream().map(InterfaceSource::new), enums);
             TypeConverter typeConverter = new TypeConverter(types, shortener, packageName, sources, primary);
-            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter, typeParameters);
+            Function<ExecutableElement, String> toDeclaration = convertToDeclaration(typeConverter, typeParameters, primary);
             Predicate<TypeMirror> validSuperclass = base -> base.getKind() != NONE && !base.toString().equals(object);
             Stream<TypeMirror> baseInterfaces = Stream.of(annotation.extend()).map(this::typeMirror);
             Stream<String> baseInterfaceNames = baseInterfaces.map(typeConverter::convert).map(Type::signature);
@@ -335,7 +336,11 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     String signature = annotation.generate();
                     if (!typeParameters.isEmpty())
                     {
-                        signature += "<" + typeParameters.stream().map(Object::toString).collect(joining(", ")) + ">";
+                        String parameters = typeParameters.stream()
+                            .map(Object::toString)
+                            .map(typeVariableTransformer(primary))
+                            .collect(joining(", "));
+                        signature += "<" + parameters + ">";
                     }
                     if (!supertypes.isEmpty())
                     {
@@ -352,6 +357,28 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     private final <_Type_> Stream<_Type_> concat(Collection<? extends _Type_> initial, _Type_... additional)
     {
         return Stream.concat(initial.stream(), Stream.of(additional));
+    }
+
+    UnaryOperator<String> typeVariableTransformer(InterfaceSource source)
+    {
+        try
+        {
+            Class<UnaryOperator<Writer>> typeVariableTransformer;
+            typeVariableTransformer = getType(source.options()::typeVariableTransformer);
+            UnaryOperator<Writer> operator = typeVariableTransformer.getConstructor().newInstance();
+            return string ->
+            {
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter printWriter = new PrintWriter(operator.apply(stringWriter));
+                printWriter.write(string);
+                printWriter.flush();
+                return stringWriter.toString();
+            };
+        }
+        catch (Exception exception)
+        {
+            throw new RuntimeException(exception);
+        }
     }
 
     private Collection<? extends Configuration> getEnumConfiguration(PackageElement packageElement, List<Enum> enums)
@@ -404,7 +431,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     }
 
     Function<ExecutableElement, String> convertToDeclaration(TypeConverter typeMap,
-        List<? extends TypeParameterElement> typeParameters)
+        List<? extends TypeParameterElement> typeParameters, InterfaceSource primary)
     {
         return method ->
         {
@@ -412,7 +439,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     
             // Add type parameters, if any:
             List<? extends TypeParameterElement> typeParameterList = method.getTypeParameters();
-            Map<String, String> renamedTypeVariables = renameShadowedTypeVariables(typeParameters, typeParameterList);
+            Map<String, String> renamedTypeVariables = renameShadowedTypeVariables(typeParameters, typeParameterList, typeVariableTransformer(primary));
             if (!typeParameterList.isEmpty())
             {
                 String localTypeParameters =
@@ -446,7 +473,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
 
     Map<String, String> renameShadowedTypeVariables(
         List<? extends TypeParameterElement> classLevelVariables,
-        List<? extends TypeParameterElement> methodLevelVariables)
+        List<? extends TypeParameterElement> methodLevelVariables,
+        UnaryOperator<String> transformer)
     {
     	Map<String, Integer> typeVariableOccurrences = Stream.of(classLevelVariables, methodLevelVariables)
             .flatMap(List::stream)
@@ -463,13 +491,18 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         {
         	Map<String, Integer> types = new HashMap<>(entry.getKey());
             int suffixIndex = iterate(0, next -> next+1).filter(index -> !types.containsKey(type+index)).findFirst().get();
-            String rename = type + suffixIndex;
+            String rename = transformer.apply(type + suffixIndex);
             types.put(rename, 1);
             Map<String, String> renames = new HashMap<>(entry.getValue());
             renames.put(type, rename);
             return new SimpleEntry<>(types, renames);
         };
-        return duplicates.reduce(typesAndRenames, renameDuplicates, (a, b) -> b).getValue();
+        Map<String, String> rewrites =
+            duplicates.reduce(typesAndRenames, renameDuplicates, (a, b) -> b).getValue();
+        typeVariableOccurrences.entrySet().stream()
+            .filter(entry -> !entry.getKey().equals(transformer.apply(entry.getKey())))
+            .collect(toMap(Entry::getKey, entry -> transformer.apply(entry.getKey()), (a, b) -> b, () -> rewrites));
+        return rewrites;
     }
 
     @SuppressWarnings("deprecation")

@@ -98,6 +98,12 @@ public class MergeOptions implements TypeMirrorUtilities
             }
 
             @Override
+            public Class<? extends UnaryOperator<Writer>> typeVariableTransformer()
+            {
+                return option(options -> getType(options::typeVariableTransformer));
+            }
+
+            @Override
             public Ternary addAnnotations()
             {
                 return option(Options::addAnnotations);

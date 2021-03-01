@@ -133,6 +133,12 @@ public class TypeConverterSkipTest extends AbstractTypeConverterTest
             {
                 return IdentityPostProcessor.class;
             }
+
+            @Override
+            public Class<? extends UnaryOperator<Writer>> typeVariableTransformer()
+            {
+                return IdentityPostProcessor.class;
+            }
         };
     }
 
