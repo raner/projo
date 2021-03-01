@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,6 +24,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static java.util.function.UnaryOperator.identity;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,63 +59,71 @@ public class ShadowedTypeVariableTest
         when(X0.getSimpleName()).thenReturn(new Name("X0"));
         when(X1.getSimpleName()).thenReturn(new Name("X1"));
     }
-    
+
     @Test
     public void noTypeVariablesAtAll()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(emptyList(), emptyList());
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(emptyList(), emptyList(), identity());
     	assertEquals(emptyMap(), result);
     }
 
     @Test
     public void noShadowedTypeVariables()
     {
-        Map<String, String> result = processor.renameShadowedTypeVariables(asList(S, T, U), asList(V, W));
+        Map<String, String> result =
+            processor.renameShadowedTypeVariables(asList(S, T, U), asList(V, W), identity());
         assertEquals(emptyMap(), result);
     }
 
     @Test
     public void oneShadowedTypeVariable()
     {
-        Map<String, String> result = processor.renameShadowedTypeVariables(asList(S, T), asList(T, U));
+        Map<String, String> result =
+            processor.renameShadowedTypeVariables(asList(S, T), asList(T, U), identity());
         assertEquals(singletonMap("T", "T0"), result);
     }
-    
+
     @Test
     public void oneShadowedTypeVariableRenameWouldCollideWithExistingTypeLevelVariable()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(asList(W, X, X0), asList(T, U, X));
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(asList(W, X, X0), asList(T, U, X), identity());
     	assertEquals(singletonMap("X", "X1"), result);
     }
-    
+
     @Test
     public void oneShadowedTypeVariableRenameWouldCollideWithExistingMethodLevelVariable()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(asList(W, X), asList(T, U, X, X0));
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(asList(W, X), asList(T, U, X, X0), identity());
     	assertEquals(singletonMap("X", "X1"), result);
     }
-    
+
     @Test
     public void oneShadowedTypeVariableRenameWouldCollideWithTwoExistingTypeLevelVariables()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(asList(X, X0, X1), asList(U, X));
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(asList(X, X0, X1), asList(U, X), identity());
     	assertEquals(singletonMap("X", "X2"), result);
     }
-    
+
     @Test
     public void multipeShadowedTypeVariablesWithCollisions()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(asList(S, T, U, X, X0), asList(U, V, W, X, X1));
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(asList(S, T, U, X, X0), asList(U, V, W, X, X1), identity());
     	Map<String, String> expected = new HashMap<>();
     	expected.put("U", "U0");
     	expected.put("X", "X2");
     	assertEquals(expected, result);
     }
-    
+
     @Test
     public void allMethodLevelsTypeVariablesAreShadowed()
     {
-    	Map<String, String> result = processor.renameShadowedTypeVariables(asList(S, T, U, V, W), asList(T, U, V));
+    	Map<String, String> result =
+    	    processor.renameShadowedTypeVariables(asList(S, T, U, V, W), asList(T, U, V), identity());
     	Map<String, String> expected = new HashMap<>();
     	expected.put("T", "T0");
     	expected.put("U", "U0");

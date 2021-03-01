@@ -84,4 +84,11 @@ public @interface Options
     * @return the post-processor class
     **/
     Class<? extends UnaryOperator<Writer>> postProcessor() default IdentityPostProcessor.class;
+
+    /**
+    * The option for specifying a type variable transformer class.
+    *
+    * @return the type variable transformer
+    **/
+    Class<? extends UnaryOperator<Writer>> typeVariableTransformer() default IdentityPostProcessor.class;
 }
