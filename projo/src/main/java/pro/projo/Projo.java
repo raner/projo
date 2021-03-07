@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 - 2020 Mirko Raner                                        //
+// Copyright 2016 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -216,7 +216,11 @@ public abstract class Projo
     public static <_Artifact_, _Delegate_>
     _Artifact_ delegate(Class<_Artifact_> type, _Delegate_ delegate, Mapping mapping)
     {
-        return creates(type).initialize(Delegated.class).delegate(delegate, mapping).returnInstance();
+        @SuppressWarnings("unchecked")
+        Class<_Artifact_> realType = type == Object.class?
+            (Class<_Artifact_>)mapping.getSynthetic(delegate.getClass()):
+            type;
+        return creates(realType).initialize(Delegated.class).delegate(delegate, mapping).returnInstance();
     }
 
     public static <_Artifact_, _Delegate_>

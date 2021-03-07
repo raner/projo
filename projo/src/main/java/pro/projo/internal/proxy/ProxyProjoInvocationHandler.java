@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -197,7 +197,9 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             // Get the delegate object and its type (e.g. BigInteger):
             //
             Object delegate = state.get(DELEGATE);
-            Class<?> delegateType = delegate.getClass();
+            Class<?> delegateType = delegate != null?
+                delegate.getClass():
+                mapping.getDelegate(method.getDeclaringClass());
 
             // Find the corresponding method in the delegate type (e.g., BigInteger):
             //
@@ -236,6 +238,12 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         {
             return (Class<?>)((ParameterizedType)type).getRawType();
         }
+        if (type instanceof TypeVariable)
+        {
+            // TODO: what to do if there is more than one upper bound? e.g. T extends Number & Runnable
+            Type upperBound = ((TypeVariable<?>)type).getBounds()[0];
+            return (Class<?>)upperBound;
+        }
         return (Class<?>)type;
     }
 
@@ -261,7 +269,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         // TODO: some code overlap with ProxyProjo.initializer(Class)
         Class<?>[] interfaces = {type, ProjoObject.class};
         ClassLoader classLoader = Projo.getImplementation().getClassLoader();
-        @SuppressWarnings({"unchecked", "deprecation"})
+        @SuppressWarnings({"unchecked"})
         Class<? extends _Artifact_> proxyClass = (Class<? extends _Artifact_>)getProxyClass(classLoader, interfaces);
         return proxyClass;
     }
