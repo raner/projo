@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,6 +24,10 @@ package pro.projo.interfaces.annotation;
 *       unmapped types are primitives</li>
 *  <li> {@code @Unmapped(includingPrimitives=true)} - skip methods that use
 *       unmapped types, including those that use unmapped primitives
+*  <li> {@code @Unmapped(includingArrays=true)} - skip methods that use
+*       unmapped types, including those that use arrays
+*  <li> {@code @Unmapped(includingPrimitives=true, includingArrays=true)} - skip
+*       methods that use unmapped types, including primitives and arrays
 *  <li> {@code @Unmapped(false)} - do not skip any methods, regardless of whether
 *       they use unmapped types</li>
 * </ul>
@@ -52,4 +56,14 @@ public @interface Unmapped
     * {@code false} otherwise
     **/
     boolean includingPrimitives() default false;
+
+    /**
+     * Indicates whether to also skip methods that use array types.
+     * Notably, enabling this option will also skip methods that have a {@code void}
+     * return type (unless {@code void} is mapped to some other type).
+     *
+     * @return {@code true} if methods using unmapped primitives should be skipped,
+     * {@code false} otherwise
+     **/
+    boolean includingArrays() default false;
 }

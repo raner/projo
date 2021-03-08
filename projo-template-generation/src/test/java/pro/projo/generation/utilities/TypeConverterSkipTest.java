@@ -163,6 +163,12 @@ public class TypeConverterSkipTest extends AbstractTypeConverterTest
             {
                 return includingPrimitives;
             }
+
+            @Override
+            public boolean includingArrays()
+            {
+                return false;
+            }
         };
     }
 }

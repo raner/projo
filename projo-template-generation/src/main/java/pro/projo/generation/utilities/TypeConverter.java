@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -163,8 +163,9 @@ public class TypeConverter implements TypeMirrorUtilities
         }
         if (element instanceof ArrayType)
         {
+            Unmapped skip = options.skip();
             Type arrayType = convert(((ArrayType)element).getComponentType(), typeRenames, unmapped);
-            return new Type(arrayType.signature + "[]", unmapped || arrayType.unmapped);
+            return new Type(arrayType.signature + "[]", unmapped || arrayType.unmapped || skip.includingArrays());
         }
         if (element instanceof WildcardType)
         {
