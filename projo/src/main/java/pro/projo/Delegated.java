@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,6 +15,8 @@
 //                                                                          //
 package pro.projo;
 
+import java.util.Map;
+
 /**
 * The {@link Delegated} interface represents objects whose implementation is delegated
 * to another object. This interface also allows to retrieve the delegate.
@@ -24,4 +26,6 @@ package pro.projo;
 public interface Delegated
 {
 	<_Delegate_> _Delegate_ getDelegate();
+
+	Map<String, Object> getState();
 }

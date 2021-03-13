@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,7 +24,7 @@ public class MappingTest implements AbstractTypeMappingTest
     @Test
     public void createSimpleMapping()
     {
-        Mapping mapping = Projo.mapping()
+        Mapping<?> mapping = Projo.mapping()
             .map(Integer.class).to(BigInteger.class)
             .map(String.class).to(java.lang.String.class);
         assertEquals(BigInteger.class, mapping.getDelegate(Integer.class));

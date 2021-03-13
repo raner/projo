@@ -195,10 +195,16 @@ public abstract class Projo
     *
     * @return a new {@link Mapping}
     **/
-    public static Mapping mapping()
+    public static <TYPE> Mapping<TYPE> mapping()
     {
-        return new Mapping()
+        return new Mapping<TYPE>()
         {
+            @Override
+            Class<TYPE> current()
+            {
+                return null;
+            }
+
             @Override
             Map<Class<?>, Class<?>> syntheticToDelegate()
             {
@@ -210,11 +216,17 @@ public abstract class Projo
             {
                 return new HashMap<>();
             }
+
+            @Override
+            public Map<Class<?>, Adapter<?, ?>> adapters()
+            {
+                return new HashMap<>();
+            }
         };
     }
 
     public static <_Artifact_, _Delegate_>
-    _Artifact_ delegate(Class<_Artifact_> type, _Delegate_ delegate, Mapping mapping)
+    _Artifact_ delegate(Class<_Artifact_> type, _Delegate_ delegate, Mapping<?> mapping)
     {
         @SuppressWarnings("unchecked")
         Class<_Artifact_> realType = type == Object.class?
