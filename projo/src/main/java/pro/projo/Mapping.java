@@ -17,6 +17,7 @@ package pro.projo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import static java.util.Collections.unmodifiableMap;
 
 /**
@@ -25,18 +26,37 @@ import static java.util.Collections.unmodifiableMap;
 * getter/setter-style Projo objects.
 * The {@link Mapping} class follows an <i>immutable builder</i> pattern.
 *
+* @param <TYPE> the last mapped type
+*
 * @author Mirko Raner
 **/
-public abstract class Mapping
+public abstract class Mapping<TYPE>
 {
+    public static interface Adapter<TYPE, ADAPTER>
+    {
+        Class<ADAPTER> type();
+
+        Function<TYPE, ADAPTER> from();
+
+        Function<ADAPTER, TYPE> to();
+    }
+
     public abstract class Source
     {
         abstract Class<?> source();
         
-        Mapping to(Class<?> destination)
+        <TARGET> Mapping<TARGET> to(Class<? extends TARGET> destination)
         {
-            return new Mapping()
+            return new Mapping<TARGET>()
             {
+                @Override
+                Class<TARGET> current()
+                {
+                    @SuppressWarnings("unchecked")
+                    Class<TARGET> target =  (Class<TARGET>)destination;
+                    return target;
+                }
+
                 @Override
                 Map<Class<?>, Class<?>> syntheticToDelegate()
                 {
@@ -52,13 +72,49 @@ public abstract class Mapping
                     mapping.put(destination, source());
                     return unmodifiableMap(mapping);
                 }
+
+                @Override
+                public Map<Class<?>, Adapter<?, ?>> adapters()
+                {
+                    return Mapping.this.adapters();
+                }
             };
         }
     }
 
+    abstract Class<TYPE> current();
+
     abstract Map<Class<?>, Class<?>> syntheticToDelegate();
 
     abstract Map<Class<?>, Class<?>> delegateToSynthetic();
+
+    abstract public Map<Class<?>, Adapter<?, ?>> adapters();
+
+    public Class<?> getAdaptedType(Class<?> type)
+    {
+        Adapter<?, ?> identity = new Adapter<Object, Object>()
+        {
+            @Override
+            @SuppressWarnings("unchecked")
+            public Class<Object> type()
+            {
+                return (Class<Object>)type;
+            }
+
+            @Override
+            public Function<Object, Object> from()
+            {
+                return null;
+            }
+
+            @Override
+            public Function<Object, Object> to()
+            {
+                return null;
+            }
+        };
+        return adapters().getOrDefault(type, identity).type();
+    }
 
     public Class<?> getDelegate(Class<?> type)
     {
@@ -80,5 +136,60 @@ public abstract class Mapping
               return source;
             }
         };
+    }
+
+    <ADAPTER> Mapping<TYPE> withAdapter(Class<ADAPTER> type,
+        Function<TYPE, ADAPTER> from, Function<ADAPTER, TYPE> to)
+    {
+        Mapping<TYPE> mappingWithAdapter = new Mapping<TYPE>()
+        {
+            @Override
+            Class<TYPE> current()
+            {
+                return Mapping.this.current();
+            }
+
+            @Override
+            Map<Class<?>, Class<?>> syntheticToDelegate()
+            {
+                return Mapping.this.syntheticToDelegate();
+            }
+
+            @Override
+            Map<Class<?>, Class<?>> delegateToSynthetic()
+            {
+                return Mapping.this.delegateToSynthetic();
+            }
+
+            @Override
+            public Map<Class<?>, Adapter<?, ?>> adapters()
+            {
+                HashMap<Class<?>, Adapter<?, ?>> mapping = new HashMap<>(Mapping.this.adapters());
+                @SuppressWarnings("rawtypes")
+                Adapter<?, ?> adapter = new Adapter()
+                {
+                    @Override
+                    public Class<?> type()
+                    {
+                        return type;
+                    }
+
+                    @Override
+                    public Function<?, ?> from()
+                    {
+                        return from;
+                    }
+
+                    @Override
+                    public Function<?, ?> to()
+                    {
+                        return to;
+                    }
+                };
+                mapping.put(current(), adapter);
+                return unmodifiableMap(mapping);
+            }
+        };
+        return mappingWithAdapter;
     }
 }

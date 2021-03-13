@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,7 @@
 package pro.projo.internal;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -47,4 +48,7 @@ public interface Predicates
     static Predicate<Method> getDelegate = method -> method.getName().equals("getDelegate")
         && method.getParameterCount() == 0
         && Object.class.equals(method.getReturnType());
+    static Predicate<Method> getState = method -> method.getName().equals("getState")
+        && method.getParameterCount() == 0
+        && Map.class.equals(method.getReturnType());
 }

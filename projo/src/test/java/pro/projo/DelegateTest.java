@@ -56,23 +56,24 @@ public class DelegateTest implements AbstractTypeMappingTest
 
     static interface Flows<$ extends Flows<$>>
     {
-        <TYPE> Flow<?, TYPE> just(TYPE element);
-        <TYPE> Flow<?, TYPE> just(TYPE element1, TYPE element2);
-        <TYPE> Flow<?, TYPE> fromIterable(Iterable<TYPE> iterable);
-        <TYPE> Flow<?, TYPE> concat(Flow<?, ? extends TYPE> s1, Flow<?, ? extends TYPE> s2);
-        <T1, T2, TYPE> Flow<?, TYPE> zip(Flow<?, ? extends T1> s1, Flow<?, ? extends T2> s2, Function<?, Tuple<?, ? super T1, ? super T2>, ? extends TYPE> zipper);
+        <T> Flow<?, T> just(T element);
+        <T> Flow<?, T> just(T element1, T element2);
+        <T> Flow<?, T> fromIterable(Iterable<T> iterable);
+        <T> Flow<?, T> concat(Flow<?, ? extends T> s1, Flow<?, ? extends T> s2);
+        <T1, T2, T> Flow<?, T> zip(Flow<?, ? extends T1> s1, Flow<?, ? extends T2> s2, Function<?, Tuple<?, ? super T1, ? super T2>, ? extends T> zipper);
     }
 
-    Mapping mapping = Projo.mapping()
+    Mapping<?> mapping = Projo.mapping()
         .map(Flow.class).to(Flowable.class)
         .map(Flows.class).to(Flowable.class)
         .map(Natural.class).to(BigInteger.class)
+            .withAdapter(long.class, BigInteger::longValue, BigInteger::valueOf)
         .map(Integer.class).to(BigInteger.class);
 
     @Test
     public void integerAdd()
     {
-        Mapping mapping = Projo.mapping().map(IntegerImpl.class).to(BigInteger.class);
+        Mapping<?> mapping = Projo.mapping().map(IntegerImpl.class).to(BigInteger.class);
         IntegerImpl one = Projo.delegate(IntegerImpl.class, BigInteger.ONE, mapping);
         IntegerImpl ten = Projo.delegate(IntegerImpl.class, BigInteger.TEN, mapping);
         IntegerImpl eleven = ten.add(one);
@@ -101,7 +102,6 @@ public class DelegateTest implements AbstractTypeMappingTest
         assertEquals(BigInteger.ONE, result);
     }
 
-    @org.junit.Ignore
     @Test
     public void skipFlow()
     {
