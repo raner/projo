@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,11 +43,13 @@ import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
+import pro.projo.utilities.Pair;
 import static java.lang.System.identityHashCode;
 import static java.lang.reflect.Proxy.getProxyClass;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static pro.projo.Projo.isValueObject;
+import static pro.projo.utilities.Pair.pair;
 
 /**
 * The {@link ProxyProjoInvocationHandler} is the {@link InvocationHandler} for Projo objects that are
@@ -76,7 +77,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     {
         String propertyName = matcher.propertyName(method.getName());
         state.put(propertyName, initializationStack.pop());
-        properties.add(new SimpleEntry<>(propertyName, method.getReturnType()));
+        properties.add(pair(propertyName, method.getReturnType()));
 
         // Avoid NPEs during auto-unboxing of return values of methods that return a primitive type:
         //
@@ -222,7 +223,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 {
                     String typeVariableName = ((TypeVariable<?>)type).getName();
                     Type reifiedArgumentType = getPrimaryProxyType(argument);
-                    return new SimpleEntry<String, Type>(typeVariableName, reifiedArgumentType);
+                    return pair(typeVariableName, reifiedArgumentType);
                 }
                 return null;
             });
@@ -251,16 +252,22 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
             // Convert the arguments to their corresponding delegate (non-synthetic) types (i.e., unwrap them):
             //
-            Stream<Object> unwrappedArguments = stream(arguments).map(Projo::unwrap).map(adapt);
+            Function<Object, Object> unwrap = object ->
+            {
+                return object instanceof Delegated? adapt.apply(Projo.unwrap(object)):object;
+            };
+            Stream<Object> unwrappedArguments = stream(arguments).map(unwrap);
 
             // Invoke the delegate method:
             //
             Object result = delegateMethod.invoke(delegate, unwrappedArguments.toArray());
 
-            // Convert the result back to the synthetic type:
+            // Convert the result back to the synthetic type (unless it already is):
             //
             Class<?> returnType = getEffectiveType(method.getGenericReturnType(), self, primaryProxyType, bindings);
-            Delegated wrappedResult = (Delegated)Projo.delegate(returnType, result, mapping);
+            Delegated wrappedResult = result instanceof Delegated?
+                (Delegated)result:
+                (Delegated)Projo.delegate(returnType, result, mapping);
             Map<String, Object> state = wrappedResult.getState();
 
             // Determine if the type variables that were bound previously are present in the
@@ -271,14 +278,10 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             {
                 Type[] typeArguments = ((ParameterizedType)genericReturnType).getActualTypeArguments();
                 Map<String, Type> map = typeMap.filter(Objects::nonNull).collect(toMap(Entry::getKey, Entry::getValue, (a, b) -> b, () -> new HashMap<>()));
-                for (int index = 0; index < typeArguments.length; index++)
-                {
-                    Type type = map.get(typeArguments[index].getTypeName());
-                    if (type != null)
-                    {
-                        state.put(TYPE_VARIABLE + index, type);
-                    }
-                }
+                IntStream.range(0, typeArguments.length)
+                    .mapToObj(index -> pair(TYPE_VARIABLE + index, map.get(typeArguments[index].getTypeName())))
+                    .filter(Pair::hasValue)
+                    .forEach(entry -> entry.addTo(state));
 
                 // Transitively bind previously bound type variables if the current type
                 // has variables <..., X, ...> and the return type is the same base type and has the
@@ -286,26 +289,20 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 //
                 if (returnType.equals(declaringClass))
                 {
+                    // TODO: this should also work if the type variables don't have the
+                    //       same index, e.g.
+                    //
+                    //       BijectiveFunction<A, B>
+                    //       {
+                    //           BijectiveFunction<B, A> invert();
+                    //       }
+                    //
                     TypeVariable<?>[] typeParameters = declaringClass.getTypeParameters();
-                    for (int index = 0; index < typeArguments.length; index++)
-                    {
-                        // TODO: this should also work if the type variables don't have the
-                        //       same index, e.g.
-                        //
-                        //       BijectiveFunction<A, B>
-                        //       {
-                        //           BijectiveFunction<B, A> invert();
-                        //       }
-                        //
-                        if (typeArguments[index].equals(typeParameters[index]))
-                        {
-                            Object binding = this.state.get(TYPE_VARIABLE + index);
-                            if (binding != null)
-                            {
-                                state.put(TYPE_VARIABLE + index, binding);
-                            }
-                        }
-                    }
+                    IntStream.range(0, typeParameters.length)
+                        .filter(index -> typeArguments[index].equals(typeParameters[index]))
+                        .mapToObj(index -> pair(TYPE_VARIABLE + index, this.state.get(TYPE_VARIABLE + index)))
+                        .filter(Pair::hasValue)
+                        .forEach(pair -> pair.addTo(state));
                 }
             }
             return wrappedResult;
@@ -314,17 +311,11 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
     Map<TypeVariable<?>, Type> getBindings(Class<?> declaringClass)
     {
-        Map<TypeVariable<?>, Type> bindings = new HashMap<>();
         TypeVariable<?>[] typeParameters = declaringClass.getTypeParameters();
-        for (int index = 0; index < typeParameters.length; index++)
-        {
-            Type binding = (Type)state.get(TYPE_VARIABLE + index);
-            if (binding != null)
-            {
-                bindings.put(typeParameters[index], binding);
-            }
-        }
-        return bindings;
+        return IntStream.range(0, typeParameters.length)
+            .mapToObj(index -> pair(index, (Type)state.get(TYPE_VARIABLE + index)))
+            .filter(Pair::hasValue)
+            .collect(toMap(pair -> typeParameters[pair.getKey()], Pair::getValue));
     }
 
     Entry<Method, Boolean> findMethod(Mapping<?> mapping, Class<?> delegateType, String name, Class<?>[] parameterTypes) throws NoSuchMethodException
@@ -335,12 +326,12 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         // - assume that there is either 0 or 1 adapter for each parameter type
         try
         {
-            return new SimpleEntry<>(delegateType.getMethod(name, parameterTypes), false);
+            return pair(delegateType.getMethod(name, parameterTypes), false);
         }
         catch (NoSuchMethodException noSuchMethod)
         {
             Class<?>[] adaptedParameterTypes = Stream.of(parameterTypes).map(mapping::getAdaptedType).toArray(Class[]::new);
-            return new SimpleEntry<>(delegateType.getMethod(name, adaptedParameterTypes), true);
+            return pair(delegateType.getMethod(name, adaptedParameterTypes), true);
         }
     }
 

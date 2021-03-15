@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -19,10 +19,9 @@ import java.lang.reflect.Constructor;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.stream.Stream;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -30,7 +29,7 @@ import org.junit.runners.Parameterized.Parameters;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.rules.ExpectedException.none;
+import static org.junit.Assert.assertThrows;
 import static pro.projo.internal.NumbersWideningTest.Supported.can;
 import static pro.projo.internal.NumbersWideningTest.Supported.cannot;
 
@@ -57,7 +56,7 @@ public class NumbersWideningTest
           .filter(item -> item[0][0].equals(from)).findFirst().get()[1])
           .anyMatch(to::equals)? can:cannot;
     }
-    
+
     @Parameters(name="{0} {2} be widened to {1}")
     public static Collection<Object[]> testedConversions()
     {
@@ -76,24 +75,27 @@ public class NumbersWideningTest
     @Parameter(2)
     public Supported supported;
 
-    @Rule
-    public ExpectedException expectedException = none();
-
     @Test
     public void test() throws Exception
     {
-        if (supported == cannot)
-        {
-            expectedException.expect(IllegalArgumentException.class);
-        }
         @SuppressWarnings("unchecked")
         Class<? extends Number> target = (Class<? extends Number>)numbers.getWrapperClass(to);
-        Class<?> source = numbers.getWrapperClass(from);
-        Class<?> parameter = Character.class.equals(source)? char.class:String.class;
-        Object argument = Character.class.equals(source)? '0':"0";
-        Constructor<?> constructor = source.getDeclaredConstructor(parameter);
-        Number number = (Number)constructor.newInstance(argument);
-        Number result = numbers.cast(number).to(target);
-        assertEquals(target, result.getClass());
+        Callable<Number> result = () ->
+        {
+            Class<?> source = numbers.getWrapperClass(from);
+            Class<?> parameter = Character.class.equals(source)? char.class:String.class;
+            Object argument = Character.class.equals(source)? '0':"0";
+            Constructor<?> constructor = source.getDeclaredConstructor(parameter);
+            Number number = (Number)constructor.newInstance(argument);
+            return numbers.cast(number).to(target);
+        };
+        if (supported == cannot)
+        {
+            assertThrows(IllegalArgumentException.class, result::call);
+        }
+        else
+        {
+            assertEquals(target, result.call().getClass());
+        }
     }
 }

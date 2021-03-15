@@ -193,6 +193,7 @@ public abstract class Projo
     /**
     * Returns a new, empty delegate mapping.
     *
+    * @param <TYPE> the inferred mapping type
     * @return a new {@link Mapping}
     **/
     public static <TYPE> Mapping<TYPE> mapping()

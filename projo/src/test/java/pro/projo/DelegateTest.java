@@ -16,6 +16,7 @@
 package pro.projo;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import org.junit.Test;
 import io.reactivex.rxjava3.core.Flowable;
 import static org.junit.Assert.assertEquals;
@@ -113,5 +114,20 @@ public class DelegateTest implements AbstractTypeMappingTest
         Natural<?> first = skipped.blockingFirst();
         BigInteger result = Projo.unwrap(first);
         assertEquals(BigInteger.TEN, result);
+    }
+    
+    @Test
+    public void fromIterable()
+    {
+        Natural<?> zero = Projo.delegate(Natural.class, BigInteger.ZERO, mapping);
+        Natural<?> one = Projo.delegate(Natural.class, BigInteger.ONE, mapping);
+        Natural<?> ten = Projo.delegate(Natural.class, BigInteger.TEN, mapping);
+        Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
+        Iterable<Natural<?>> iterable = Arrays.asList(zero, one, ten);
+        Flow<?, Natural<?>> flow = flows.fromIterable(iterable);
+        Flow<?, Natural<?>> skipped = flow.skip(one);
+        Natural<?> first = skipped.blockingFirst();
+        BigInteger result = Projo.unwrap(first);
+        assertEquals(BigInteger.ONE, result);
     }
 }
