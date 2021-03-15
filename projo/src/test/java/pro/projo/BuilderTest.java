@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,10 +16,8 @@
 package pro.projo;
 
 import org.junit.Test;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.rules.ExpectedException.none;
+import static org.junit.Assert.assertThrows;
 
 public class BuilderTest
 {
@@ -47,9 +45,6 @@ public class BuilderTest
         long begin();
         long end();
     }
-
-    @Rule
-    public ExpectedException expectedException = none();
 
     @Test
     public void testBuilderWithTwoProperties()
@@ -159,7 +154,8 @@ public class BuilderTest
     @Test
     public void testBuilderWithIncorrectPropertyTypeAndLossyCast()
     {
-        expectedException.expect(IllegalArgumentException.class);
-        Projo.builder(Interval.class).with(Interval::begin, -1).with(Interval::end, 1L).build();
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> Projo.builder(Interval.class).with(Interval::begin, -1).with(Interval::end, 1L).build());
     }
 }
