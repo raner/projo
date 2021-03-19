@@ -29,7 +29,7 @@
  <artifactId>projo-jax-rs</artifactId>
 
  <properties>
-  <tomcat-embed.version>8.5.56</tomcat-embed.version>
+  <tomcat-embed.version>10.0.4</tomcat-embed.version>
  </properties>
 
  <dependencies>
