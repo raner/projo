@@ -29,7 +29,7 @@ public class DelegateTest implements AbstractTypeMappingTest
 
     static interface Predicate<$ extends Predicate<$, VALUE>, VALUE>
     {
-        Boolean<?> evaluate(VALUE value);
+        Boolean<?> test(VALUE value);
     }
 
     static interface Function<$ extends Function<$, INPUT, OUTPUT>, INPUT, OUTPUT>
@@ -69,7 +69,8 @@ public class DelegateTest implements AbstractTypeMappingTest
         .map(Flows.class).to(Flowable.class)
         .map(Natural.class).to(BigInteger.class)
             .withAdapter(long.class, BigInteger::longValue, BigInteger::valueOf)
-        .map(Integer.class).to(BigInteger.class);
+        .map(Integer.class).to(BigInteger.class)
+        .map(Predicate.class).to(io.reactivex.rxjava3.functions.Predicate.class);
 
     @Test
     public void integerAdd()
@@ -129,5 +130,28 @@ public class DelegateTest implements AbstractTypeMappingTest
         Natural<?> first = skipped.blockingFirst();
         BigInteger result = Projo.unwrap(first);
         assertEquals(BigInteger.ONE, result);
+    }
+
+    @Test
+    public void filterFlow()
+    {
+        Natural<?> zero = Projo.delegate(Natural.class, BigInteger.ZERO, mapping);
+        Natural<?> one = Projo.delegate(Natural.class, BigInteger.ONE, mapping);
+        Natural<?> ten = Projo.delegate(Natural.class, BigInteger.TEN, mapping);
+        Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
+        Iterable<Natural<?>> iterable = Arrays.asList(zero, one, ten);
+        Flow<?, Natural<?>> flow = flows.fromIterable(iterable);
+        Predicate<Predicate, Natural<Object>> predicate = new Predicate<Object, Natural<Object>>()
+        {
+            @Override
+            public Boolean<?, Boolean<?>> test(Natural<?> number)
+            {
+                
+            }
+        };
+        Flow<?, Natural<?>> filtered = flow.skip(one);
+        Natural<?> first = skipped.blockingFirst();
+        BigInteger result = Projo.unwrap(first);
+        assertEquals(BigInteger.TEN, result);
     }
 }
