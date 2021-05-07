@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: projo-jax-rs
+Bundle-Name: pro.projo.projo-jax-rs
 Bundle-Vendor: Mirko Raner
 Bundle-Version: 1.2.0
-Bundle-SymbolicName: projo-jax-rs; singleton:=true
+Bundle-SymbolicName: pro.projo.projo-jax-rs; singleton:=true
 Bundle-ActivationPolicy: lazy
-Automatic-Module-Name: projo-jax-rs
+Automatic-Module-Name: pro.projo.projo-jax-rs
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: pro.projo.jaxrs.jersey.moxy
 Require-Bundle: projo; bundle-version="1.2.0"
