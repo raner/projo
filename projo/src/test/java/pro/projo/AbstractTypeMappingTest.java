@@ -37,7 +37,7 @@ public interface AbstractTypeMappingTest
 
     public static interface Ordered<S extends Ordered<S>> extends Something<S>
     {
-        Boolean<?> lessOrEqual(S other);
+        Boolean<?> lessOrEqual(Ordered<S> other);
     }
 
     public static interface Boolean<S extends Boolean<S>> extends Value<S>
@@ -60,6 +60,7 @@ public interface AbstractTypeMappingTest
     {
         default Boolean<?> lessThan(S other)
         {
+System.err.println("***lessThan(" + other.getClass() + ")");
             return lessOrEqual(other).and(equals(other).not());
         }
     }
@@ -73,7 +74,16 @@ public interface AbstractTypeMappingTest
 
     public static interface Natural<S extends Natural<S>> extends Comparable<S>, Number<S>
     {
-        //
+//        @Override
+//        default Boolean<?> lessOrEqual(@SuppressWarnings("rawtypes") Ordered other)
+//        {
+//            return null;
+//        }
+//
+//        default Boolean<?> equals(Natural<?> other)
+//        {
+//            return null;
+//        }
     }
 
     public static interface Integer<S extends Integer<S>> extends Comparable<S>, Number<S>

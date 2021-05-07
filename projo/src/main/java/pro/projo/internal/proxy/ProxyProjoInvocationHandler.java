@@ -47,6 +47,7 @@ import pro.projo.utilities.Pair;
 import static java.lang.System.identityHashCode;
 import static java.lang.reflect.Proxy.getProxyClass;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static pro.projo.Projo.isValueObject;
 import static pro.projo.utilities.Pair.pair;
@@ -260,6 +261,9 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
             // Invoke the delegate method:
             //
+System.err.println("delegateMethod=" + delegateMethod);
+System.err.println("wrappedArguments.types=" + stream(arguments).map(Object::getClass).collect(toList()));
+System.err.println("unwrappedArguments.types=" + stream(arguments).map(unwrap).map(Object::getClass).collect(toList()));
             Object result = delegateMethod.invoke(delegate, unwrappedArguments.toArray());
 
             // Convert the result back to the synthetic type (unless it already is):

@@ -64,94 +64,146 @@ public class DelegateTest implements AbstractTypeMappingTest
         <T1, T2, T> Flow<?, T> zip(Flow<?, ? extends T1> s1, Flow<?, ? extends T2> s2, Function<?, Tuple<?, ? super T1, ? super T2>, ? extends T> zipper);
     }
 
+    public static class ExtendedInteger extends BigInteger
+    {
+        private final static long serialVersionUID = 6122563045434251897L;
+
+        public static ExtendedInteger ZERO = new ExtendedInteger("0");
+
+        public static ExtendedInteger ONE = new ExtendedInteger("1");
+
+        public static ExtendedInteger TEN = new ExtendedInteger("10");
+
+        public ExtendedInteger(java.lang.String value)
+        {
+            super(value);
+        }
+
+        public static ExtendedInteger valueOf(long value)
+        {
+            return new ExtendedInteger(java.lang.String.valueOf(value));
+        }
+
+        public long longValue()
+        {
+            return super.longValue();
+        }
+
+        public ExtendedInteger add(ExtendedInteger value)
+        {
+            return new ExtendedInteger(java.lang.String.valueOf(((BigInteger)this).add(value)));
+        }
+
+        public ExtendedInteger subtract(ExtendedInteger value)
+        {
+            return new ExtendedInteger(java.lang.String.valueOf(((BigInteger)this).subtract(value)));
+        }
+
+        public boolean lessThan(ExtendedInteger other)
+        {
+            return compareTo(other) < 0;
+        }
+    }
+
     Mapping<?> mapping = Projo.mapping()
         .map(Flow.class).to(Flowable.class)
         .map(Flows.class).to(Flowable.class)
-        .map(Natural.class).to(BigInteger.class)
-            .withAdapter(long.class, BigInteger::longValue, BigInteger::valueOf)
-        .map(Integer.class).to(BigInteger.class)
+        .map(Natural.class).to(ExtendedInteger.class)
+            .withAdapter(long.class, ExtendedInteger::longValue, ExtendedInteger::valueOf)
+        .map(Integer.class).to(ExtendedInteger.class)
         .map(Predicate.class).to(io.reactivex.rxjava3.functions.Predicate.class);
 
     @Test
     public void integerAdd()
     {
-        Mapping<?> mapping = Projo.mapping().map(IntegerImpl.class).to(BigInteger.class);
-        IntegerImpl one = Projo.delegate(IntegerImpl.class, BigInteger.ONE, mapping);
-        IntegerImpl ten = Projo.delegate(IntegerImpl.class, BigInteger.TEN, mapping);
+        Mapping<?> mapping = Projo.mapping().map(IntegerImpl.class).to(ExtendedInteger.class);
+        IntegerImpl one = Projo.delegate(IntegerImpl.class, ExtendedInteger.ONE, mapping);
+        IntegerImpl ten = Projo.delegate(IntegerImpl.class, ExtendedInteger.TEN, mapping);
         IntegerImpl eleven = ten.add(one);
         BigInteger result = Projo.unwrap(eleven);
-        assertEquals(new BigInteger("11"), result);
+        assertEquals(new ExtendedInteger("11"), result);
     }
 
     @Test
     public void integerSubtract()
     {
-        Integer<?> one = Projo.delegate(Integer.class, BigInteger.ONE, mapping);
-        Integer<?> ten = Projo.delegate(Integer.class, BigInteger.TEN, mapping);
+        Integer<?> one = Projo.delegate(Integer.class, ExtendedInteger.ONE, mapping);
+        Integer<?> ten = Projo.delegate(Integer.class, ExtendedInteger.TEN, mapping);
         Integer<?> nine = ten.subtract(one);
-        BigInteger result = Projo.unwrap(nine);
-        assertEquals(new BigInteger("9"), result);
+        ExtendedInteger result = Projo.unwrap(nine);
+        assertEquals(new ExtendedInteger("9"), result);
     }
 
     @Test
     public void justFlows()
     {
-        Integer<?> one = Projo.delegate(Integer.class, BigInteger.ONE, mapping);
+        Integer<?> one = Projo.delegate(Integer.class, ExtendedInteger.ONE, mapping);
         Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
         Flow<?, Integer<?>> flow = flows.just(one);
         Integer<?> first = flow.blockingFirst();
-        BigInteger result = Projo.unwrap(first);
-        assertEquals(BigInteger.ONE, result);
+        ExtendedInteger result = Projo.unwrap(first);
+        assertEquals(ExtendedInteger.ONE, result);
     }
 
     @Test
     public void skipFlow()
     {
-        Natural<?> one = Projo.delegate(Natural.class, BigInteger.ONE, mapping);
-        Natural<?> ten = Projo.delegate(Natural.class, BigInteger.TEN, mapping);
+        Natural<?> one = Projo.delegate(Natural.class, ExtendedInteger.ONE, mapping);
+        Natural<?> ten = Projo.delegate(Natural.class, ExtendedInteger.TEN, mapping);
         Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
         Flow<?, Natural<?>> flow = flows.just(one, ten);
         Flow<?, Natural<?>> skipped = flow.skip(one);
         Natural<?> first = skipped.blockingFirst();
-        BigInteger result = Projo.unwrap(first);
-        assertEquals(BigInteger.TEN, result);
+        ExtendedInteger result = Projo.unwrap(first);
+        assertEquals(ExtendedInteger.TEN, result);
     }
     
     @Test
     public void fromIterable()
     {
-        Natural<?> zero = Projo.delegate(Natural.class, BigInteger.ZERO, mapping);
-        Natural<?> one = Projo.delegate(Natural.class, BigInteger.ONE, mapping);
-        Natural<?> ten = Projo.delegate(Natural.class, BigInteger.TEN, mapping);
+        Natural<?> zero = Projo.delegate(Natural.class, ExtendedInteger.ZERO, mapping);
+        Natural<?> one = Projo.delegate(Natural.class, ExtendedInteger.ONE, mapping);
+        Natural<?> ten = Projo.delegate(Natural.class, ExtendedInteger.TEN, mapping);
         Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
         Iterable<Natural<?>> iterable = Arrays.asList(zero, one, ten);
         Flow<?, Natural<?>> flow = flows.fromIterable(iterable);
         Flow<?, Natural<?>> skipped = flow.skip(one);
         Natural<?> first = skipped.blockingFirst();
-        BigInteger result = Projo.unwrap(first);
-        assertEquals(BigInteger.ONE, result);
+        ExtendedInteger result = Projo.unwrap(first);
+        assertEquals(ExtendedInteger.ONE, result);
     }
 
     @Test
     public void filterFlow()
     {
-        Natural<?> zero = Projo.delegate(Natural.class, BigInteger.ZERO, mapping);
-        Natural<?> one = Projo.delegate(Natural.class, BigInteger.ONE, mapping);
-        Natural<?> ten = Projo.delegate(Natural.class, BigInteger.TEN, mapping);
+        Natural<?> zero = Projo.delegate(Natural.class, ExtendedInteger.ZERO, mapping);
+        Natural<?> one = Projo.delegate(Natural.class, ExtendedInteger.ONE, mapping);
+        Natural<?> ten = Projo.delegate(Natural.class, ExtendedInteger.TEN, mapping);
+        io.reactivex.rxjava3.functions.Predicate<Natural<?>> rxPredicate = natural ->
+        {
+            System.err.println("predicate***");
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Boolean<?> result = ((Natural)natural).lessThan(one);
+            System.err.println("***result=" + Arrays.asList(result.getClass().getInterfaces()));
+            return result instanceof AbstractTypeMappingTest.True;
+        };
+        Predicate<?, Natural<?>> filter = Projo.delegate(Predicate.class, rxPredicate, mapping);
         Flows<?> flows = Projo.delegate(Flows.class, null, mapping);
-        Iterable<Natural<?>> iterable = Arrays.asList(zero, one, ten);
+        Iterable<Natural<?>> iterable = Arrays.asList(ten, one, zero);
         Flow<?, Natural<?>> flow = flows.fromIterable(iterable);
-        Predicate<Predicate, Natural<Object>> predicate = new Predicate<Object, Natural<Object>>()
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Predicate<?, Natural<?>> predicate = new Predicate()
         {
             @Override
-            public Boolean<?, Boolean<?>> test(Natural<?> number)
+            public Boolean<?> test(Object value)
             {
-                
+                Comparable natural = (Natural<?>)value;
+                return natural.lessThan(one);
             }
         };
-        Flow<?, Natural<?>> filtered = flow.skip(one);
-        Natural<?> first = skipped.blockingFirst();
-        BigInteger result = Projo.unwrap(first);
-        assertEquals(BigInteger.TEN, result);
+        Flow<?, Natural<?>> filtered = flow.filter(filter);//predicate);
+        Natural<?> first = filtered.blockingFirst();
+        ExtendedInteger result = Projo.unwrap(first);
+        assertEquals(ExtendedInteger.ZERO, result);
     }
 }
