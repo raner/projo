@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.2.0</version>
  </parent>
  <artifactId>projo-template-generation-test</artifactId>
  <name>Projo Template Generation Tests</name>
@@ -34,13 +34,13 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-annotation</artifactId>
-   <version>1.2.0-SNAPSHOT</version>
+   <version>1.2.0</version>
    <scope>test</scope>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-generation</artifactId>
-   <version>1.2.0-SNAPSHOT</version>
+   <version>1.2.0</version>
    <scope>provided</scope>
   </dependency>
    <dependency>
