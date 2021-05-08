@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: projo-runtime-code-generation
+Bundle-Name: pro.projo.projo-runtime-code-generation
 Bundle-Vendor: Mirko Raner
 Bundle-Version: 1.2.0
-Bundle-SymbolicName: projo-runtime-code-generation; singleton:=true
+Bundle-SymbolicName: pro.projo.projo-runtime-code-generation; singleton:=true
 Bundle-ActivationPolicy: lazy
-Automatic-Module-Name: projo-runtime-code-generation
+Automatic-Module-Name: pro.projo.projo-runtime-code-generation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Fragment-Host: projo
 Export-Package: pro.projo.internal.rcg; x-internal:=true,
