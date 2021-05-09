@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2016 - 2020 Mirko Raner                                        -->
+<!-- Copyright 2016 - 2021 Mirko Raner                                        -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -71,11 +71,11 @@
   <module>projo</module>
   <module>projo-template-annotation</module>
   <module>projo-template-generation</module>
+  <module>projo-template-generation-test</module>
   <module>projo-template-configuration</module>
   <module>projo-runtime-code-generation</module>
   <module>projo-jackson</module>
   <module>projo-jax-rs</module>
-  <module>projo-template-generation-test</module>
  </modules>
 
  <build>
@@ -120,6 +120,12 @@
       <goals>
        <goal>sign</goal>
       </goals>
+      <configuration>
+       <gpgArguments>
+        <arg>--pinentry-mode</arg>
+        <arg>loopback</arg>
+       </gpgArguments>
+      </configuration>
      </execution>
     </executions>
    </plugin>
