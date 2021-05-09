@@ -32,8 +32,10 @@ public class Person
     }
 }
 ```
-Other languages, like Scala, for example, offer something called *case classes* that provide a very concise way of defining
-such a class, but in Java it is a lot of code (especially for a class that does essentially nothing). Even if you are not
+Java 14 offers *records* to vastly simplify this kind of class, but in earlier versions of Java it is a lot of code
+(especially for a class that does essentially nothing).
+Also, other languages, like Scala, for example, offer something called *case classes* that provide a very concise way of defining
+such a class. Even if you are not
 following DDD principles, an average software project can easily contain hundreds of these classes, accounting for thousands,
 if not ten-thousands, lines of code.
 
@@ -88,12 +90,12 @@ If you are using [Maven](https://maven.apache.org/), simply add these two depend
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.1.0</version>
+   <version>1.2.0</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-runtime-code-generation</artifactId>
-   <version>1.1.0</version>
+   <version>1.2.0</version>
    <scope>runtime</scope>
   </dependency>
 ```
@@ -178,7 +180,7 @@ not needed at compile time), i.e.:
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-jax-rs</artifactId>
-   <version>1.1.0</version>
+   <version>1.2.0</version>
    <scope>runtime</scope>
   </dependency>
 ```
@@ -198,3 +200,7 @@ Besides several bug fixes (e.g., [#1](https://github.com/raner/projo/issues/1), 
 
 Until more detailed documentation becomes available, please have a look at the test cases in the
 [projo-template-generation-test](https://github.com/raner/projo/tree/master/projo-template-generation-test/src/test/java/pro/projo/generation/interfaces) and [jackson](https://github.com/raner/projo/tree/master/projo-jackson/src/test/java/pro/projo/jackson) module to get a basic idea how these new features can be used.
+
+### What is new in Projo 1.2.0?
+Release 1.2.0 contains mainly improvements to Projo's API scraping feature as well as some major and minor
+bug fixes.
