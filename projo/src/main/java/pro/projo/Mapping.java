@@ -126,7 +126,7 @@ public abstract class Mapping<TYPE>
         return delegateToSynthetic().getOrDefault(type, type);
     }
 
-    Source map(Class<?> source)
+    public Source map(Class<?> source)
     {
         return new Source()
         {
