@@ -45,14 +45,14 @@ import static java.util.stream.Stream.iterate;
 **/
 @Target(FIELD)
 @Retention(RUNTIME)
-@interface PrivateFieldProxy
+public @interface PrivateFieldProxy
 {
-  class Processor
+  public static class Processor
   {
     private Object object;
     private List<Field> proxies;
 
-    Processor(Object object)
+    public Processor(Object object)
     {
       this.object = object;
       proxies = Stream.of(object.getClass().getDeclaredFields())

@@ -152,8 +152,8 @@ Alternatively, immutable objects can also be constructed using a builder:
 ```
 
 ### Can Projo create Value Objects?
-The [Value Object](http://dl.acm.org/citation.cfm?id=141550) pattern (free article available
-[here](http://dirkriehle.com/computer-science/research/2006/plop-2006-value-object.pdf)) requires objects to be immutable
+The [Value Object](https://dl.acm.org/doi/10.1145/1415472.1415507) pattern (free article available
+[here](https://riehle.org/computer-science/research/2006/plop-2006-value-object.pdf)) requires objects to be immutable
 and have `equals(Object)` and `hashCode()` methods that are based on the individual fields of the object instead
 of the object's identity. Projo will create appropriate implementations of `equals(Object)` and `hashCode()`
 if **at least one** of these three criteria is fulfilled:

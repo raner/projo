@@ -33,7 +33,7 @@
   <dependency>
    <groupId>net.bytebuddy</groupId>
    <artifactId>byte-buddy</artifactId>
-   <version>1.10.13</version>
+   <version>${bytebuddy.version}</version>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
