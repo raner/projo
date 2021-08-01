@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2020 Mirko Raner                                        //
+// Copyright 2017 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -132,7 +132,14 @@ public class RuntimeCodeGenerationProjo extends Projo
             }
 
             @Override
-            public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate, Mapping mapping)
+            public ProjoHandler<_Artifact_>.ProjoInitializer.ProjoMembers delegate(Object delegate, Mapping<?> mapping)
+            {
+                // TODO
+                return null;
+            }
+
+            @Override
+            public ProjoMembers proxy(Object delegate)
             {
                 // TODO
                 return null;

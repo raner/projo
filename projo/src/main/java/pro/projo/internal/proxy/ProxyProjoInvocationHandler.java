@@ -15,6 +15,8 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -122,6 +124,28 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             };
         }
 
+        @Override
+        public ProjoMembers proxy(Object delegate)
+        {
+            return new ProjoMembers()
+            {
+                @Override
+                public _Artifact_ returnInstance()
+                {
+                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(delegate);
+                    state.put(DELEGATE, delegate);
+                    initializationStack = null;
+                    return instance;
+                }
+
+                @Override
+                public _Artifact_ with(Object... values)
+                {
+                    throw new UnsupportedOperationException("with" + Arrays.asList(values));
+                }
+            };
+        }
+
         class Members extends ProjoMembers
         {
             @SafeVarargs
@@ -185,6 +209,35 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
         throw new NoSuchMethodError(String.valueOf(method));
     };
+
+    InvocationHandler proxyInvoker(Object delegate)
+    {
+        // TODO: this handler captures the delegate object from the closure;
+        //       should it use the ProxyInvocationHandler's state map instead?
+        //
+        return (Object proxy, Method method, Object... arguments) ->
+        {
+            if (method.isDefault())
+            {
+                // Execute the default method code:
+                //
+                Class<?> declaringClass = method.getDeclaringClass();
+                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(declaringClass)
+                    .in(declaringClass)
+                    .unreflectSpecial(method, declaringClass)
+                    .bindTo(proxy)
+                    .invokeWithArguments(arguments);
+            }
+            else
+            {
+                // Forward to delegate object:
+                //
+                return method.invoke(delegate, arguments);
+            }
+        };
+    }
 
     InvocationHandler delegateInvoker(Mapping<?> mapping)
     {

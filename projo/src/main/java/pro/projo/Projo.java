@@ -226,6 +226,25 @@ public abstract class Projo
         };
     }
 
+    /**
+    * Creates a proxy object that wraps another object. All methods are directly forwarded to the wrapped
+    * object with the exact same signatures (no type transformation is performed). However, default methods
+    * in the provided interfaces can be used to modify the behavior of the proxies (instead of forwarding
+    * to the wrapped object, the code in the default method will be executed). The wrapped original object
+    * must implement the primary interface and all additional interfaces (if any).
+    *
+    * @param <_Artifact_> the primary artifact type
+    * @param original the original object to be wrapped
+    * @param primaryInterface the primary interface
+    * @param additionalInterfaces additional interfaces
+    * @return the proxy object
+    **/
+    public static <_Artifact_>
+    _Artifact_ proxy(Object original, Class<_Artifact_> primaryInterface, Class<?>... additionalInterfaces)
+    {
+        return creates(primaryInterface).initialize(additionalInterfaces).proxy(original).returnInstance();
+    }
+
     public static <_Artifact_, _Delegate_>
     _Artifact_ delegate(Class<_Artifact_> type, _Delegate_ delegate, Mapping<?> mapping)
     {
