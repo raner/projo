@@ -73,6 +73,14 @@ public abstract class ProjoHandler<_Artifact_>
         * @return the {@link ProjoMembers}
         **/
         public abstract ProjoMembers delegate(Object delegate, Mapping<?> mapping);
+
+        /**
+        * Creates a {@link ProjoMembers} object based on a proxy object.
+        *
+        * @param delegate the delegate object
+        * @return the {@link ProjoMembers}
+        **/
+        public abstract ProjoMembers proxy(Object delegate);
     }
 
     /**
