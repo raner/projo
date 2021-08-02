@@ -17,6 +17,7 @@ package pro.projo.internal.rcg;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -111,9 +112,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
     }
 
-    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type)
+    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, Class<?>... additionalTypes)
     {
-        return implementationClassCache.computeIfAbsent(type, this::generateProxy);
+        return implementationClassCache.computeIfAbsent(type, it -> generateProxy(it, additionalTypes));
     }
 
     /**
@@ -135,9 +136,29 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
     }
 
-    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type)
+    @SuppressWarnings("unchecked")
+    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, Class<?>... additionalTypes)
     {
-        Builder<_Artifact_> builder = create(type).name(implementationName(type)).defineField("delegate", type);
+        Builder<_Artifact_> builder = null;
+        try
+        {
+            Type[] interfaces = type.getInterfaces();
+            Type delegateType = interfaces.length > 0? interfaces[0]:type;
+            builder = (Builder<_Artifact_>)codeGenerator()
+                .subclass(Object.class)
+                .implement(type)
+                .implement(additionalTypes)
+                .name(implementationName(type))
+                .defineField("delegate", delegateType)
+                .defineConstructor(Modifier.PUBLIC)
+                .withParameter(delegateType)
+                .intercept(MethodCall.invoke(Object.class.getDeclaredConstructor())
+                .andThen(FieldAccessor.ofField("delegate").setsArgumentAt(0)));
+        }
+        catch (NoSuchMethodException | SecurityException exception)
+        {
+            throw new Error(exception);
+        }
         Predicate<Method> proxiable = method -> !method.isDefault();
         builder = Projo.getMethods(type, proxiable).reduce(builder, this::addProxy, sequentialOnly());
         return builder.make().load(type.getClassLoader()).getLoaded();
@@ -238,7 +259,12 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private String implementationName(Class<_Artifact_> type)
     {
-        return type.getName() + SUFFIX;
+        String typeName = type.getName();
+        if (typeName.startsWith("java."))
+        {
+            typeName = typeName.substring("java.".length());
+        }
+        return typeName + SUFFIX;
     }
 
     private Builder<_Artifact_> create(Class<_Artifact_> type)

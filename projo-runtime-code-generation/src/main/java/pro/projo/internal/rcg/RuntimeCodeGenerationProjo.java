@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -143,16 +144,15 @@ public class RuntimeCodeGenerationProjo extends Projo
             {
                 return new ProjoMembers()
                 {
+                    @SuppressWarnings("unchecked")
                     @Override
                     public _Artifact_ returnInstance()
                     {
                         try
                         {
-                            return projoHandler.getProxyImplementationOf(type).getConstructor().newInstance();
-                        }
-                        catch (NoSuchMethodException exception)
-                        {
-                            throw new NoSuchMethodError(exception.getMessage());
+                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, additionalInterfaces).getConstructors();
+                            Constructor<?> constructor = Stream.of(constructors).filter(it -> it.getParameterCount() == 1).findFirst().get();
+                            return (_Artifact_)constructor.newInstance(delegate);
                         }
                         catch (InvocationTargetException exception)
                         {

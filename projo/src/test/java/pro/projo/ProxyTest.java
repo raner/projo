@@ -120,6 +120,11 @@ public class ProxyTest
         }
     }
 
+    public static interface Package
+    {
+        String getName();
+    }
+
     // Test objects:
     //
     MethodDescription getName = latent(type(Package.class), type(String.class), "getName", emptyList());
