@@ -141,8 +141,44 @@ public class RuntimeCodeGenerationProjo extends Projo
             @Override
             public ProjoMembers proxy(Object delegate)
             {
-                // TODO
-                return null;
+                return new ProjoMembers()
+                {
+                    @Override
+                    public _Artifact_ returnInstance()
+                    {
+                        try
+                        {
+                            return projoHandler.getProxyImplementationOf(type).getConstructor().newInstance();
+                        }
+                        catch (NoSuchMethodException exception)
+                        {
+                            throw new NoSuchMethodError(exception.getMessage());
+                        }
+                        catch (InvocationTargetException exception)
+                        {
+                            Throwable cause = exception.getCause();
+                            if (cause instanceof RuntimeException)
+                            {
+                                throw (RuntimeException)cause;
+                            }
+                            throw new RuntimeException(cause.getMessage(), cause);
+                        }
+                        catch (InstantiationException exception)
+                        {
+                            throw new RuntimeException(exception.getMessage(), exception);
+                        }
+                        catch (IllegalAccessException illegalAccess)
+                        {
+                            throw new IllegalAccessError(illegalAccess.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public _Artifact_ with(Object... values)
+                    {
+                        return null;
+                    }
+                };
             }
         };
     }

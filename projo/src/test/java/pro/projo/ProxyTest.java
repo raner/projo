@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -41,7 +42,7 @@ public class ProxyTest
 {
     // Test interfaces:
 
-    static interface UncheckedMethodDescription extends MethodDescription
+    public static interface UncheckedMethodDescription extends MethodDescription
     {
         @Override
         default boolean isInvokableOn(TypeDescription type)
@@ -50,7 +51,7 @@ public class ProxyTest
         }
     }
 
-    static interface PreparameterizedType extends InstrumentedType
+    public static interface PreparameterizedType extends InstrumentedType
     {
         @Override
         default boolean isGenerified()
@@ -65,7 +66,7 @@ public class ProxyTest
         TypeList.Generic getTypeVariables();        
     }
 
-    static interface MergeableInitial<TYPE> extends Initial<TYPE>
+    public static interface MergeableInitial<TYPE> extends Initial<TYPE>
     {
         // These are additional attributes:
         //
@@ -149,6 +150,17 @@ public class ProxyTest
     {
         MethodDescription proxied = Projo.proxy(getName, UncheckedMethodDescription.class);
         assertTrue(proxied.isVisibleTo(type(Package.class)));
+    }
+    
+    @Test
+    public void simpleProxyWithTwoInterfacesImplementsBoth()
+    {
+        boolean[] value = {false};
+        Runnable setValue = () -> value[0] = true;
+        Runnable proxy = Projo.proxy(setValue, Runnable.class, Serializable.class);
+        proxy.run();
+        assertTrue(value[0]);
+        assertTrue(proxy instanceof Serializable);
     }
 
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,

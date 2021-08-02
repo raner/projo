@@ -36,6 +36,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import pro.projo.Projo;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
@@ -110,6 +111,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
     }
 
+    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type)
+    {
+        return implementationClassCache.computeIfAbsent(type, this::generateProxy);
+    }
+
     /**
     * Determines the Projo interface name (if any) of an implementation type.
     *
@@ -127,6 +133,30 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Builder<_Artifact_> builder = create(type).name(implementationName(type));
         builder = Projo.getMethods(type, getter, setter).reduce(builder, this::add, sequentialOnly());
         return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
+    }
+
+    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type)
+    {
+        Builder<_Artifact_> builder = create(type).name(implementationName(type)).defineField("delegate", type);
+        Predicate<Method> proxiable = method -> !method.isDefault();
+        builder = Projo.getMethods(type, proxiable).reduce(builder, this::addProxy, sequentialOnly());
+        return builder.make().load(type.getClassLoader()).getLoaded();
+    }
+
+    private Builder<_Artifact_> addProxy(Builder<_Artifact_> builder, Method method)
+    {
+        String methodName = method.getName();
+        Type returnType = method.getReturnType();
+        Type[] parameterTypes = method.getParameterTypes();
+        Implementation methodCall = MethodCall
+            .invoke(method)
+            .onField("delegate")
+            .withAllArguments()
+            .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+        return builder
+            .defineMethod(methodName, returnType)
+            .withParameters(parameterTypes)
+            .intercept(methodCall);
     }
 
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
