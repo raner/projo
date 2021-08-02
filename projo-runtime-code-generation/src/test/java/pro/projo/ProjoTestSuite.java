@@ -30,6 +30,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses
 ({
     BuilderTest.class,
+    ProxyTest.class,
     ProjoTest.class,
     ProjoObjectTest.class,
     ProjoToStringTest.class,

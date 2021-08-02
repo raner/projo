@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -141,8 +142,43 @@ public class RuntimeCodeGenerationProjo extends Projo
             @Override
             public ProjoMembers proxy(Object delegate)
             {
-                // TODO
-                return null;
+                return new ProjoMembers()
+                {
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public _Artifact_ returnInstance()
+                    {
+                        try
+                        {
+                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, additionalInterfaces).getConstructors();
+                            Constructor<?> constructor = Stream.of(constructors).filter(it -> it.getParameterCount() == 1).findFirst().get();
+                            return (_Artifact_)constructor.newInstance(delegate);
+                        }
+                        catch (InvocationTargetException exception)
+                        {
+                            Throwable cause = exception.getCause();
+                            if (cause instanceof RuntimeException)
+                            {
+                                throw (RuntimeException)cause;
+                            }
+                            throw new RuntimeException(cause.getMessage(), cause);
+                        }
+                        catch (InstantiationException exception)
+                        {
+                            throw new RuntimeException(exception.getMessage(), exception);
+                        }
+                        catch (IllegalAccessException illegalAccess)
+                        {
+                            throw new IllegalAccessError(illegalAccess.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public _Artifact_ with(Object... values)
+                    {
+                        return null;
+                    }
+                };
             }
         };
     }
