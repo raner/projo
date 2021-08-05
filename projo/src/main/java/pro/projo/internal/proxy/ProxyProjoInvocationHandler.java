@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import pro.projo.Delegated;
 import pro.projo.Mapping;
 import pro.projo.Projo;
+import pro.projo.annotations.Proxied;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
@@ -125,14 +126,14 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
 
         @Override
-        public ProjoMembers proxy(Object delegate)
+        public ProjoMembers proxy(Object delegate, Class<?> proxyInterface)
         {
             return new ProjoMembers()
             {
                 @Override
                 public _Artifact_ returnInstance()
                 {
-                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(delegate);
+                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(delegate, proxyInterface);
                     state.put(DELEGATE, delegate);
                     initializationStack = null;
                     return instance;
@@ -210,8 +211,9 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         throw new NoSuchMethodError(String.valueOf(method));
     };
 
-    InvocationHandler proxyInvoker(Object delegate)
+    InvocationHandler proxyInvoker(Object delegate, Class<?> proxyInterface)
     {
+        // 
         // TODO: this handler captures the delegate object from the closure;
         //       should it use the ProxyInvocationHandler's state map instead?
         //
@@ -229,6 +231,10 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                     .unreflectSpecial(method, declaringClass)
                     .bindTo(proxy)
                     .invokeWithArguments(arguments);
+            }
+            else if (method.getAnnotation(Proxied.class) != null)
+            {
+                return delegate;
             }
             else
             {

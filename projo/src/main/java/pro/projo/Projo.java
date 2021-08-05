@@ -242,7 +242,32 @@ public abstract class Projo
     public static <_Artifact_>
     _Artifact_ proxy(Object original, Class<_Artifact_> primaryInterface, Class<?>... additionalInterfaces)
     {
-        return creates(primaryInterface).initialize(additionalInterfaces).proxy(original).returnInstance();
+        return creates(primaryInterface).initialize(additionalInterfaces).proxy(original, null).returnInstance();
+    }
+
+    /**
+    * Creates a proxy object that wraps another object with the goal of overriding and reimplementing
+    * certain methods. This is useful in cases where an interface can be sub-typed but there is no mechanism
+    * to create the objects (e.g., because they are created by some other framework). By wrapping the object
+    * the original object can be re-used but its behavior can be modified. All methods are directly forwarded
+    * to the wrapped object with the exact same signatures (no type transformation is performed). However,
+    * default methods in the provided interfaces can be used to modify the behavior of the proxies (instead
+    * of forwarding to the wrapped object, the code in the default method will be executed). The wrapped
+    * original object must implement the interface's sole super-interface.
+    *
+    * @param <_Artifact_> the primary artifact type
+    * @param original the original object to be wrapped
+    * @param overrideInterface the primary interface
+    * @return the proxy object
+    **/
+    public static <_Original_, _Artifact_ extends _Original_>
+    _Artifact_ proxyOverride(_Original_ original, Class<_Artifact_> overrideInterface)
+    {
+        if (overrideInterface.getInterfaces().length == 0)
+        {
+            throw new IllegalArgumentException("interface must have a super-interface");
+        }
+        return creates(overrideInterface).initialize().proxy(original, overrideInterface).returnInstance();
     }
 
     public static <_Artifact_, _Delegate_>
