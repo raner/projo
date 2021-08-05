@@ -78,9 +78,10 @@ public abstract class ProjoHandler<_Artifact_>
         * Creates a {@link ProjoMembers} object based on a proxy object.
         *
         * @param delegate the delegate object
+        * @param proxyInterface the proxy interface
         * @return the {@link ProjoMembers}
         **/
-        public abstract ProjoMembers proxy(Object delegate);
+        public abstract ProjoMembers proxy(Object delegate, Class<?> proxyInterface);
     }
 
     /**

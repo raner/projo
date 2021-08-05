@@ -20,7 +20,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.method.ParameterDescription;
 import net.bytebuddy.description.modifier.ModifierContributor;
@@ -32,11 +34,12 @@ import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ParameterDefin
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ReceiverTypeDefinition;
 import net.bytebuddy.dynamic.scaffold.InstrumentedType;
 import net.bytebuddy.implementation.Implementation;
-import pro.projo.annotations.Proxy;
+import pro.projo.annotations.Overrides;
+import pro.projo.annotations.Proxied;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
+import static pro.projo.annotations.Overrides.toString;
 
 public class ProxyTest
 {
@@ -44,10 +47,19 @@ public class ProxyTest
 
     public static interface UncheckedMethodDescription extends MethodDescription
     {
+        @Proxied
+        MethodDescription proxied();
+
         @Override
         default boolean isInvokableOn(TypeDescription type)
         {
           return true;
+        }
+
+        @Overrides(toString)
+        default String toStringOverride()
+        {
+            return "unchecked " + proxied().toString();
         }
     }
 
@@ -80,7 +92,7 @@ public class ProxyTest
         // This is the proxy method - instead of redirecting to a wrapped
         // Initial, all proxied methods redirect to the result of this method:
         //
-        @Proxy
+        @Proxied
         default Initial<TYPE> initial()
         {
           return originalBuilder().defineMethod(methodName(), returnType(), modifiers());
@@ -129,34 +141,54 @@ public class ProxyTest
     //
     MethodDescription getName = latent(type(Package.class), type(String.class), "getName", emptyList());
 
+    @SuppressWarnings("deprecation")
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     @Test
     public void simpleProxyWithOverriddenMethodInvokesDefaultMethod()
     {
-        MethodDescription proxied = Projo.proxy(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
         assertTrue(proxied.isInvokableOn(null));
     }
 
     @Test
     public void simpleProxyWithOverriddenMethodInvokesRegularMethodReturningInt()
     {
-        MethodDescription proxied = Projo.proxy(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
         assertEquals(1, proxied.getActualModifiers());
     }
 
     @Test
     public void simpleProxyWithOverriddenMethodInvokesRegularMethodReturningObject()
     {
-        MethodDescription proxied = Projo.proxy(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
         assertEquals(type(Package.class), proxied.getDeclaringType());
     }
 
     @Test
     public void simpleProxyWithOverriddenMethodInvokesRegularMethodWithParameter()
     {
-        MethodDescription proxied = Projo.proxy(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
         assertTrue(proxied.isVisibleTo(type(Package.class)));
     }
-    
+
+    @Test
+    public void simpleProxyWithOverriddenMethodMustSubtypeAnotherInterface()
+    {
+        Runnable runnable = () -> {};
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("interface must have a super-interface");
+        Projo.proxyOverride(runnable, Runnable.class);
+    }
+
+    @Test
+    public void simpleProxyWithProxiedMethodShouldReturnOriginalDelegate()
+    {
+        UncheckedMethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        assertEquals(getName, proxied.proxied());
+    }
+
     @Test
     public void simpleProxyWithTwoInterfacesImplementsBoth()
     {

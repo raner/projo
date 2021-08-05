@@ -140,7 +140,7 @@ public class RuntimeCodeGenerationProjo extends Projo
             }
 
             @Override
-            public ProjoMembers proxy(Object delegate)
+            public ProjoMembers proxy(Object delegate, Class<?> proxyInterface)
             {
                 return new ProjoMembers()
                 {

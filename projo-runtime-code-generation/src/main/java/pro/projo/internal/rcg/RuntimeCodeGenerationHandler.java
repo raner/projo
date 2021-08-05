@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -39,6 +39,7 @@ import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import pro.projo.Projo;
+import pro.projo.annotations.Proxied;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
@@ -169,11 +170,19 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String methodName = method.getName();
         Type returnType = method.getReturnType();
         Type[] parameterTypes = method.getParameterTypes();
-        Implementation methodCall = MethodCall
-            .invoke(method)
-            .onField("delegate")
-            .withAllArguments()
-            .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+        Implementation methodCall;
+        if (method.getAnnotation(Proxied.class) != null)
+        {
+            methodCall = FieldAccessor.ofField("delegate");
+        }
+        else
+        {
+            methodCall = MethodCall
+                .invoke(method)
+                .onField("delegate")
+                .withAllArguments()
+                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+        }
         return builder
             .defineMethod(methodName, returnType)
             .withParameters(parameterTypes)
