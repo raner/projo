@@ -140,7 +140,7 @@ public class RuntimeCodeGenerationProjo extends Projo
             }
 
             @Override
-            public ProjoMembers proxy(Object delegate, Class<?> proxyInterface)
+            public ProjoMembers proxy(Object delegate, Class<?> proxyInterface, boolean override)
             {
                 return new ProjoMembers()
                 {
@@ -150,7 +150,7 @@ public class RuntimeCodeGenerationProjo extends Projo
                     {
                         try
                         {
-                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, additionalInterfaces).getConstructors();
+                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, override, additionalInterfaces).getConstructors();
                             Constructor<?> constructor = Stream.of(constructors).filter(it -> it.getParameterCount() == 1).findFirst().get();
                             return (_Artifact_)constructor.newInstance(delegate);
                         }

@@ -228,10 +228,9 @@ public abstract class Projo
 
     /**
     * Creates a proxy object that wraps another object. All methods are directly forwarded to the wrapped
-    * object with the exact same signatures (no type transformation is performed). However, default methods
-    * in the provided interfaces can be used to modify the behavior of the proxies (instead of forwarding
-    * to the wrapped object, the code in the default method will be executed). The wrapped original object
-    * must implement the primary interface and all additional interfaces (if any).
+    * object with the exact same signatures (no type transformation is performed). The wrapped original object
+    * must implement the primary interface and all additional interfaces (if any), or at least have methods
+    * with the matching signatures (if the object does not technically implement the interface).
     *
     * @param <_Artifact_> the primary artifact type
     * @param original the original object to be wrapped
@@ -242,7 +241,7 @@ public abstract class Projo
     public static <_Artifact_>
     _Artifact_ proxy(Object original, Class<_Artifact_> primaryInterface, Class<?>... additionalInterfaces)
     {
-        return creates(primaryInterface).initialize(additionalInterfaces).proxy(original, null).returnInstance();
+        return creates(primaryInterface).initialize(additionalInterfaces).proxy(original, null, false).returnInstance();
     }
 
     /**
@@ -267,7 +266,7 @@ public abstract class Projo
         {
             throw new IllegalArgumentException("interface must have a super-interface");
         }
-        return creates(overrideInterface).initialize().proxy(original, overrideInterface).returnInstance();
+        return creates(overrideInterface).initialize().proxy(original, overrideInterface, true).returnInstance();
     }
 
     public static <_Artifact_, _Delegate_>

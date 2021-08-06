@@ -79,9 +79,10 @@ public abstract class ProjoHandler<_Artifact_>
         *
         * @param delegate the delegate object
         * @param proxyInterface the proxy interface
+        * @param override {@code true} if this proxy overrides base interface functionality
         * @return the {@link ProjoMembers}
         **/
-        public abstract ProjoMembers proxy(Object delegate, Class<?> proxyInterface);
+        public abstract ProjoMembers proxy(Object delegate, Class<?> proxyInterface, boolean override);
     }
 
     /**

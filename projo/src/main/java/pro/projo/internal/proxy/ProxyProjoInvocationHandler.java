@@ -126,7 +126,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
 
         @Override
-        public ProjoMembers proxy(Object delegate, Class<?> proxyInterface)
+        public ProjoMembers proxy(Object delegate, Class<?> proxyInterface, boolean override)
         {
             return new ProjoMembers()
             {

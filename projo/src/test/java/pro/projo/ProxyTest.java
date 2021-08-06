@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo;
 
+import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -187,6 +188,16 @@ public class ProxyTest
     {
         UncheckedMethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
         assertEquals(getName, proxied.proxied());
+    }
+
+    @Test
+    public void simpleProxyWithOneInterface() throws Exception
+    {
+        boolean[] value = {false};
+        Closeable setValue = () -> value[0] = true;
+        Closeable proxy = Projo.proxy(setValue, Closeable.class);
+        proxy.close();
+        assertTrue(value[0]);
     }
 
     @Test
