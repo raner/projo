@@ -113,9 +113,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
     }
 
-    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, Class<?>... additionalTypes)
+    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, boolean override, Class<?>... additionalTypes)
     {
-        return implementationClassCache.computeIfAbsent(type, it -> generateProxy(it, additionalTypes));
+        return implementationClassCache.computeIfAbsent(type, it -> generateProxy(it, override, additionalTypes));
     }
 
     /**
@@ -138,13 +138,12 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, Class<?>... additionalTypes)
+    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, boolean override, Class<?>... additionalTypes)
     {
         Builder<_Artifact_> builder = null;
         try
         {
-            Type[] interfaces = type.getInterfaces();
-            Type delegateType = interfaces.length > 0? interfaces[0]:type;
+            Type delegateType = override? type.getInterfaces()[0]:type;
             builder = (Builder<_Artifact_>)codeGenerator()
                 .subclass(Object.class)
                 .implement(type)
