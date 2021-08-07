@@ -183,6 +183,14 @@ public class ProxyTest
         Projo.proxyOverride(runnable, Runnable.class);
     }
 
+    @org.junit.Ignore("currently only passes for proxy-based implementations")
+    @Test
+    public void proxyMethodWithOverridesAnnotationOverridesIndicatedMethod()
+    {
+        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        assertEquals("unchecked public java.lang.String pro.projo.ProxyTest$Package.getName()", proxied.toString());
+    }
+
     @Test
     public void simpleProxyWithProxiedMethodShouldReturnOriginalDelegate()
     {

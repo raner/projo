@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import java.util.stream.Stream;
 import pro.projo.Delegated;
 import pro.projo.Mapping;
 import pro.projo.Projo;
+import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Proxied;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
@@ -213,12 +215,21 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
 
     InvocationHandler proxyInvoker(Object delegate, Class<?> proxyInterface)
     {
-        // 
+        // Find methods that are annotated with an @Overrides annotation:
+        //
+        Method[] declaredMethods = proxyInterface != null? proxyInterface.getDeclaredMethods():new Method[] {};
+        Map<String, Method> overrides = Stream.of(declaredMethods)
+            .map(method -> new SimpleEntry<>(method, method.getAnnotation(Overrides.class)))
+            .filter(pair -> pair.getValue() != null)
+            .map(pair -> new SimpleEntry<>(pair.getValue().value(), pair.getKey()))
+            .collect(toMap(Entry::getKey, Entry::getValue));
+
         // TODO: this handler captures the delegate object from the closure;
         //       should it use the ProxyInvocationHandler's state map instead?
         //
         return (Object proxy, Method method, Object... arguments) ->
         {
+            Method overrideMethod = null;
             if (method.isDefault())
             {
                 // Execute the default method code:
@@ -235,6 +246,20 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             else if (method.getAnnotation(Proxied.class) != null)
             {
                 return delegate;
+            }
+            else if (method.getDeclaringClass().equals(Object.class)
+                && ((overrideMethod = overrides.get(method.getName()))) != null)
+            {
+                // Invoke override method:
+                //
+                Class<?> declaringClass = overrideMethod.getDeclaringClass();
+                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+                constructor.setAccessible(true);
+                return constructor.newInstance(declaringClass)
+                    .in(declaringClass)
+                    .unreflectSpecial(overrideMethod, declaringClass)
+                    .bindTo(proxy)
+                    .invokeWithArguments(arguments);
             }
             else
             {
