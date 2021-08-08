@@ -19,9 +19,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
@@ -37,8 +39,8 @@ import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
-import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import pro.projo.Projo;
+import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Proxied;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
@@ -143,6 +145,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Builder<_Artifact_> builder = null;
         try
         {
+            // Define the class and the delegate constructor:
+            //
             Type delegateType = override? type.getInterfaces()[0]:type;
             builder = (Builder<_Artifact_>)codeGenerator()
                 .subclass(Object.class)
@@ -159,9 +163,35 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         {
             throw new Error(exception);
         }
+
+        // Add proxy implementations for all non-default methods:
+        //
         Predicate<Method> proxiable = method -> !method.isDefault();
         builder = Projo.getMethods(type, proxiable).reduce(builder, this::addProxy, sequentialOnly());
+
+        // Add implementations that have @Overrides annotations:
+        //
+        builder = Stream.of(type.getDeclaredMethods())
+            .map(method -> new SimpleEntry<>(method, method.getAnnotation(Overrides.class)))
+            .filter(pair -> pair.getValue() != null)
+            .map(pair -> new SimpleEntry<>(pair.getValue().value(), pair.getKey()))
+            .reduce(builder, this::addOverrides, sequentialOnly());
+
+        // Build and return the proxy class:
+        //
         return builder.make().load(type.getClassLoader()).getLoaded();
+    }
+
+    private Builder<_Artifact_> addOverrides(Builder<_Artifact_> builder, Entry<String, Method> method)
+    {
+        String methodName = method.getKey();
+        Type returnType = method.getValue().getReturnType();
+        Type[] parameterTypes = method.getValue().getParameterTypes();
+        MethodCall methodCall = MethodCall.invoke(method.getValue()).withAllArguments();
+        return builder
+            .defineMethod(methodName, returnType)
+            .withParameters(parameterTypes)
+            .intercept(methodCall);
     }
 
     private Builder<_Artifact_> addProxy(Builder<_Artifact_> builder, Method method)
@@ -179,8 +209,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             methodCall = MethodCall
                 .invoke(method)
                 .onField("delegate")
-                .withAllArguments()
-                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC);
+                .withAllArguments();
         }
         return builder
             .defineMethod(methodName, returnType)

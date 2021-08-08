@@ -183,7 +183,6 @@ public class ProxyTest
         Projo.proxyOverride(runnable, Runnable.class);
     }
 
-    @org.junit.Ignore("currently only passes for proxy-based implementations")
     @Test
     public void proxyMethodWithOverridesAnnotationOverridesIndicatedMethod()
     {

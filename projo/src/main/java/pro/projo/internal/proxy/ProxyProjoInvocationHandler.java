@@ -234,14 +234,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             {
                 // Execute the default method code:
                 //
-                Class<?> declaringClass = method.getDeclaringClass();
-                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
-                constructor.setAccessible(true);
-                return constructor.newInstance(declaringClass)
-                    .in(declaringClass)
-                    .unreflectSpecial(method, declaringClass)
-                    .bindTo(proxy)
-                    .invokeWithArguments(arguments);
+                return rebindAndInvoke(method, proxy, arguments);
             }
             else if (method.getAnnotation(Proxied.class) != null)
             {
@@ -252,14 +245,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             {
                 // Invoke override method:
                 //
-                Class<?> declaringClass = overrideMethod.getDeclaringClass();
-                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
-                constructor.setAccessible(true);
-                return constructor.newInstance(declaringClass)
-                    .in(declaringClass)
-                    .unreflectSpecial(overrideMethod, declaringClass)
-                    .bindTo(proxy)
-                    .invokeWithArguments(arguments);
+                return rebindAndInvoke(overrideMethod, proxy, arguments);
             }
             else
             {
@@ -391,6 +377,18 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             }
             return wrappedResult;
         };
+    }
+
+    Object rebindAndInvoke(Method method, Object proxy, Object... arguments) throws Throwable
+    {
+        Class<?> declaringClass = method.getDeclaringClass();
+        Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(declaringClass)
+            .in(declaringClass)
+            .unreflectSpecial(method, declaringClass)
+            .bindTo(proxy)
+            .invokeWithArguments(arguments);
     }
 
     Map<TypeVariable<?>, Type> getBindings(Class<?> declaringClass)
