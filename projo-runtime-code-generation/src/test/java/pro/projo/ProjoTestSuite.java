@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2021 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -43,7 +43,8 @@ import org.junit.runners.Suite.SuiteClasses;
     ImmutableProjoTrigintuplesTest.class,
     MutableProjoSinglesTest.class,
     MutableProjoDoublesTest.class,
-    MutableProjoTriplesTest.class
+    MutableProjoTriplesTest.class,
+    TransitiveValueObjectsTest.class
 })
 public class ProjoTestSuite
 {

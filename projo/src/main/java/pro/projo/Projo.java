@@ -24,11 +24,13 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -40,6 +42,7 @@ import pro.projo.internal.ProjoObject;
 import pro.projo.utilities.MethodFunctionConverter;
 import static java.lang.reflect.Modifier.isStatic;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
@@ -367,9 +370,11 @@ public abstract class Projo
     **/
     public static boolean isValueObject(Class<?> projo)
     {
-        return projo.getDeclaredAnnotation(ValueObject.class) != null
-            || methodExists(projo, "equals", Object.class)
-            || methodExists(projo, "hashCode");
+        Set<Class<?>> allSuperInterfaces = superInterfaces(projo);
+        return allSuperInterfaces.stream()
+            .anyMatch(type -> type.getDeclaredAnnotation(ValueObject.class) != null
+                || methodExists(type, "equals", Object.class)
+                || methodExists(type, "hashCode"));
     }
 
     /**
@@ -504,6 +509,14 @@ public abstract class Projo
     {
         MethodFunctionConverter converter = new MethodFunctionConverter();
         return Stream.of(getGetterMethods(type)).map(converter::convert).<Function<_Artifact_, ?>>toArray(Function[]::new);
+    }
+
+    private static Set<Class<?>> superInterfaces(Class<?> type)
+    {
+        Set<Class<?>> superInterfaces = new HashSet<>();
+        superInterfaces.add(type);
+        Stream<Class<?>> stream = Stream.of(type.getInterfaces()).flatMap(it -> superInterfaces(it).stream());
+        return (Set<Class<?>>)stream.collect(toCollection(() -> superInterfaces));
     }
 
     private static boolean methodExists(Class<?> type, String methodName, Class<?>... parameters)
