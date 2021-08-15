@@ -18,26 +18,33 @@ package pro.projo;
 import java.io.Closeable;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.method.ParameterDescription;
 import net.bytebuddy.description.modifier.ModifierContributor;
+import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeList;
 import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ParameterDefinition.Initial;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ReceiverTypeDefinition;
 import net.bytebuddy.dynamic.scaffold.InstrumentedType;
 import net.bytebuddy.implementation.Implementation;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Proxied;
+import pro.projo.sextuples.Factory;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static net.bytebuddy.implementation.FixedValue.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static pro.projo.annotations.Overrides.toString;
@@ -85,18 +92,42 @@ public class ProxyTest
         //
         Collection<? extends ModifierContributor.ForMethod> modifiers();
         List<? extends Annotation> annotations();
-        DynamicType.Builder<TYPE> originalBuilder();
+        DynamicType.Builder<?> originalBuilder();
         TypeDefinition returnType();
         Implementation implementation();
         String methodName();
+
+        // This is the factory for creating new objects:
+        //
+        @SuppressWarnings("rawtypes")
+        Factory
+        <
+            MergeableInitial,
+            DynamicType.Builder<?>,
+            String,
+            TypeDefinition,
+            Implementation,
+            Collection<? extends ModifierContributor.ForMethod>,
+            List<? extends Annotation>
+        >
+        FACTORY = Projo.creates(MergeableInitial.class).with
+        (
+            MergeableInitial::originalBuilder,
+            MergeableInitial::methodName,
+            MergeableInitial::returnType,
+            MergeableInitial::implementation,
+            MergeableInitial::modifiers,
+            MergeableInitial::annotations
+        );
 
         // This is the proxy method - instead of redirecting to a wrapped
         // Initial, all proxied methods redirect to the result of this method:
         //
         @Proxied
+        @SuppressWarnings("unchecked")
         default Initial<TYPE> initial()
         {
-          return originalBuilder().defineMethod(methodName(), returnType(), modifiers());
+            return (Initial<TYPE>)originalBuilder().defineMethod(methodName(), returnType(), modifiers());
         }
 
         // The following methods override a default behavior using the additional new attributes:
@@ -104,9 +135,9 @@ public class ProxyTest
         @Override
         default ReceiverTypeDefinition<TYPE> intercept(Implementation intercept)
         {
-          Implementation implementation = implementation();
-          Implementation interceptor = implementation != null? implementation:intercept;
-          return (ReceiverTypeDefinition<TYPE>)initial().intercept(interceptor).annotateMethod(annotations());
+            Implementation implementation = implementation();
+            Implementation interceptor = implementation != null? implementation:intercept;
+            return (ReceiverTypeDefinition<TYPE>)initial().intercept(interceptor).annotateMethod(annotations());
         }
 
         @Override
@@ -117,19 +148,22 @@ public class ProxyTest
 
         // The following are new methods that are not part of the original interface:
         //
+        @SuppressWarnings("unchecked")
         default MergeableInitial<TYPE> merge(ModifierContributor.ForMethod... modifiers)
         {
-            return null; //...(originalBuilder(), methodName(), returnType(), implementation(), modifiers, annotations());
+            return FACTORY.create(originalBuilder(), methodName(), returnType(), implementation(), asList(modifiers), annotations());
         }
 
+        @SuppressWarnings("unchecked")
         default MergeableInitial<TYPE> implement(Implementation implementation)
         {
-            return null; //...(originalBuilder(), methodName(), returnType(), implementation, modifiers(), annotations());
+            return FACTORY.create(originalBuilder(), methodName(), returnType(), implementation, modifiers(), annotations());
         }
 
+        @SuppressWarnings("unchecked")
         default MergeableInitial<TYPE> annotateMethod(List<? extends Annotation> annotations)
         {
-            return null; //...(originalBuilder(), methodName(), returnType(), implementation(), modifiers(), annotations);
+            return FACTORY.create(originalBuilder(), methodName(), returnType(), implementation(), modifiers(), annotations);
         }
     }
 
@@ -216,6 +250,66 @@ public class ProxyTest
         proxy.run();
         assertTrue(value[0]);
         assertTrue(proxy instanceof Serializable);
+    }
+
+    @org.junit.Ignore("does not work with runtime code generation yet")
+    @Test
+    public void proxyObjectCreatedViaFactoryHasAllAttributes()
+    {
+        Builder<Object> builder = new ByteBuddy().subclass(Object.class);
+        MergeableInitial<?> initial = MergeableInitial.FACTORY.create
+        (
+            builder,
+            "getId",
+            type(String.class),
+            nullValue(),
+            emptyList(),
+            emptyList()
+        );
+        assertEquals(builder, initial.originalBuilder());
+        assertEquals("getId", initial.methodName());
+        assertEquals(type(String.class), initial.returnType());
+        assertEquals(nullValue(), initial.implementation());
+        assertEquals(emptyList(), initial.annotations());
+        assertEquals(emptyList(), initial.modifiers());
+    }
+
+    @org.junit.Ignore("does not work with runtime code generation yet")
+    @Test
+    public void proxyObjectCreatedViaFactoryHasWorkingAttributeMethods()
+    {
+        Builder<Object> builder = new ByteBuddy().subclass(Object.class);
+        MergeableInitial<?> initial = MergeableInitial.FACTORY.create
+        (
+            builder,
+            "getId",
+            type(String.class),
+            nullValue(),
+            emptyList(),
+            emptyList()
+        );
+        assertEquals("getId", initial.methodName());
+    }
+
+    @org.junit.Ignore("does not work with runtime code generation yet")
+    @Test
+    public void proxyObjectCreatedViaFactoryHasWorkingProxiedMethod() throws Exception
+    {
+        Builder<Object> builder = new ByteBuddy().subclass(Object.class).name("Test");
+        MergeableInitial<?> initial = MergeableInitial.FACTORY.create
+        (
+            builder,
+            "getId",
+            type(String.class),
+            nullValue(),
+            asList(Visibility.PROTECTED),
+            emptyList()
+        );
+        Initial<?> proxied = initial.initial();
+        Class<?> testClass = proxied.intercept(nullValue()).make().load(getClass().getClassLoader()).getLoaded();
+        Method getId = testClass.getDeclaredMethod("getId");
+        assertEquals(String.class, getId.getReturnType());
+        assertEquals(Modifier.PROTECTED, getId.getModifiers());
     }
 
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,
