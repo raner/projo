@@ -171,7 +171,6 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 {
                     throw new IllegalStateException();
                 }
-System.err.println("reified type=" + reifiedType);
                 if (isProxiedInterface())
                 {
                     invoker = ProxyProjoInvocationHandler.this.proxyInvoker(null, reifiedType);
