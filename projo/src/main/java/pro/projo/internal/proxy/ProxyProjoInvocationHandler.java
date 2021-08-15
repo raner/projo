@@ -19,6 +19,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -170,7 +171,14 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 {
                     throw new IllegalStateException();
                 }
-                invoker = ProxyProjoInvocationHandler.this.regularInvoker;
+                if (isProxiedInterface())
+                {
+                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(null, reifiedType);
+                }
+                else
+                {
+                    invoker = ProxyProjoInvocationHandler.this.regularInvoker;
+                }
                 initializationStack = null;
                 return instance;
             }
@@ -179,6 +187,12 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             public _Artifact_ returnInstance()
             {
                 return with(new Object[getters.length]);
+            }
+
+            private boolean isProxiedInterface()
+            {
+                return Stream.of(reifiedType.getDeclaredMethods())
+                    .anyMatch(method -> method.getAnnotation(Proxied.class) != null);
             }
         }
     }
@@ -246,6 +260,15 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 // Invoke override method:
                 //
                 return rebindAndInvoke(overrideMethod, proxy, arguments);
+            }
+            else if (method.getDeclaringClass().equals(proxyInterface)
+                && ((method.getModifiers() & Modifier.ABSTRACT) != 0)
+                && ((method.getParameterCount() == 0)))
+            {
+                // Return new custom attributes (in lieu of delegate object):
+                //
+                Object value = state.get(matcher.propertyName(method.getName()));
+                return value != null? value:Default.VALUES.get(method.getReturnType());
             }
             else
             {
