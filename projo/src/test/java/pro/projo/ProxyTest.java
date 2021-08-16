@@ -252,7 +252,6 @@ public class ProxyTest
         assertTrue(proxy instanceof Serializable);
     }
 
-    @org.junit.Ignore("does not work with runtime code generation yet")
     @Test
     public void proxyObjectCreatedViaFactoryHasAllAttributes()
     {
@@ -274,24 +273,6 @@ public class ProxyTest
         assertEquals(emptyList(), initial.modifiers());
     }
 
-    @org.junit.Ignore("does not work with runtime code generation yet")
-    @Test
-    public void proxyObjectCreatedViaFactoryHasWorkingAttributeMethods()
-    {
-        Builder<Object> builder = new ByteBuddy().subclass(Object.class);
-        MergeableInitial<?> initial = MergeableInitial.FACTORY.create
-        (
-            builder,
-            "getId",
-            type(String.class),
-            nullValue(),
-            emptyList(),
-            emptyList()
-        );
-        assertEquals("getId", initial.methodName());
-    }
-
-    @org.junit.Ignore("does not work with runtime code generation yet")
     @Test
     public void proxyObjectCreatedViaFactoryHasWorkingProxiedMethod() throws Exception
     {

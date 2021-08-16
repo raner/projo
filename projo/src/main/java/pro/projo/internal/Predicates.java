@@ -16,8 +16,10 @@
 package pro.projo.internal;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Predicate;
+import pro.projo.annotations.Proxied;
 
 /**
 * The {@link Predicates} class is a utility class that defines several commonly used predicates.
@@ -40,7 +42,8 @@ public interface Predicates
         && !method.getDeclaringClass().equals(Object.class)
         && !method.isDefault()
         && !hashCode.test(method)
-        && !toString.test(method);
+        && !toString.test(method)
+        && method.getAnnotation(Proxied.class) == null;
     static Predicate<Method> setter = method -> method.getParameterCount() == 1
         && !method.getDeclaringClass().equals(Object.class)
         && !method.isDefault()
@@ -51,4 +54,7 @@ public interface Predicates
     static Predicate<Method> getState = method -> method.getName().equals("getState")
         && method.getParameterCount() == 0
         && Map.class.equals(method.getReturnType());
+    static Predicate<Method> declaredAttribute = method -> (method.getModifiers() & Modifier.ABSTRACT) != 0
+        && method.getAnnotation(Proxied.class) == null
+        && method.getParameterCount() == 0;
 }

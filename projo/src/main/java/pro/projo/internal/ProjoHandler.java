@@ -16,7 +16,9 @@
 package pro.projo.internal;
 
 import java.util.function.Function;
+import java.util.stream.Stream;
 import pro.projo.Mapping;
+import pro.projo.annotations.Proxied;
 
 /**
 * The {@link ProjoHandler} and its nested member classes {@link ProjoHandler.ProjoInitializer ProjoInitializer} and
@@ -55,6 +57,12 @@ public abstract class ProjoHandler<_Artifact_>
             * @return an uninitialized object (typically mutable, to allow for later initialization)
             **/
             public abstract _Artifact_ returnInstance();
+
+            protected boolean isProxiedInterface(Class<?> reifiedType)
+            {
+                return Stream.of(reifiedType.getDeclaredMethods())
+                    .anyMatch(method -> method.getAnnotation(Proxied.class) != null);
+            }
         }
 
         /**

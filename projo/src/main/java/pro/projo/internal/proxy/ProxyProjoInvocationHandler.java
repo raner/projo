@@ -171,7 +171,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 {
                     throw new IllegalStateException();
                 }
-                if (isProxiedInterface())
+                if (isProxiedInterface(reifiedType))
                 {
                     invoker = ProxyProjoInvocationHandler.this.proxyInvoker(null, reifiedType);
                 }
@@ -187,12 +187,6 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             public _Artifact_ returnInstance()
             {
                 return with(new Object[getters.length]);
-            }
-
-            private boolean isProxiedInterface()
-            {
-                return Stream.of(reifiedType.getDeclaredMethods())
-                    .anyMatch(method -> method.getAnnotation(Proxied.class) != null);
             }
         }
     }
