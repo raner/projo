@@ -74,7 +74,12 @@ public class RuntimeCodeGenerationProjo extends Projo
                     {
                         try
                         {
-                            return projoHandler.getImplementationOf(type).getConstructor().newInstance();
+                            Class<?> implementation = isProxiedInterface(type)?
+                                projoHandler.getProxyImplementationOf(type, true):
+                                projoHandler.getImplementationOf(type);
+                            @SuppressWarnings("unchecked")
+                            _Artifact_ instance = (_Artifact_)implementation.getConstructor().newInstance();
+                            return instance;
                         }
                         catch (NoSuchMethodException exception)
                         {

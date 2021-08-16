@@ -42,6 +42,7 @@ import net.bytebuddy.implementation.MethodCall;
 import pro.projo.Projo;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Proxied;
+import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
@@ -53,6 +54,7 @@ import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.function.UnaryOperator.identity;
+import static java.util.stream.Stream.empty;
 import static net.bytebuddy.ClassFileVersion.JAVA_V8;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.description.type.TypeDescription.OBJECT;
@@ -147,14 +149,16 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         {
             // Define the class and the delegate constructor:
             //
-            Type delegateType = override? type.getInterfaces()[0]:type;
+            Class<?> delegateType = override? type.getInterfaces()[0]:type;
             builder = (Builder<_Artifact_>)codeGenerator()
                 .subclass(Object.class)
                 .implement(type)
                 .implement(additionalTypes)
                 .name(implementationName(type))
-                .defineField("delegate", delegateType)
-                .defineConstructor(Modifier.PUBLIC)
+                .defineField("delegate", delegateType);
+            builder = additionalAttributes(type, override)
+                .reduce(builder, this::add, sequentialOnly());
+            builder = builder.defineConstructor(Modifier.PUBLIC)
                 .withParameter(delegateType)
                 .intercept(MethodCall.invoke(Object.class.getDeclaredConstructor())
                 .andThen(FieldAccessor.ofField("delegate").setsArgumentAt(0)));
@@ -166,7 +170,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
         // Add proxy implementations for all non-default methods:
         //
-        Predicate<Method> proxiable = method -> !method.isDefault();
+        Predicate<Method> proxiable = method -> !method.isDefault()
+                && (!method.getDeclaringClass().equals(type)
+                    || !override || method.getAnnotation(Proxied.class) != null);
         builder = Projo.getMethods(type, proxiable).reduce(builder, this::addProxy, sequentialOnly());
 
         // Add implementations that have @Overrides annotations:
@@ -180,6 +186,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         // Build and return the proxy class:
         //
         return builder.make().load(type.getClassLoader()).getLoaded();
+    }
+
+    private Stream<Method> additionalAttributes(Class<?> type, boolean override)
+    {
+        return override? Stream.of(type.getDeclaredMethods()).filter(Predicates.declaredAttribute):empty();
     }
 
     private Builder<_Artifact_> addOverrides(Builder<_Artifact_> builder, Entry<String, Method> method)
