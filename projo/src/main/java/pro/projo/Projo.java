@@ -257,6 +257,7 @@ public abstract class Projo
     * of forwarding to the wrapped object, the code in the default method will be executed). The wrapped
     * original object must implement the interface's sole super-interface.
     *
+    * @param <_Original_> the original artifact type
     * @param <_Artifact_> the primary artifact type
     * @param original the original object to be wrapped
     * @param overrideInterface the primary interface

@@ -144,6 +144,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     @SuppressWarnings("unchecked")
     private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, boolean override, Class<?>... additionalTypes)
     {
+        Optional<Method> delegateMethod = getDelegateMethod(type.getDeclaredMethods());
         Builder<_Artifact_> builder = null;
         try
         {
@@ -172,8 +173,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         //
         Predicate<Method> proxiable = method -> !method.isDefault()
                 && (!method.getDeclaringClass().equals(type)
-                    || !override || method.getAnnotation(Proxied.class) != null);
-        builder = Projo.getMethods(type, proxiable).reduce(builder, this::addProxy, sequentialOnly());
+                    || !override || method.isAnnotationPresent(Proxied.class));
+        builder = Projo.getMethods(type, proxiable)
+            .reduce(builder, (it, method) -> addProxy(it, method, delegateMethod), sequentialOnly());
 
         // Add implementations that have @Overrides annotations:
         //
@@ -205,22 +207,27 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             .intercept(methodCall);
     }
 
-    private Builder<_Artifact_> addProxy(Builder<_Artifact_> builder, Method method)
+    private Builder<_Artifact_> addProxy(Builder<_Artifact_> builder, Method method, Optional<Method> delegate)
     {
         String methodName = method.getName();
         Type returnType = method.getReturnType();
         Type[] parameterTypes = method.getParameterTypes();
         Implementation methodCall;
-        if (method.getAnnotation(Proxied.class) != null)
+        if (method.isAnnotationPresent(Proxied.class))
         {
             methodCall = FieldAccessor.ofField("delegate");
         }
         else
         {
-            methodCall = MethodCall
-                .invoke(method)
-                .onField("delegate")
-                .withAllArguments();
+            if (delegate.isPresent())
+            {
+                MethodCall delegateMethodCall = MethodCall.invoke(delegate.get());
+                methodCall = MethodCall.invoke(method).onMethodCall(delegateMethodCall).withAllArguments();
+            }
+            else
+            {
+                methodCall = MethodCall.invoke(method).onField("delegate").withAllArguments();
+            }
         }
         return builder
             .defineMethod(methodName, returnType)

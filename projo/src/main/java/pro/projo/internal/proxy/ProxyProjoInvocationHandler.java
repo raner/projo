@@ -231,6 +231,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             .filter(pair -> pair.getValue() != null)
             .map(pair -> new SimpleEntry<>(pair.getValue().value(), pair.getKey()))
             .collect(toMap(Entry::getKey, Entry::getValue));
+        Method delegateMethod = getDelegateMethod(declaredMethods).orElse(null);
 
         // TODO: this handler captures the delegate object from the closure;
         //       should it use the ProxyInvocationHandler's state map instead?
@@ -268,7 +269,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             {
                 // Forward to delegate object:
                 //
-                return method.invoke(delegate, arguments);
+                return method.invoke(delegate == null? delegateMethod.invoke(proxy):delegate, arguments);
             }
         };
     }
