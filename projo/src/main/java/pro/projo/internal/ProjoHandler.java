@@ -15,6 +15,8 @@
 //                                                                          //
 package pro.projo.internal;
 
+import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import pro.projo.Mapping;
@@ -101,4 +103,11 @@ public abstract class ProjoHandler<_Artifact_>
     * @return the concrete implementation class
     **/
     public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type);
+
+    protected Optional<Method> getDelegateMethod(Method[] declaredMethods)
+    {
+        return Stream.of(declaredMethods)
+            .filter(method -> method.isAnnotationPresent(Proxied.class))
+            .findFirst();
+    }
 }

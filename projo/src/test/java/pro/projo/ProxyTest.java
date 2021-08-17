@@ -35,6 +35,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeList;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ExceptionDefinition;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ParameterDefinition.Initial;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ReceiverTypeDefinition;
 import net.bytebuddy.dynamic.scaffold.InstrumentedType;
@@ -289,6 +290,26 @@ public class ProxyTest
         Initial<?> proxied = initial.initial();
         Class<?> testClass = proxied.intercept(nullValue()).make().load(getClass().getClassLoader()).getLoaded();
         Method getId = testClass.getDeclaredMethod("getId");
+        assertEquals(String.class, getId.getReturnType());
+        assertEquals(Modifier.PROTECTED, getId.getModifiers());
+    }
+
+    @Test
+    public void proxyObjectCreatedViaFactoryDelegatesToProxiedMethod() throws Exception
+    {
+        Builder<Object> builder = new ByteBuddy().subclass(Object.class).name("Test");
+        MergeableInitial<?> initial = MergeableInitial.FACTORY.create
+        (
+            builder,
+            "getId",
+            type(String.class),
+            nullValue(),
+            asList(Visibility.PROTECTED),
+            emptyList()
+        );
+        ExceptionDefinition<?> proxied = initial.withParameters(String.class);
+        Class<?> testClass = proxied.intercept(nullValue()).make().load(getClass().getClassLoader()).getLoaded();
+        Method getId = testClass.getDeclaredMethod("getId", String.class);
         assertEquals(String.class, getId.getReturnType());
         assertEquals(Modifier.PROTECTED, getId.getModifiers());
     }
