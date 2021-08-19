@@ -55,6 +55,5 @@ public interface Predicates
         && method.getParameterCount() == 0
         && Map.class.equals(method.getReturnType());
     static Predicate<Method> declaredAttribute = method -> (method.getModifiers() & Modifier.ABSTRACT) != 0
-        && method.getAnnotation(Proxied.class) == null
         && method.getParameterCount() == 0;
 }

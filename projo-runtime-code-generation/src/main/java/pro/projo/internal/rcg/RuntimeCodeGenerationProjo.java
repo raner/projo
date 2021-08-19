@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import pro.projo.Mapping;
 import pro.projo.Projo;
+import pro.projo.annotations.Proxied;
 import pro.projo.internal.Default;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.PropertyMatcher;
@@ -120,6 +121,21 @@ public class RuntimeCodeGenerationProjo extends Projo
                                     Object value = values[index] != null? values[index]:Default.VALUES.get(field.getType());
                                     field.setAccessible(true);
                                     field.set(instance, value);
+                                    try
+                                    {
+                                        // If this is the delegate method also set the "delegate" field:
+                                        //
+                                        if (type.getDeclaredMethod(fieldNames[index]).isAnnotationPresent(Proxied.class))
+                                        {
+                                            Field delegate = implementationClass.getDeclaredField("delegate");
+                                            delegate.setAccessible(true);
+                                            delegate.set(instance, value);
+                                        }
+                                    }
+                                    catch (NoSuchMethodException noSuchMethod)
+                                    {
+                                        // Do nothing
+                                    }
                                 }
                                 catch (NoSuchFieldException noSuchField)
                                 {

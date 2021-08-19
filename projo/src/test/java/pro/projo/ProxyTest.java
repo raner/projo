@@ -45,6 +45,7 @@ import pro.projo.annotations.Proxied;
 import pro.projo.sextuples.Factory;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static net.bytebuddy.description.type.TypeDescription.Generic.Builder.typeVariable;
 import static net.bytebuddy.implementation.FixedValue.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -74,17 +75,27 @@ public class ProxyTest
 
     public static interface PreparameterizedType extends InstrumentedType
     {
-        @Override
-        default boolean isGenerified()
-        {
-            return true;
-        }
+        pro.projo.doubles.Factory<PreparameterizedType, InstrumentedType, TypeList.Generic> FACTORY =
+            Projo.creates(PreparameterizedType.class).with
+            (
+                PreparameterizedType::type,
+                PreparameterizedType::getTypeVariables
+            );
+
+        @Proxied
+        InstrumentedType type();
 
         // This method is supposed to return a value that was passed in at
         // object creation time, not what the proxied InstrumentedType
         // would return.
         @Override
-        TypeList.Generic getTypeVariables();        
+        TypeList.Generic getTypeVariables(); 
+
+        @Override
+        default boolean isGenerified()
+        {
+            return true;
+        }
     }
 
     public static interface MergeableInitial<TYPE> extends Initial<TYPE>
@@ -312,6 +323,38 @@ public class ProxyTest
         Method getId = testClass.getDeclaredMethod("getId", String.class);
         assertEquals(String.class, getId.getReturnType());
         assertEquals(Modifier.PROTECTED, getId.getModifiers());
+    }
+
+    @Test
+    public void hybridProxyObjectImplementsNewMethods() throws Exception
+    {
+        PreparameterizedType type = PreparameterizedType.FACTORY.create
+        (
+            (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription(),
+            new TypeList.Generic.Explicit(typeVariable("T").build())
+        );
+        assertTrue(type.isGenerified());
+    }
+    
+    @Test
+    public void hybridProxyObjectReturnsCorrectProxyObject() throws Exception
+    {
+        InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
+        PreparameterizedType type = PreparameterizedType.FACTORY.create
+        (
+            originalType,
+            new TypeList.Generic.Explicit(typeVariable("T").build())
+        );
+        assertEquals(originalType, type.type());
+    }
+
+    @Test
+    public void hybridProxyObjectReturnsOverriddenAttributes() throws Exception
+    {
+        InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
+        TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
+        PreparameterizedType type = PreparameterizedType.FACTORY.create(originalType, typeVariables);
+        assertEquals(typeVariables, type.getTypeVariables());
     }
 
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,

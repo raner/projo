@@ -173,7 +173,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 }
                 if (isProxiedInterface(reifiedType))
                 {
-                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(null, reifiedType);
+                    invoker = ProxyProjoInvocationHandler.this.proxyInvoker(values[0], reifiedType);
                 }
                 else
                 {
@@ -269,7 +269,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             {
                 // Forward to delegate object:
                 //
-                return method.invoke(delegate == null? delegateMethod.invoke(proxy):delegate, arguments);
+                return method.invoke(delegateMethod != null && delegateMethod.isDefault()? delegateMethod.invoke(proxy):delegate, arguments);
             }
         };
     }
