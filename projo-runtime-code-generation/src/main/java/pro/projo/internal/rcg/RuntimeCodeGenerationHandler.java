@@ -237,7 +237,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
     {
-        boolean isGetter = getter.test(method);
+        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Proxied.class);
         String methodName = method.getName();
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
