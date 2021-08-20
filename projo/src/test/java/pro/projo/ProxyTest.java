@@ -357,6 +357,24 @@ public class ProxyTest
         assertEquals(typeVariables, type.getTypeVariables());
     }
 
+    @Test
+    public void hybridProxyObjectUsesCorrectDelegate() throws Exception
+    {
+        InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
+        TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
+        PreparameterizedType type = PreparameterizedType.FACTORY.create(originalType, typeVariables);
+        assertEquals(originalType.getTypeInitializer(), type.getTypeInitializer());
+    }
+    
+    @Test
+    public void hybridProxyObjectUsesCorrectDelegateWithParameters() throws Exception
+    {
+        InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
+        TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
+        PreparameterizedType type = PreparameterizedType.FACTORY.create(originalType, typeVariables);
+        assertEquals(originalType.withEnclosingType(type(ProxyTest.class)), type.withEnclosingType(type(ProxyTest.class)));
+    }
+
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,
             List<? extends ParameterDescription.Token> parameterTokens)
     {
