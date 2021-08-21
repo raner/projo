@@ -43,7 +43,7 @@ import pro.projo.Delegated;
 import pro.projo.Mapping;
 import pro.projo.Projo;
 import pro.projo.annotations.Overrides;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
@@ -245,7 +245,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 //
                 return rebindAndInvoke(method, proxy, arguments);
             }
-            else if (method.getAnnotation(Proxied.class) != null)
+            else if (method.getAnnotation(Delegate.class) != null)
             {
                 return delegate;
             }

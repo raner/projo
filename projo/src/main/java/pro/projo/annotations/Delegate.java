@@ -21,7 +21,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-* The {@link Proxied @Proxied} annotation is used for marking the method of a proxy interface that
+* The {@link Delegate @Delegate} annotation is used for marking the method of a proxy interface that
 * returns a reference to the wrapped objects. Default methods that override their original (super)
 * implementation can call the marked method to get access to the wrapped object.
 *
@@ -29,7 +29,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 **/
 @Target(METHOD)
 @Retention(RUNTIME)
-public @interface Proxied
+public @interface Delegate
 {
     // No attributes
 }

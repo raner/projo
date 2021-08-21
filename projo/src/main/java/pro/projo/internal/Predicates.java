@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Predicate;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 
 /**
 * The {@link Predicates} class is a utility class that defines several commonly used predicates.
@@ -43,7 +43,7 @@ public interface Predicates
         && !method.isDefault()
         && !hashCode.test(method)
         && !toString.test(method)
-        && method.getAnnotation(Proxied.class) == null;
+        && method.getAnnotation(Delegate.class) == null;
     static Predicate<Method> setter = method -> method.getParameterCount() == 1
         && !method.getDeclaringClass().equals(Object.class)
         && !method.isDefault()

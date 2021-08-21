@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import pro.projo.Mapping;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 
 /**
 * The {@link ProjoHandler} and its nested member classes {@link ProjoHandler.ProjoInitializer ProjoInitializer} and
@@ -63,7 +63,7 @@ public abstract class ProjoHandler<_Artifact_>
             protected boolean isProxiedInterface(Class<?> reifiedType)
             {
                 return Stream.of(reifiedType.getDeclaredMethods())
-                    .anyMatch(method -> method.getAnnotation(Proxied.class) != null);
+                    .anyMatch(method -> method.getAnnotation(Delegate.class) != null);
             }
         }
 
@@ -107,7 +107,7 @@ public abstract class ProjoHandler<_Artifact_>
     protected Optional<Method> getDelegateMethod(Method[] declaredMethods)
     {
         return Stream.of(declaredMethods)
-            .filter(method -> method.isAnnotationPresent(Proxied.class))
+            .filter(method -> method.isAnnotationPresent(Delegate.class))
             .findFirst();
     }
 }

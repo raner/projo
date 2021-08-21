@@ -41,7 +41,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ReceiverTypeDe
 import net.bytebuddy.dynamic.scaffold.InstrumentedType;
 import net.bytebuddy.implementation.Implementation;
 import pro.projo.annotations.Overrides;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 import pro.projo.sextuples.Factory;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -51,13 +51,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static pro.projo.annotations.Overrides.toString;
 
-public class ProxyTest
+public class SimpleDelegateTest
 {
     // Test interfaces:
 
     public static interface UncheckedMethodDescription extends MethodDescription
     {
-        @Proxied
+        @Delegate
         MethodDescription proxied();
 
         @Override
@@ -82,7 +82,7 @@ public class ProxyTest
                 PreparameterizedType::getTypeVariables
             );
 
-        @Proxied
+        @Delegate
         InstrumentedType type();
 
         // This method is supposed to return a value that was passed in at
@@ -135,7 +135,7 @@ public class ProxyTest
         // This is the proxy method - instead of redirecting to a wrapped
         // Initial, all proxied methods redirect to the result of this method:
         //
-        @Proxied
+        @Delegate
         @SuppressWarnings("unchecked")
         default Initial<TYPE> initial()
         {
@@ -193,79 +193,79 @@ public class ProxyTest
     public ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void simpleProxyWithOverriddenMethodInvokesDefaultMethod()
+    public void simpleDelegateWithOverriddenMethodInvokesDefaultMethod()
     {
-        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
         assertTrue(proxied.isInvokableOn(null));
     }
 
     @Test
-    public void simpleProxyWithOverriddenMethodInvokesRegularMethodReturningInt()
+    public void simpleDelegateWithOverriddenMethodInvokesRegularMethodReturningInt()
     {
-        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
         assertEquals(1, proxied.getActualModifiers());
     }
 
     @Test
-    public void simpleProxyWithOverriddenMethodInvokesRegularMethodReturningObject()
+    public void simpleDelegateWithOverriddenMethodInvokesRegularMethodReturningObject()
     {
-        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
         assertEquals(type(Package.class), proxied.getDeclaringType());
     }
 
     @Test
-    public void simpleProxyWithOverriddenMethodInvokesRegularMethodWithParameter()
+    public void simpleDelegateWithOverriddenMethodInvokesRegularMethodWithParameter()
     {
-        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        MethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
         assertTrue(proxied.isVisibleTo(type(Package.class)));
     }
 
     @Test
-    public void simpleProxyWithOverriddenMethodMustSubtypeAnotherInterface()
+    public void simpleDelegateWithOverriddenMethodMustSubtypeAnotherInterface()
     {
         Runnable runnable = () -> {};
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("interface must have a super-interface");
-        Projo.proxyOverride(runnable, Runnable.class);
+        Projo.delegateOverride(runnable, Runnable.class);
     }
 
     @Test
-    public void proxyMethodWithOverridesAnnotationOverridesIndicatedMethod()
+    public void delegateMethodWithOverridesAnnotationOverridesIndicatedMethod()
     {
-        MethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
-        assertEquals("unchecked public java.lang.String pro.projo.ProxyTest$Package.getName()", proxied.toString());
+        MethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
+        assertEquals("unchecked public java.lang.String pro.projo.SimpleDelegateTest$Package.getName()", proxied.toString());
     }
 
     @Test
-    public void simpleProxyWithProxiedMethodShouldReturnOriginalDelegate()
+    public void simpleDelegateWithProxiedMethodShouldReturnOriginalDelegate()
     {
-        UncheckedMethodDescription proxied = Projo.proxyOverride(getName, UncheckedMethodDescription.class);
+        UncheckedMethodDescription proxied = Projo.delegateOverride(getName, UncheckedMethodDescription.class);
         assertEquals(getName, proxied.proxied());
     }
 
     @Test
-    public void simpleProxyWithOneInterface() throws Exception
+    public void simpleDelegateWithOneInterface() throws Exception
     {
         boolean[] value = {false};
         Closeable setValue = () -> value[0] = true;
-        Closeable proxy = Projo.proxy(setValue, Closeable.class);
+        Closeable proxy = Projo.delegate(setValue, Closeable.class);
         proxy.close();
         assertTrue(value[0]);
     }
 
     @Test
-    public void simpleProxyWithTwoInterfacesImplementsBoth()
+    public void simpleDelegateWithTwoInterfacesImplementsBoth()
     {
         boolean[] value = {false};
         Runnable setValue = () -> value[0] = true;
-        Runnable proxy = Projo.proxy(setValue, Runnable.class, Serializable.class);
+        Runnable proxy = Projo.delegate(setValue, Runnable.class, Serializable.class);
         proxy.run();
         assertTrue(value[0]);
         assertTrue(proxy instanceof Serializable);
     }
 
     @Test
-    public void proxyObjectCreatedViaFactoryHasAllAttributes()
+    public void delegateObjectCreatedViaFactoryHasAllAttributes()
     {
         Builder<Object> builder = new ByteBuddy().subclass(Object.class);
         MergeableInitial<?> initial = MergeableInitial.FACTORY.create
@@ -286,7 +286,7 @@ public class ProxyTest
     }
 
     @Test
-    public void proxyObjectCreatedViaFactoryHasWorkingProxiedMethod() throws Exception
+    public void delegateObjectCreatedViaFactoryHasWorkingProxiedMethod() throws Exception
     {
         Builder<Object> builder = new ByteBuddy().subclass(Object.class).name("Test");
         MergeableInitial<?> initial = MergeableInitial.FACTORY.create
@@ -306,7 +306,7 @@ public class ProxyTest
     }
 
     @Test
-    public void proxyObjectCreatedViaFactoryDelegatesToProxiedMethod() throws Exception
+    public void delegateObjectCreatedViaFactoryDelegatesToProxiedMethod() throws Exception
     {
         Builder<Object> builder = new ByteBuddy().subclass(Object.class).name("Test");
         MergeableInitial<?> initial = MergeableInitial.FACTORY.create
@@ -326,7 +326,7 @@ public class ProxyTest
     }
 
     @Test
-    public void hybridProxyObjectImplementsNewMethods() throws Exception
+    public void hybridDelegateObjectImplementsNewMethods() throws Exception
     {
         PreparameterizedType type = PreparameterizedType.FACTORY.create
         (
@@ -337,7 +337,7 @@ public class ProxyTest
     }
     
     @Test
-    public void hybridProxyObjectReturnsCorrectProxyObject() throws Exception
+    public void hybridDelegateObjectReturnsCorrectProxyObject() throws Exception
     {
         InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
         PreparameterizedType type = PreparameterizedType.FACTORY.create
@@ -349,7 +349,7 @@ public class ProxyTest
     }
 
     @Test
-    public void hybridProxyObjectReturnsOverriddenAttributes() throws Exception
+    public void hybridDelegateObjectReturnsOverriddenAttributes() throws Exception
     {
         InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
         TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
@@ -358,7 +358,7 @@ public class ProxyTest
     }
 
     @Test
-    public void hybridProxyObjectUsesCorrectDelegate() throws Exception
+    public void hybridDelegateObjectUsesCorrectDelegate() throws Exception
     {
         InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
         TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
@@ -367,12 +367,12 @@ public class ProxyTest
     }
     
     @Test
-    public void hybridProxyObjectUsesCorrectDelegateWithParameters() throws Exception
+    public void hybridDelegateObjectUsesCorrectDelegateWithParameters() throws Exception
     {
         InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
         TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
         PreparameterizedType type = PreparameterizedType.FACTORY.create(originalType, typeVariables);
-        assertEquals(originalType.withEnclosingType(type(ProxyTest.class)), type.withEnclosingType(type(ProxyTest.class)));
+        assertEquals(originalType.withEnclosingType(type(SimpleDelegateTest.class)), type.withEnclosingType(type(SimpleDelegateTest.class)));
     }
 
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,
