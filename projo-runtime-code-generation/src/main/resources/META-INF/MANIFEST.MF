@@ -7,7 +7,7 @@ Bundle-SymbolicName: pro.projo.projo-runtime-code-generation; singleton:=true
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: pro.projo.projo-runtime-code-generation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Fragment-Host: projo
+Fragment-Host: pro.projo.projo
 Export-Package: pro.projo.internal.rcg; x-internal:=true,
  pro.projo.internal.rcg.runtime; x-internal:=true
 Require-Bundle: net.bytebuddy.byte-buddy; bundle-version="1.9.0"
