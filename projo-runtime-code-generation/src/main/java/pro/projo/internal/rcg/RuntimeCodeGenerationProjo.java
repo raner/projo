@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import pro.projo.Mapping;
 import pro.projo.Projo;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 import pro.projo.internal.Default;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.PropertyMatcher;
@@ -125,7 +125,7 @@ public class RuntimeCodeGenerationProjo extends Projo
                                     {
                                         // If this is the delegate method also set the "delegate" field:
                                         //
-                                        if (type.getDeclaredMethod(fieldNames[index]).isAnnotationPresent(Proxied.class))
+                                        if (type.getDeclaredMethod(fieldNames[index]).isAnnotationPresent(Delegate.class))
                                         {
                                             Field delegate = implementationClass.getDeclaredField("delegate");
                                             delegate.setAccessible(true);

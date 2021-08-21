@@ -230,7 +230,7 @@ public abstract class Projo
     }
 
     /**
-    * Creates a proxy object that wraps another object. All methods are directly forwarded to the wrapped
+    * Creates a delegate object that wraps another object. All methods are directly forwarded to the wrapped
     * object with the exact same signatures (no type transformation is performed). The wrapped original object
     * must implement the primary interface and all additional interfaces (if any), or at least have methods
     * with the matching signatures (if the object does not technically implement the interface).
@@ -242,7 +242,7 @@ public abstract class Projo
     * @return the proxy object
     **/
     public static <_Artifact_>
-    _Artifact_ proxy(Object original, Class<_Artifact_> primaryInterface, Class<?>... additionalInterfaces)
+    _Artifact_ delegate(Object original, Class<_Artifact_> primaryInterface, Class<?>... additionalInterfaces)
     {
         return creates(primaryInterface).initialize(additionalInterfaces).proxy(original, null, false).returnInstance();
     }
@@ -264,7 +264,7 @@ public abstract class Projo
     * @return the proxy object
     **/
     public static <_Original_, _Artifact_ extends _Original_>
-    _Artifact_ proxyOverride(_Original_ original, Class<_Artifact_> overrideInterface)
+    _Artifact_ delegateOverride(_Original_ original, Class<_Artifact_> overrideInterface)
     {
         if (overrideInterface.getInterfaces().length == 0)
         {

@@ -41,7 +41,7 @@ import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
 import pro.projo.Projo;
 import pro.projo.annotations.Overrides;
-import pro.projo.annotations.Proxied;
+import pro.projo.annotations.Delegate;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
@@ -173,7 +173,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         //
         Predicate<Method> proxiable = method -> !method.isDefault()
                 && (!method.getDeclaringClass().equals(type)
-                    || !override || method.isAnnotationPresent(Proxied.class));
+                    || !override || method.isAnnotationPresent(Delegate.class));
         builder = Projo.getMethods(type, proxiable)
             .reduce(builder, (it, method) -> addProxy(it, method, delegateMethod), sequentialOnly());
 
@@ -213,7 +213,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Type returnType = method.getReturnType();
         Type[] parameterTypes = method.getParameterTypes();
         Implementation methodCall;
-        if (method.isAnnotationPresent(Proxied.class))
+        if (method.isAnnotationPresent(Delegate.class))
         {
             methodCall = FieldAccessor.ofField("delegate");
         }
@@ -237,7 +237,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
     {
-        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Proxied.class);
+        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Delegate.class);
         String methodName = method.getName();
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
