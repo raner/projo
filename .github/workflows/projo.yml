@@ -29,3 +29,10 @@ jobs:
         java-version: 8
     - name: Build with Maven
       run: mvn -B install
+    - name: Report Test Results
+      uses: dorny/test-reporter@v1
+      if: success() || failure() # always collect results, even if previous step failed
+      with:
+        name: tests
+        path: '**/surefire-reports/TEST-*.xml'
+        reporter: java-junit
