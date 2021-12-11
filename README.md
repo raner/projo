@@ -1,4 +1,4 @@
-## projo &nbsp; [![Build Status](https://travis-ci.org/raner/projo.svg?branch=master)](https://travis-ci.org/raner/projo) [![Maven Central](https://img.shields.io/maven-central/v/pro.projo/projo.svg)](https://oss.sonatype.org/content/repositories/releases/pro/projo/)
+## projo &nbsp; [![Build Status](https://travis-ci.org/raner/projo.svg?branch=master)](https://travis-ci.org/raner/projo) [![Maven Central](https://img.shields.io/maven-central/v/pro.projo/projo.svg)](https://oss.sonatype.org/content/repositories/releases/pro/projo/) ![loc](https://img.shields.io/tokei/lines/github/raner/projo)
 **Projo** is a Java library for reducing the amount of boiler-plate code that is necessary for implementing simple model
 objects and DTOs (i.e., objects that don't contain any business logic). The name Projo is a portmanteau of **Pro**xy and
 PO**JO**.
