@@ -28,6 +28,8 @@ public enum Protocol
 {
 /* */
     INET, 
+
     INET6
+
 /* */
 }
