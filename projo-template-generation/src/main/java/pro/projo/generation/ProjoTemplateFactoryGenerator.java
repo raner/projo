@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 Mirko Raner                                               //
+// Copyright 2018 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -76,7 +76,7 @@ public class ProjoTemplateFactoryGenerator
     {
         Template template = new Template();
         template.setRuntimeServices(getRuntimeServices());
-        template.setData(getRuntimeServices().parse(reader, name));
+        template.setData(getRuntimeServices().parse(reader, template));
         template.initDocument();
         return template;
     }
