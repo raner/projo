@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -36,6 +36,7 @@ import net.bytebuddy.description.type.TypeDescription.ForLoadedType;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
+import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
@@ -270,7 +271,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private ByteBuddy codeGenerator()
     {
-        return new ByteBuddy(JAVA_V8);
+        return new ByteBuddy(JAVA_V8).with(TypeValidation.DISABLED);
     }
 
     private Generic getProcessedReturnType(Optional<Annotation> inject, Type originalReturnType)

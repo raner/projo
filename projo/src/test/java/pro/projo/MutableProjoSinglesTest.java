@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2016 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -40,6 +40,12 @@ public class MutableProjoSinglesTest
         long getNumber();
     }
 
+    static interface Value
+    {
+    	void setDefault(Object value);
+    	Object getDefault();
+    }
+
     @Test
     public void testCreateUserId()
     {
@@ -68,5 +74,13 @@ public class MutableProjoSinglesTest
     {
         Account account = create(Account.class);
         assertEquals(0L, account.getNumber());
+    }
+    
+    @Test
+    public void testPropertyNameThatIsJavaKeyword()
+    {
+        Value value = create(Value.class);
+        value.setDefault("default");
+        assertEquals("default", value.getDefault());
     }
 }
