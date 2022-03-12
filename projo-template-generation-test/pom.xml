@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2019 - 2021 Mirko Raner                                        -->
+<!-- Copyright 2018 - 2022 Mirko Raner                                        -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.3.1</version>
+  <version>1.3.2</version>
  </parent>
  <artifactId>projo-template-generation-test</artifactId>
  <name>Projo Template Generation Tests</name>
@@ -34,13 +34,13 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-annotation</artifactId>
-   <version>1.3.1</version>
+   <version>1.3.2</version>
    <scope>test</scope>
   </dependency>
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo-template-generation</artifactId>
-   <version>1.3.1</version>
+   <version>1.3.2</version>
    <scope>provided</scope>
   </dependency>
    <dependency>
