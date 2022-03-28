@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -17,6 +17,7 @@ package pro.projo.internal;
 
 import java.lang.reflect.Method;
 import org.junit.Test;
+import pro.projo.annotations.Property;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -32,6 +33,20 @@ public class PredicatesTest
         default Number getZero()
         {
             return 0;
+        }
+
+        @Property
+        default Double getDouble()
+        {
+        	// This implementation should be overridden by Projo:
+        	return getReal().doubleValue()*2;
+        }
+        
+        @Property
+        default Double getMultiple(double multiplier)
+        {
+        	// This implementation should be retained by Projo:
+        	return getReal().doubleValue()*multiplier;
         }
 
         @Override
@@ -50,6 +65,20 @@ public class PredicatesTest
     {
         Method getZero = Complex.class.getDeclaredMethod("getZero");
         assertFalse(Predicates.getter.test(getZero));
+    }
+
+    @Test
+    public void testPropertyMethodIsGetter() throws Exception
+    {
+    	Method getDouble = Complex.class.getDeclaredMethod("getDouble");
+    	assertTrue(Predicates.getter.test(getDouble));
+    }
+    
+    @Test
+    public void testPropertyWithParametersMethodIsNotGetter() throws Exception
+    {
+    	Method getMultiple = Complex.class.getDeclaredMethod("getMultiple", double.class);
+    	assertFalse(Predicates.getter.test(getMultiple));
     }
 
     @Test

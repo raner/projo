@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2016 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,7 +15,9 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -217,6 +219,29 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
             @SuppressWarnings("unchecked")
             _Artifact_ artifact = (_Artifact_)proxy;
             return toString(artifact);
+        }
+        if (method.isDefault())
+        {
+        	Class<?> type = method.getDeclaringClass();
+            if (System.getProperty("java.version").startsWith("1.8"))
+            {
+                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+                constructor.setAccessible(true);
+                return constructor
+                    .newInstance(type)
+                    .in(type)
+                    .unreflectSpecial(method, type)
+                    .bindTo(proxy)
+                    .invokeWithArguments(arguments);
+            }
+            else // assuming Java 9+
+            {
+                return MethodHandles
+                    .lookup()
+                    .findSpecial(type, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()), type)
+                    .bindTo(proxy)
+                    .invokeWithArguments(arguments);
+            }
         }
         throw new NoSuchMethodError(String.valueOf(method));
     };
