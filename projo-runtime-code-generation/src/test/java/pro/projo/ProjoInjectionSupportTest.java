@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -20,7 +20,13 @@ import java.lang.reflect.Type;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import org.junit.Test;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import pro.projo.annotations.Property;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertSame;
 
 public class ProjoInjectionSupportTest
 {
@@ -38,6 +44,21 @@ public class ProjoInjectionSupportTest
     {
         @Inject True _true();
         @Inject False _false();
+    }
+
+    static interface Pass
+    {
+        @Inject
+        @Property
+        default Booleans booleans()
+        {
+            throw new NoSuchMethodError();
+        }
+
+        default True evaluate()
+        {
+            return booleans()._true();
+        }
     }
 
     @Test
@@ -73,5 +94,24 @@ public class ProjoInjectionSupportTest
         };
         Type[] actual = {trueType, falseType};
         assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    public void testThatPropertyAnnotationWorksInConjunctionWithInject() throws Exception
+    {
+        Module module = new AbstractModule()
+        {
+            protected void configure()
+            {
+                bind(True.class).to(Projo.getImplementationClass(True.class)).asEagerSingleton();
+                bind(False.class).to(Projo.getImplementationClass(False.class)).asEagerSingleton();
+                bind(Booleans.class).to(Projo.getImplementationClass(Booleans.class)).asEagerSingleton();
+                bind(Pass.class).to(Projo.getImplementationClass(Pass.class)).asEagerSingleton();
+            }
+        };
+        Injector injector = Guice.createInjector(module);
+        Booleans booleans = injector.getInstance(Booleans.class);
+        Pass pass = injector.getInstance(Pass.class);
+        assertSame(booleans._true(), pass.evaluate());
     }
 }
