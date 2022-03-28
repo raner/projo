@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Predicate;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Property;
 
 /**
 * The {@link Predicates} class is a utility class that defines several commonly used predicates.
@@ -40,7 +41,7 @@ public interface Predicates
         && String.class.equals(method.getReturnType());
     static Predicate<Method> getter = method -> method.getParameterCount() == 0
         && !method.getDeclaringClass().equals(Object.class)
-        && !method.isDefault()
+        && (!method.isDefault() || method.getAnnotation(Property.class) != null)
         && !hashCode.test(method)
         && !toString.test(method)
         && method.getAnnotation(Delegate.class) == null;

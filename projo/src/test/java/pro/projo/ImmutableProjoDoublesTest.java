@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,8 @@
 package pro.projo;
 
 import org.junit.Test;
+
+import pro.projo.annotations.Property;
 import pro.projo.doubles.Factory;
 import static java.lang.System.identityHashCode;
 import static org.junit.Assert.assertArrayEquals;
@@ -47,6 +49,36 @@ public class ImmutableProjoDoublesTest
             .with(ComplexPerson::complex, ComplexPerson::person);
         Complex complex();
         Person person();
+    }
+
+    static interface Version
+    {
+        Factory<Version, Integer, Integer> FACTORY = creates(Version.class)
+            .with(Version::major, Version::minor);
+
+        int major();
+
+        @Property
+        default int minor()
+        {
+            // This method should be overridden by Projo
+            throw new UnsupportedOperationException();
+        }
+
+        default int patch()
+        {
+        	// This method should be retained by Projo
+        	return 99;
+        }
+    }
+
+    @Test
+    public void testCreateVersion()
+    {
+        Version version = Version.FACTORY.create(3, 14);
+        assertEquals(3, version.major());
+        assertEquals(14, version.minor());
+        assertEquals(99, version.patch());
     }
 
     @Test
