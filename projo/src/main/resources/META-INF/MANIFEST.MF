@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: pro.projo.projo
 Bundle-Vendor: Mirko Raner
-Bundle-Version: 1.3.2
+Bundle-Version: 1.4.0
 Bundle-SymbolicName: pro.projo.projo; singleton:=true
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: pro.projo.projo
