@@ -16,16 +16,19 @@
 package pro.projo.internal.rcg;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -40,8 +43,10 @@ import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.implementation.MethodDelegation;
 import pro.projo.Projo;
 import pro.projo.annotations.Overrides;
+import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
@@ -51,6 +56,7 @@ import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
+import pro.projo.internal.rcg.utilities.Interceptor;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -63,6 +69,7 @@ import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTI
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.DEFAULT;
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.Typing.DYNAMIC;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static pro.projo.internal.Predicates.cached;
 import static pro.projo.internal.Predicates.getter;
 import static pro.projo.internal.Predicates.setter;
 
@@ -95,6 +102,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private static Map<List<Boolean>, Class<?>> baseClasses = new HashMap<>();
 
+    private static Type listOfObjects;
+
     static
     {
         @SuppressWarnings("unused")
@@ -103,6 +112,20 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         baseClasses.put(asList(valueObject=true, toString=false), ValueObject.class);
         baseClasses.put(asList(valueObject=false, toString=true), ToStringObject.class);
         baseClasses.put(asList(valueObject=true, toString=true), ToStringValueObject.class);
+
+        class Prototype
+        {
+            @SuppressWarnings("unused")
+            List<Object> list;
+        }
+        try
+        {
+            listOfObjects = Prototype.class.getDeclaredField("list").getGenericType();
+        }
+        catch (NoSuchFieldException noSuchField)
+        {
+            throw new NoSuchFieldError(noSuchField.getMessage());
+        }
     }
 
     /**
@@ -138,7 +161,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type)
     {
         Builder<_Artifact_> builder = create(type).name(implementationName(type));
-        builder = Projo.getMethods(type, getter, setter).reduce(builder, this::add, sequentialOnly());
+        builder = Projo.getMethods(type, getter, setter, cached).reduce(builder, this::add, sequentialOnly());
         return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
     }
 
@@ -236,18 +259,90 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             .intercept(methodCall);
     }
 
+    /**
+    * Adds method implementation and (if necessary) field definition for a method.
+    *
+    * @param builder the existing {@link Builder} to build upon
+    * @param method a getter, setter, delegate or cached method
+    * @return a new {@link Builder} with an additional method (and possibly an additional field)
+    **/
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
     {
-        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Delegate.class);
+        Optional<Cached> cached = Optional.ofNullable(method.getAnnotation(Cached.class));
+        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Delegate.class) || cached.isPresent();
         String methodName = method.getName();
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         Optional<Annotation> inject = getInject(method);
         Type returnType = method.getReturnType();
-        TypeDescription.Generic type = isGetter? getProcessedReturnType(inject, returnType):generic(ForLoadedType.of(void.class));
+        TypeDescription.Generic type = isGetter? getFieldType(inject, cached, returnType):generic(ForLoadedType.of(void.class));
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
-        Implementation implementation = inject.isPresent()? get(propertyName, returnType):FieldAccessor.ofField(propertyName);
+        Implementation implementation = getAccessor(inject, cached, returnType, propertyName);
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
+    }
+
+    Implementation getAccessor(Optional<Annotation> inject, Optional<Cached> cached, Type returnType, String property)
+    {
+        if (inject.isPresent())
+        {
+            return get(property, returnType);
+        }
+        if (cached.isPresent())
+        {
+            return cached(cached.get(), property, returnType);
+        }
+        return FieldAccessor.ofField(property);
+    }
+
+    /**
+    * TODO: this method currently uses a hybrid approach that still uses reflection under the hood
+    **/
+    private Implementation cached(Cached cached, String field, Type type)
+    {
+        Function<Interceptor.Invocation, Object> interceptor = (Interceptor.Invocation invocation) ->
+        {
+            try
+            {
+                Object object = invocation.instance();
+                Field cacheField = object.getClass().getDeclaredField(field);
+                cacheField.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                Map<List<Object>, Object> cache = (Map<List<Object>, Object>)cacheField.get(object);
+                if (cache == null)
+                {
+                    cache = new HashMap<>();
+
+                    // The null key is always associated with the maximum cache size:
+                    //
+                    cache.put(null, new Integer(cached.cacheSize()));
+
+                    // Initialize the cache field:
+                    //
+                    cacheField.set(object, cache);
+                }
+                List<Object> key = Arrays.asList(invocation.arguments()); // can never be null
+                if (cache.containsKey(key))
+                {
+                    return cache.get(key);
+                }
+
+                // Invoke the original default method to retrieve the value:
+                //
+                Object value = invocation.defaultMethod().call();
+
+                int cacheSize = (Integer)cache.get(null);
+                if (cache.size()-1 < cacheSize) // subtract 1 for the size metadata entry :-/
+                {
+                    cache.put(key, value);
+                }
+                return value;
+            }
+            catch (Exception exception)
+            {
+                throw new Error(exception.getClass().getName() + ": " + exception.getMessage());
+            }
+        };
+        return MethodDelegation.to(new Interceptor(interceptor));
     }
 
     private Implementation get(String field, Type type)
@@ -259,7 +354,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
     }
 
-    private MethodDescription.Latent latent(TypeDescription declaringType, Generic returnType, String name)
+    private MethodDescription.Latent latent(TypeDescription declaringType, Generic returnType, String name, TypeDescription... parameterTypes)
     {
         return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), generic(OBJECT), emptyList(), emptyList(), emptyList(), null, null);
     }
@@ -274,12 +369,37 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return new ByteBuddy(JAVA_V8).with(TypeValidation.DISABLED);
     }
 
-    private Generic getProcessedReturnType(Optional<Annotation> inject, Type originalReturnType)
+    /**
+    * Determines the field type that is backing a method implementation. The field type is
+    * not necessarily the same as the method's return type:
+    * <ul>
+    *  <li>for injected methods returning type {@code T}, the field type is {@code Provider<T>}</li>
+    *  <li>for cached methods returning type {@code T}, the field type is
+    *      {@code Map<List<Object>, T>}</li>
+    *  <li>for all other methods returning type {@code T}, the field type is {@code T}</li>
+    * </ul>
+    * @param inject an {@link Optional} {@link javax.inject.Inject} annotation
+    * @param cached an {@link Optional} {@link pro.projo.annotations.Cached} annotation
+    * @param originalReturnType the return type of the method
+    * @return the appropriate field type for the method
+    **/
+    Generic getFieldType(Optional<Annotation> inject, Optional<Cached> cached, Type originalReturnType)
     {
-        boolean injected = inject.isPresent();
-        Class<?> container = getClass(injected? "javax.inject.Provider":"java.util.Set");
+        if (inject.isPresent())
+        {
+            Class<?> container = getClass("javax.inject.Provider");
+            Generic generic = Generic.Builder.parameterizedType(container, originalReturnType).build();
+            return generic;
+        }
+        if (cached.isPresent())
+        {
+            Class<?> container = getClass("java.util.Map");
+            Generic generic = Generic.Builder.parameterizedType(container, listOfObjects, originalReturnType).build();
+            return generic;
+        }
+        Class<?> container = getClass("java.util.Set");
         Generic generic = Generic.Builder.parameterizedType(container, originalReturnType).build();
-        return injected? generic:generic.getTypeArguments().get(0);
+        return generic.getTypeArguments().get(0);
     }
 
     private <_ValuableBuilder_ extends Valuable<_Artifact_> & Builder<_Artifact_>>
