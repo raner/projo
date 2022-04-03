@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,6 +29,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses
 ({
+    CacheTest.class,
     BuilderTest.class,
     SimpleDelegateTest.class,
     ProjoTest.class,

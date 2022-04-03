@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,8 +15,14 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.util.Optional;
+import javax.inject.Inject;
 import org.junit.Test;
+import net.bytebuddy.description.type.TypeDescription.Generic;
+import pro.projo.annotations.Cached;
 import static java.lang.reflect.Proxy.isProxyClass;
+import static java.util.Optional.empty;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class RuntimeCodeGenerationHandlerTest
@@ -51,5 +57,33 @@ public class RuntimeCodeGenerationHandlerTest
         RuntimeCodeGenerationHandler<PackagePerson> handler = new RuntimeCodeGenerationHandler<>();
         Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class);
         assertFalse(isProxyClass(result));
+    }
+
+    @Test
+    public void testFieldTypeForRegularMethod()
+    {
+        RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+        Generic fieldType = handler.getFieldType(empty(), empty(), String.class);
+        assertEquals("class java.lang.String", fieldType.toString());
+    }
+
+    @Test
+    @Inject
+    public void testFieldTypeForInjectedMethod() throws Exception
+    {
+        RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+        Inject inject = getClass().getDeclaredMethod("testFieldTypeForInjectedMethod").getAnnotation(Inject.class);
+        Generic fieldType = handler.getFieldType(Optional.of(inject), empty(), String.class);
+        assertEquals("javax.inject.Provider<java.lang.String>", fieldType.toString());
+    }
+
+    @Test
+    @Cached
+    public void testFieldTypeForCachedMethod() throws Exception
+    {
+        RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+        Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
+        Generic fieldType = handler.getFieldType(empty(), Optional.of(cached), String.class);
+        assertEquals("java.util.Map<java.util.List<java.lang.Object>, java.lang.String>", fieldType.toString());
     }
 }

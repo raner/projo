@@ -15,9 +15,7 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -45,6 +43,7 @@ import pro.projo.Delegated;
 import pro.projo.Mapping;
 import pro.projo.Projo;
 import pro.projo.annotations.Overrides;
+import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
 import pro.projo.internal.Default;
 import pro.projo.internal.Predicates;
@@ -54,6 +53,7 @@ import pro.projo.internal.PropertyMatcher;
 import pro.projo.utilities.Pair;
 import static java.lang.System.identityHashCode;
 import static java.lang.reflect.Proxy.getProxyClass;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static pro.projo.Projo.isValueObject;
@@ -222,25 +222,52 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
         if (method.isDefault())
         {
-        	Class<?> type = method.getDeclaringClass();
+            List<Object> key = null;
+            Map<List<Object>, Object> cache = null;
+            Cached cached = method.getAnnotation(Cached.class);
+            if (cached != null)
+            {
+                String property = matcher.propertyName(method.getName());
+                @SuppressWarnings("unchecked")
+                Map<List<Object>, Object> cacheState = (Map<List<Object>, Object>)state.get(property);
+                cache = cacheState;
+                if (cache == null)
+                {
+                    cache = new HashMap<>();
+                    state.put(property, cache);
+                }
+                key = arguments == null? emptyList():Arrays.asList(arguments);
+                Object value = cache.get(key);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
             if (System.getProperty("java.version").startsWith("1.8"))
             {
+                Class<?> type = method.getDeclaringClass();
                 Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
                 constructor.setAccessible(true);
-                return constructor
+                Object value = constructor
                     .newInstance(type)
                     .in(type)
                     .unreflectSpecial(method, type)
                     .bindTo(proxy)
                     .invokeWithArguments(arguments);
+                if (cached != null)
+                {
+                    // Add value to cache if there is still space:
+                    //
+                    if (cache.size() < cached.cacheSize())
+                    {
+                        cache.put(key, value);
+                    }
+                }
+                return value;
             }
             else // assuming Java 9+
             {
-                return MethodHandles
-                    .lookup()
-                    .findSpecial(type, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()), type)
-                    .bindTo(proxy)
-                    .invokeWithArguments(arguments);
+                throw new UnsupportedOperationException("proxy functionality no longer fully available in Java 9 or higher");
             }
         }
         throw new NoSuchMethodError(String.valueOf(method));
