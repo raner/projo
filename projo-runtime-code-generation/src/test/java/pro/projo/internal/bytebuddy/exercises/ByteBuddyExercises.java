@@ -15,16 +15,28 @@
 //                                                                          //
 package pro.projo.internal.bytebuddy.exercises;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import org.junit.Test;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.field.FieldDescription;
+import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Unloaded;
 import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.MethodCall;
 import net.bytebuddy.implementation.MethodDelegation;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
+import static net.bytebuddy.description.type.TypeDescription.VOID;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
@@ -86,6 +98,37 @@ public class ByteBuddyExercises
             return other instanceof ReferenceImplementation && ((ReferenceImplementation)other).value == value;
         }
     }
+
+    public static interface SomeInterface {}
+
+    public static class SomeBaseClass {}
+
+    /**
+    * This will produce the following bytecode:
+    * <pre>
+    * class pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$ReferenceClassWithHashMap
+    * extends pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$SomeBaseClass
+    * implements pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$SomeInterface
+    * {
+    *   private java.util.Map<java.lang.String, java.lang.Object> cache;
+    *
+    *   pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$ReferenceClassWithHashMap();
+    *   Code:
+    *    0: aload_0
+    *    1: invokespecial #14                 // Method pro/projo/internal/bytebuddy/exercises/ByteBuddyExercises$SomeBaseClass."<init>":()V
+    *    4: aload_0
+    *    5: new           #16                 // class java/util/HashMap
+    *    8: dup
+    *    9: invokespecial #18                 // Method java/util/HashMap."<init>":()V
+    *   12: putfield      #19                 // Field cache:Ljava/util/Map;
+    *   15: return
+    * }
+    **/
+    //static class ReferenceClassWithHashMap extends SomeBaseClass implements SomeInterface
+    //{
+    //    @SuppressWarnings("unused")
+    //    private Map<String, Object> cache = new HashMap<>();
+    //}
 
     @Test
     public void generateImplementationWithField() throws Exception
@@ -174,5 +217,113 @@ public class ByteBuddyExercises
         ReferenceImplementation expected = new ReferenceImplementation();
         expected.setValue(42);
         assertEquals(expected.hashCode(), pojo.hashCode());
+    }
+
+    private Class<?> generatedClass() throws Exception
+    {
+        Builder<?> builder = new ByteBuddy()
+                .subclass(SomeBaseClass.class)
+                .implement(SomeInterface.class)
+                .name("pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$ReferenceClassWithHashMap");
+        //
+        TypeDescription typeMap = new TypeDescription.ForLoadedType(Map.class);
+        TypeDescription typeString = new TypeDescription.ForLoadedType(String.class);
+        TypeDescription typeObject = new TypeDescription.ForLoadedType(Object.class);
+        Generic typeMapStringObject = Generic.Builder.parameterizedType(typeMap, typeString, typeObject).build();
+        //FieldDescription cacheField = new FieldDescription.Latent(builder.toTypeDescription(), "cache", Modifier.PRIVATE, typeMapStringObject, emptyList());
+        builder = builder.defineField("cache", typeMapStringObject, Modifier.PRIVATE);
+        MethodDescription superConstructor = new MethodDescription.Latent
+        (
+            builder.toTypeDescription().getSuperClass().asErasure(),
+            "<init>",
+            Modifier.PUBLIC,
+            emptyList(),
+            VOID.asGenericType(),
+            emptyList(),
+            emptyList(),
+            emptyList(),
+            null,
+            null
+        );
+        Constructor<?> hashMapConstructor = HashMap.class.getDeclaredConstructor(int.class);
+        MethodCall createHashMap = MethodCall.construct(hashMapConstructor).withArgument(0);
+        Implementation implementation = MethodCall.invoke(superConstructor).onSuper()
+            .andThen(createHashMap);
+        builder = builder
+            .defineConstructor(Modifier.PUBLIC)
+            .withParameter(int.class)
+            .intercept(implementation);
+        builder.make().saveIn(new java.io.File("/tmp"));
+        return builder.make().load(getClass().getClassLoader()).getLoaded();
+    }
+
+    @Test
+    public void generatedClassHasCorrectName() throws Exception
+    {
+        String expectedName = "pro.projo.internal.bytebuddy.exercises.ByteBuddyExercises$ReferenceClassWithHashMap";
+        assertEquals(expectedName, generatedClass().getName());
+    }
+    
+    @Test
+    public void generatedClassHasPrivateFieldCalledCache() throws Exception
+    {
+        Field cache = generatedClass().getDeclaredField("cache");
+        assertEquals(Modifier.PRIVATE, cache.getModifiers() & Modifier.PRIVATE);
+    }
+    
+    @Test
+    public void generatedClassHasFieldCalledCacheWithProperSimpleType() throws Exception
+    {
+        Field cache = generatedClass().getDeclaredField("cache");
+        assertEquals(Map.class, cache.getType());
+    }
+    
+    @Test
+    public void generatedClassHasFieldCalledCacheWithProperParameterizedType() throws Exception
+    {
+        Field cache = generatedClass().getDeclaredField("cache");
+        assertEquals("java.util.Map<java.lang.String, java.lang.Object>", cache.getGenericType().toString());
+    }
+    
+    @Test
+    public void generatedClassIsInitializedCorrectly() throws Exception
+    {
+        Class<?> generatedClass = generatedClass();
+        Constructor<?> constructor = generatedClass.getDeclaredConstructor();
+        Object instance = constructor.newInstance();
+        Field cache = generatedClass.getDeclaredField("cache");
+        cache.setAccessible(true);
+        Object object = cache.get(instance);
+        assertEquals(HashMap.class, object.getClass());
+    }
+    
+    @Test
+    public void generatedClassExtendsProperBaseClass() throws Exception
+    {
+        assertEquals(SomeBaseClass.class, generatedClass().getSuperclass());
+    }
+    
+    @Test
+    public void generatedClassConstructorTakesIntArgument() throws Exception
+    {
+        generatedClass().getDeclaredConstructor(int.class);
+    }
+    
+    @Test
+    public void generatedClassHasExactlyOneConstructor() throws Exception
+    {
+        assertEquals(1, generatedClass().getDeclaredConstructors().length);
+    }
+    
+    @Test
+    public void generatedClassHasExactlyOneField() throws Exception
+    {
+        assertEquals(1, generatedClass().getDeclaredFields().length);
+    }
+
+    @Test
+    public void generatedClassHasNoDeclaredMethods() throws Exception
+    {
+        assertEquals(0, generatedClass().getDeclaredMethods().length);
     }
 }
