@@ -16,12 +16,12 @@
 package pro.projo.internal.rcg;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,30 +33,31 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.field.FieldDescription;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
-import net.bytebuddy.description.type.TypeDescription.ForLoadedType;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
+import net.bytebuddy.implementation.Implementation.Composable;
 import net.bytebuddy.implementation.MethodCall;
-import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.utility.JavaConstant;
 import pro.projo.Projo;
-import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Overrides;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.internal.PropertyMatcher;
+import pro.projo.internal.rcg.runtime.Cache;
 import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
-import pro.projo.internal.rcg.utilities.Interceptor;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -65,6 +66,7 @@ import static java.util.stream.Stream.empty;
 import static net.bytebuddy.ClassFileVersion.JAVA_V8;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
 import static net.bytebuddy.description.type.TypeDescription.OBJECT;
+import static net.bytebuddy.description.type.TypeDescription.VOID;
 import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTION;
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.DEFAULT;
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.Typing.DYNAMIC;
@@ -102,8 +104,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private static Map<List<Boolean>, Class<?>> baseClasses = new HashMap<>();
 
-    private static Type listOfObjects;
-
     static
     {
         @SuppressWarnings("unused")
@@ -112,20 +112,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         baseClasses.put(asList(valueObject=true, toString=false), ValueObject.class);
         baseClasses.put(asList(valueObject=false, toString=true), ToStringObject.class);
         baseClasses.put(asList(valueObject=true, toString=true), ToStringValueObject.class);
-
-        class Prototype
-        {
-            @SuppressWarnings("unused")
-            List<Object> list;
-        }
-        try
-        {
-            listOfObjects = Prototype.class.getDeclaredField("list").getGenericType();
-        }
-        catch (NoSuchFieldException noSuchField)
-        {
-            throw new NoSuchFieldError(noSuchField.getMessage());
-        }
     }
 
     /**
@@ -160,8 +146,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type)
     {
+        Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type));
+        TypeDescription currentType = builder.make().getTypeDescription();
         builder = Projo.getMethods(type, getter, setter, cached).reduce(builder, this::add, sequentialOnly());
+        builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
         return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
     }
 
@@ -182,8 +171,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 .name(implementationName(type))
                 .defineField("delegate", delegateType);
             builder = additionalAttributes(type, override)
-                .reduce(builder, this::add, sequentialOnly());
-            builder = builder.defineConstructor(Modifier.PUBLIC)
+                .reduce(builder, this::add, sequentialOnly())
+                .defineConstructor(Modifier.PUBLIC)
                 .withParameter(delegateType)
                 .intercept(MethodCall.invoke(Object.class.getDeclaredConstructor())
                 .andThen(FieldAccessor.ofField("delegate").setsArgumentAt(0)));
@@ -274,8 +263,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         Optional<Annotation> inject = getInject(method);
-        Type returnType = method.getReturnType();
-        TypeDescription.Generic type = isGetter? getFieldType(inject, cached, returnType):generic(ForLoadedType.of(void.class));
+        Class<?> returnType = method.getReturnType();
+        TypeDescription.Generic type = isGetter? getFieldType(inject, cached, returnType):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
         Implementation implementation = getAccessor(inject, cached, returnType, propertyName);
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
@@ -294,74 +283,67 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return FieldAccessor.ofField(property);
     }
 
-    /**
-    * TODO: this method currently uses a hybrid approach that still uses reflection under the hood
-    **/
+    private Implementation constructor(TypeDescription currentType, Stream<Method> cachedMethods)
+    {
+        Method cacheCreator;
+        try
+        {
+            cacheCreator = Cache.class.getDeclaredMethod("create", int.class, MethodHandle.class, Object.class);
+        }
+        catch (NoSuchMethodException exception)
+        {
+            throw new NoSuchMethodError(exception.getMessage());
+        }
+        Function<Method, Composable> initializer = method ->
+        {
+            TypeDescription returnType = new TypeDescription.ForLoadedType(method.getReturnType());
+            TypeDescription genericCacheType = new TypeDescription.ForLoadedType(Cache.class);
+            Generic cacheType = Generic.Builder.parameterizedType(genericCacheType, returnType).build();
+            Cached annotation = method.getAnnotation(Cached.class);
+            String fieldName = matcher.propertyName(method.getName());
+            FieldDescription cacheField = new FieldDescription.Latent(currentType, fieldName, Modifier.PRIVATE, cacheType, emptyList());
+            JavaConstant.MethodHandle originalMethod = JavaConstant.MethodHandle.ofSpecial(method, method.getDeclaringClass());
+            return MethodCall
+                .invoke(cacheCreator)
+                .with(annotation.cacheSize())
+                .with(originalMethod)
+                .withThis()
+                .setsField(cacheField);
+        };
+        Stream<Composable> initializers = cachedMethods.map(initializer);
+        MethodDescription superConstructor = latent(currentType.getSuperClass().asErasure(), VOID.asGenericType(), "<init>");
+        Composable invokeSuper = MethodCall.invoke(superConstructor).onSuper();
+        return initializers.reduce(invokeSuper, Composable::andThen);
+    }
+
     private Implementation cached(Cached cached, String field, Type type)
     {
-        Function<Interceptor.Invocation, Object> interceptor = (Interceptor.Invocation invocation) ->
+        try
         {
-            try
-            {
-                Object object = invocation.instance();
-                Field cacheField = object.getClass().getDeclaredField(field);
-                cacheField.setAccessible(true);
-                @SuppressWarnings("unchecked")
-                Map<List<Object>, Object> cache = (Map<List<Object>, Object>)cacheField.get(object);
-                if (cache == null)
-                {
-                    cache = new HashMap<>();
-
-                    // The null key is always associated with the maximum cache size:
-                    //
-                    cache.put(null, new Integer(cached.cacheSize()));
-
-                    // Initialize the cache field:
-                    //
-                    cacheField.set(object, cache);
-                }
-                List<Object> key = Arrays.asList(invocation.arguments()); // can never be null
-                if (cache.containsKey(key))
-                {
-                    return cache.get(key);
-                }
-
-                // Invoke the original default method to retrieve the value:
-                //
-                Object value = invocation.defaultMethod().call();
-
-                int cacheSize = (Integer)cache.get(null);
-                if (cache.size()-1 < cacheSize) // subtract 1 for the size metadata entry :-/
-                {
-                    cache.put(key, value);
-                }
-                return value;
-            }
-            catch (Exception exception)
-            {
-                throw new Error(exception.getClass().getName() + ": " + exception.getMessage());
-            }
-        };
-        return MethodDelegation.to(new Interceptor(interceptor));
+            Method cacheAccessor = Cache.class.getDeclaredMethod("get", Object[].class);
+            return MethodCall
+                .invoke(cacheAccessor)
+                .onField(field)
+                .withArgumentArray()
+                .withAssigner(DEFAULT, DYNAMIC);
+        }
+        catch (NoSuchMethodException exception)
+        {
+            throw new NoSuchMethodError(exception.getMessage());
+        }
     }
 
     private Implementation get(String field, Type type)
     {
         Class<?> provider = getClass("javax.inject.Provider");
         Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
-        Generic typeParameter = genericProvider.getTypeArguments().get(0);
-        MethodDescription get = latent(genericProvider.asErasure(), typeParameter, "get");
+        MethodDescription get = latent(genericProvider.asErasure(), OBJECT.asGenericType(), "get");
         return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
     }
 
     private MethodDescription.Latent latent(TypeDescription declaringType, Generic returnType, String name, TypeDescription... parameterTypes)
     {
-        return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), generic(OBJECT), emptyList(), emptyList(), emptyList(), null, null);
-    }
-
-    private TypeDescription.Generic generic(TypeDescription type)
-    {
-        return TypeDescription.Generic.Builder.rawType(type).build();
+        return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), returnType, emptyList(), emptyList(), emptyList(), null, null);
     }
 
     private ByteBuddy codeGenerator()
@@ -375,7 +357,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * <ul>
     *  <li>for injected methods returning type {@code T}, the field type is {@code Provider<T>}</li>
     *  <li>for cached methods returning type {@code T}, the field type is
-    *      {@code Map<List<Object>, T>}</li>
+    *      {@code Cache<T>}</li>
     *  <li>for all other methods returning type {@code T}, the field type is {@code T}</li>
     * </ul>
     * @param inject an {@link Optional} {@link javax.inject.Inject} annotation
@@ -383,23 +365,18 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @param originalReturnType the return type of the method
     * @return the appropriate field type for the method
     **/
-    Generic getFieldType(Optional<Annotation> inject, Optional<Cached> cached, Type originalReturnType)
+    Generic getFieldType(Optional<Annotation> inject, Optional<Cached> cached, Class<?> originalReturnType)
     {
-        if (inject.isPresent())
+        if (!inject.isPresent() && !cached.isPresent())
         {
-            Class<?> container = getClass("javax.inject.Provider");
-            Generic generic = Generic.Builder.parameterizedType(container, originalReturnType).build();
-            return generic;
+            return Generic.Builder.rawType(originalReturnType).build();
         }
-        if (cached.isPresent())
+        else
         {
-            Class<?> container = getClass("java.util.Map");
-            Generic generic = Generic.Builder.parameterizedType(container, listOfObjects, originalReturnType).build();
-            return generic;
+            Class<?> container = inject.isPresent()? getClass("javax.inject.Provider"):Cache.class;
+            Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
+            return Generic.Builder.parameterizedType(container, wrappedType).build();
         }
-        Class<?> container = getClass("java.util.Set");
-        Generic generic = Generic.Builder.parameterizedType(container, originalReturnType).build();
-        return generic.getTypeArguments().get(0);
     }
 
     private <_ValuableBuilder_ extends Valuable<_Artifact_> & Builder<_Artifact_>>
@@ -443,12 +420,16 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return typeName + SUFFIX;
     }
 
-    private Builder<_Artifact_> create(Class<_Artifact_> type)
+    private Class<?> baseclass(Class<_Artifact_> type)
     {
         List<Boolean> features = asList(Projo.isValueObject(type), Projo.hasCustomToString(type));
-        Class<?> baseclass = baseClasses.get(features);
+        return baseClasses.get(features);
+    }
+
+    private Builder<_Artifact_> create(Class<_Artifact_> type)
+    {
         @SuppressWarnings("unchecked")
-        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass).implement(type, ProjoObject.class);
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(type, ProjoObject.class);
         return builder;
     }
 }

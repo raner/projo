@@ -84,6 +84,16 @@ public class RuntimeCodeGenerationHandlerTest
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
         Generic fieldType = handler.getFieldType(empty(), Optional.of(cached), String.class);
-        assertEquals("java.util.Map<java.util.List<java.lang.Object>, java.lang.String>", fieldType.toString());
+        assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.String>", fieldType.toString());
+    }
+
+    @Test
+    @Cached
+    public void testFieldTypeForCachedPrimitiveMethod() throws Exception
+    {
+        RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+        Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
+        Generic fieldType = handler.getFieldType(empty(), Optional.of(cached), int.class);
+        assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.Integer>", fieldType.toString());
     }
 }
