@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -35,6 +35,19 @@ public class ProjoRuntimeCodeGenerationTest
         int getValue();
     }
 
+    // A class can only be generated once, so to test generation in different
+    // packages we need two different test interfaces:
+
+    public static interface Named1
+    {
+        String name();
+    }
+    
+    public static interface Named2
+    {
+        String name();
+    }
+
     @Test
     public void testRuntimeCodeGenerationProjoImplementation()
     {
@@ -51,5 +64,23 @@ public class ProjoRuntimeCodeGenerationTest
         String[] fieldNames = new RuntimeCodeGenerationProjo().getFieldNames(Getters.class, getters);
         String[] expected = {"value", "name"};
         assertArrayEquals(expected, fieldNames);
+    }
+
+    @Test
+    public void testGenerationInSamePackage()
+    {
+        Named1 person = Projo.creates(Named1.class).with(Named1::name).create("John Doe");
+        String[] nameAndPackageName = {person.name(), person.getClass().getPackage().getName()};
+        String[] expected = {"John Doe", "pro.projo.internal.rcg"};
+        assertArrayEquals(expected, nameAndPackageName);
+    }
+    
+    @Test
+    public void testGenerationInDefaultPackage()
+    {
+        Named2 person = Projo.creates(Named2.class).inDefaultPackage().with(Named2::name).create("John Doe");
+        String[] nameAndFullClassName = {person.name(), person.getClass().getName()};
+        String[] expected = {"John Doe", "Named2$Projo"};
+        assertArrayEquals(expected, nameAndFullClassName);
     }
 }

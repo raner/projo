@@ -45,7 +45,7 @@ public class ProxyProjo extends Projo
     }
 
     @Override
-    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, Class<?>... additionalInterfaces)
+    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, boolean defaultPackage, Class<?>... additionalInterfaces)
     {
         List<Class<?>> interfaces = new ArrayList<Class<?>>(asList(type, ProjoObject.class));
         interfaces.addAll(asList(additionalInterfaces));

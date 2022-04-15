@@ -80,7 +80,7 @@ import static pro.projo.internal.Predicates.setter;
 * dynamically at runtime (using the {@link ByteBuddy} library). For each, object property the generated class
 * will contain a field of the appropriate type, and the corresponding generated getter and setter will access
 * that field directly, without using reflection. Generated implementation classes can be obtained by calling
-* the {@link #getImplementationOf(Class)} method.
+* the {@link #getImplementationOf(Class, boolean)} method.
 *
 * @param <_Artifact_> the type of object being generated
 *
@@ -122,14 +122,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @return the generated implementation class
     **/
     @Override
-    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
+    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage)
     {
-        return implementationClassCache.computeIfAbsent(type, this::generateImplementation);
+        return implementationClassCache.computeIfAbsent(type, it -> generateImplementation(it, defaultPackage));
     }
 
-    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, boolean override, Class<?>... additionalTypes)
+    public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, boolean override, boolean defaultPackage, Class<?>... additionalTypes)
     {
-        return implementationClassCache.computeIfAbsent(type, it -> generateProxy(it, override, additionalTypes));
+        return implementationClassCache.computeIfAbsent(type, it -> generateProxy(it, override, defaultPackage, additionalTypes));
     }
 
     /**
@@ -144,10 +144,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return name.endsWith(SUFFIX)? name.substring(0, name.length()-SUFFIX.length()):name;
     }
 
-    private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type)
+    private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type, boolean defaultPackage)
     {
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
-        Builder<_Artifact_> builder = create(type).name(implementationName(type));
+        Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
         builder = Projo.getMethods(type, getter, setter, cached).reduce(builder, this::add, sequentialOnly());
         builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
@@ -155,7 +155,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     }
 
     @SuppressWarnings("unchecked")
-    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, boolean override, Class<?>... additionalTypes)
+    private Class<? extends _Artifact_> generateProxy(Class<_Artifact_> type, boolean override, boolean defaultPackage, Class<?>... additionalTypes)
     {
         Optional<Method> delegateMethod = getDelegateMethod(type.getDeclaredMethods());
         Builder<_Artifact_> builder = null;
@@ -168,7 +168,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 .subclass(Object.class)
                 .implement(type)
                 .implement(additionalTypes)
-                .name(implementationName(type))
+                .name(implementationName(type, defaultPackage))
                 .defineField("delegate", delegateType);
             builder = additionalAttributes(type, override)
                 .reduce(builder, this::add, sequentialOnly())
@@ -410,10 +410,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         };
     }
 
-    private String implementationName(Class<_Artifact_> type)
-    {
+    private String implementationName(Class<_Artifact_> type, boolean defaultPackage)
+    {    
         String typeName = type.getName();
-        if (typeName.startsWith("java."))
+        if (defaultPackage)
+        {
+            typeName = type.getSimpleName();
+        }
+        else if (typeName.startsWith("java."))
         {
             typeName = typeName.substring("java.".length());
         }

@@ -47,7 +47,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testHandlerReturnsNonProxyClass()
     {
         RuntimeCodeGenerationHandler<Person> handler = new RuntimeCodeGenerationHandler<>();
-        Class<? extends Person> result = handler.getImplementationOf(Person.class);
+        Class<? extends Person> result = handler.getImplementationOf(Person.class, false);
         assertFalse(isProxyClass(result));
     }
 
@@ -55,7 +55,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testHandlerCanImplementNonPublicClass()
     {
         RuntimeCodeGenerationHandler<PackagePerson> handler = new RuntimeCodeGenerationHandler<>();
-        Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class);
+        Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class, false);
         assertFalse(isProxyClass(result));
     }
 

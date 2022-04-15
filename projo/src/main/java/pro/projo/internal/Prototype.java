@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2020 Mirko Raner                                        //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,7 @@
 package pro.projo.internal;
 
 import pro.projo.Projo;
+import pro.projo.Projo.Intermediate;
 
 /**
 * The {@link Prototype} interface serves as the base interface of all generated intermediate
@@ -41,6 +42,29 @@ public interface Prototype<_Artifact_>
     **/
     public default ProjoHandler<_Artifact_>.ProjoInitializer initialize(Class<?>... additionalInterfaces)
     {
-        return Projo.getImplementation().initializer(type(), additionalInterfaces);
+        return Projo.getImplementation().initializer(type(), defaultPackage(), additionalInterfaces);
+    }
+
+    public default Intermediate<_Artifact_> inDefaultPackage()
+    {
+        return new Intermediate<_Artifact_>()
+        {
+            @Override
+            public Class<_Artifact_> type()
+            {
+                return Prototype.this.type();
+            }
+
+            @Override
+            public boolean defaultPackage()
+            {
+                return true;
+            }
+        };
+    }
+
+    public default boolean defaultPackage()
+    {
+        return false;
     }
 }
