@@ -411,7 +411,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     }
 
     private String implementationName(Class<_Artifact_> type, boolean defaultPackage)
-    {    
+    {
         String typeName = type.getName();
         if (defaultPackage)
         {

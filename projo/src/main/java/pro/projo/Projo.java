@@ -400,7 +400,7 @@ public abstract class Projo
     {
         return implementation;
     }
-    
+
     /**
     * Gets the concrete Projo implementation class of an interface or abstract type.
     *
