@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -45,7 +45,7 @@ public class ProxyProjo extends Projo
     }
 
     @Override
-    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, Class<?>... additionalInterfaces)
+    public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, boolean defaultPackage, Class<?>... additionalInterfaces)
     {
         List<Class<?>> interfaces = new ArrayList<Class<?>>(asList(type, ProjoObject.class));
         interfaces.addAll(asList(additionalInterfaces));

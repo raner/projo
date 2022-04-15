@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -100,9 +100,10 @@ public abstract class ProjoHandler<_Artifact_>
     * can be a proxy class or some other class that was dynamically created at runtime.
     *
     * @param type the interface or abstract type to be implemented
+    * @param defaultPackage {@code true} if generated code should be placed in the default package, {@code false} otherwise
     * @return the concrete implementation class
     **/
-    public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type);
+    public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage);
 
     protected Optional<Method> getDelegateMethod(Method[] declaredMethods)
     {

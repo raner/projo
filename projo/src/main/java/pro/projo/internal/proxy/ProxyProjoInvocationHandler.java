@@ -535,7 +535,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
     }
 
     @Override
-    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type)
+    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage)
     {
         // TODO: some code overlap with ProxyProjo.initializer(Class)
         Class<?>[] interfaces = {type, ProjoObject.class};

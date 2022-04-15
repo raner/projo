@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2021 Mirko Raner                                        //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -58,7 +58,7 @@ public class RuntimeCodeGenerationProjo extends Projo
     }
 
     @Override
-    public <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type, Class<?>... additionalInterfaces)
+    public <_Artifact_> ProjoHandler<_Artifact_>.ProjoInitializer initializer(Class<_Artifact_> type, boolean defaultPackage, Class<?>... additionalInterfaces)
     {
         @SuppressWarnings("unchecked")
         RuntimeCodeGenerationHandler<_Artifact_> projoHandler = (RuntimeCodeGenerationHandler<_Artifact_>)handler;
@@ -76,8 +76,8 @@ public class RuntimeCodeGenerationProjo extends Projo
                         try
                         {
                             Class<?> implementation = isProxiedInterface(type)?
-                                projoHandler.getProxyImplementationOf(type, true):
-                                projoHandler.getImplementationOf(type);
+                                projoHandler.getProxyImplementationOf(type, true, defaultPackage):
+                                projoHandler.getImplementationOf(type, defaultPackage);
                             @SuppressWarnings("unchecked")
                             _Artifact_ instance = (_Artifact_)implementation.getConstructor().newInstance();
                             return instance;
@@ -171,7 +171,7 @@ public class RuntimeCodeGenerationProjo extends Projo
                     {
                         try
                         {
-                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, override, additionalInterfaces).getConstructors();
+                            Constructor<?>[] constructors = projoHandler.getProxyImplementationOf(type, override, defaultPackage, additionalInterfaces).getConstructors();
                             Constructor<?> constructor = Stream.of(constructors).filter(it -> it.getParameterCount() == 1).findFirst().get();
                             return (_Artifact_)constructor.newInstance(delegate);
                         }

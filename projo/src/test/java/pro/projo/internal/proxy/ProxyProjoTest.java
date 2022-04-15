@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -38,7 +38,7 @@ public class ProxyProjoTest
     public void testProxyProjoImplementationClass()
     {
         Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type);
+        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type, false);
         assertTrue(Proxy.isProxyClass(implementation));
     }
 }
