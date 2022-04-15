@@ -15,11 +15,15 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.annotation.Annotation;
 import java.util.function.Function;
 import org.junit.Test;
 import pro.projo.Projo;
+import pro.projo.singles.Factory;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
 * The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
@@ -37,6 +41,11 @@ public class ProjoRuntimeCodeGenerationTest
 
     // A class can only be generated once, so to test generation in different
     // packages we need two different test interfaces:
+
+    public static interface Named
+    {
+        Class<?> interfaceType();
+    }
 
     public static interface Named1
     {
@@ -82,5 +91,41 @@ public class ProjoRuntimeCodeGenerationTest
         String[] nameAndFullClassName = {person.name(), person.getClass().getName()};
         String[] expected = {"John Doe", "Named2$Projo"};
         assertArrayEquals(expected, nameAndFullClassName);
+    }
+
+    @Test
+    public void testGeneratedCodeUsesInterfaceClassLoaderByDefault() throws Exception
+    {
+        // Ensure the integrity of the test:
+        //
+        ClassLoader interfaceClassLoader = Named.class.getClassLoader();
+        assertNotNull(interfaceClassLoader); // should not be bootstrap class loader
+
+        // By default, the interface's class loader should be used:
+        //
+        Factory<Named, Class<?>> factory = Projo.creates(Named.class).with(Named::interfaceType);
+        Named object = factory.create(Named.class);
+        assertEquals(interfaceClassLoader, object.getClass().getClassLoader());
+    }
+
+    @Test
+    public void testDefaultPackageImplementationsUseContextClassLoader()
+    {
+        // JDK standard library classes should always be loaded by the bootstrap class loader:
+        //
+        ClassLoader bootstrapClassLoader = Override.class.getClassLoader(); // may be null
+
+        // Make sure the expected CLs are different to begin with, to ensure the integrity of the test:
+        //
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        assertNotEquals(contextClassLoader, bootstrapClassLoader);
+
+        // The generated class should use the context class loader instead of the bootstrap class loader:
+        // (which wouldn't work anyway, since it's not possible to inject into the bootstrap class loader)
+        //
+        Factory<Override, Class<? extends Annotation>> factory;
+        factory = Projo.creates(Override.class).inDefaultPackage().with(Override::annotationType);
+        Override override = factory.create(Override.class);
+        assertEquals(contextClassLoader, override.getClass().getClassLoader());
     }
 }

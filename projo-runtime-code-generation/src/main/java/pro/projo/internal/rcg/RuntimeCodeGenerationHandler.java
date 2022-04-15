@@ -151,7 +151,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         TypeDescription currentType = builder.make().getTypeDescription();
         builder = Projo.getMethods(type, getter, setter, cached).reduce(builder, this::add, sequentialOnly());
         builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
-        return builder.make().load(type.getClassLoader(), INJECTION).getLoaded();
+        return builder.make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
     }
 
     @SuppressWarnings("unchecked")
@@ -200,7 +200,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
         // Build and return the proxy class:
         //
-        return builder.make().load(type.getClassLoader()).getLoaded();
+        return builder.make().load(classLoader(type, defaultPackage)).getLoaded();
     }
 
     private Stream<Method> additionalAttributes(Class<?> type, boolean override)
@@ -422,6 +422,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             typeName = typeName.substring("java.".length());
         }
         return typeName + SUFFIX;
+    }
+
+    private ClassLoader classLoader(Class<?> type, boolean defaultPackage)
+    {
+        return defaultPackage? Thread.currentThread().getContextClassLoader():type.getClassLoader();
     }
 
     private Class<?> baseclass(Class<_Artifact_> type)
