@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Property;
 
 /**
@@ -52,6 +53,8 @@ public interface Predicates
         && !equals.test(method);
     static Predicate<Method> cached = method -> method.isDefault()
         && method.getAnnotation(Cached.class) != null;
+    static Predicate<Method> overrides = method -> method.isDefault()
+        && method.getAnnotation(Overrides.class) != null;
     static Predicate<Method> getDelegate = method -> method.getName().equals("getDelegate")
         && method.getParameterCount() == 0
         && Object.class.equals(method.getReturnType());

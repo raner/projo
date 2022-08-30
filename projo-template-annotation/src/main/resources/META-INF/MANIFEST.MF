@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: pro.projo.projo-template-annotation
 Bundle-Vendor: Mirko Raner
-Bundle-Version: 1.4.0
+Bundle-Version: 1.5.0
 Bundle-SymbolicName: pro.projo.projo-template-annotation; singleton:=true
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: pro.projo.projo-template-annotation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: pro.projo.interfaces.annotation,
  pro.projo.template.annotation
-Require-Bundle: pro.projo.projo; bundle-version="1.4.0"
+Require-Bundle: pro.projo.projo; bundle-version="1.5.0"

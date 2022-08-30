@@ -58,6 +58,7 @@ import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
+import pro.projo.utilities.AnnotationList;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -73,6 +74,7 @@ import static net.bytebuddy.implementation.bytecode.assign.Assigner.Typing.DYNAM
 import static net.bytebuddy.matcher.ElementMatchers.named;
 import static pro.projo.internal.Predicates.cached;
 import static pro.projo.internal.Predicates.getter;
+import static pro.projo.internal.Predicates.overrides;
 import static pro.projo.internal.Predicates.setter;
 
 /**
@@ -98,7 +100,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     **/
     private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache = new HashMap<>();
 
-    private Predicate<Annotation> injected = annotation -> annotation.annotationType().getName().equals("javax.inject.Inject");
+    private String injected = "javax.inject.Inject";
 
     private final static String SUFFIX = "$Projo";
 
@@ -149,7 +151,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        builder = Projo.getMethods(type, getter, setter, cached).reduce(builder, this::add, sequentialOnly());
+        builder = Projo.getMethods(type, getter, setter, cached, overrides).reduce(builder, this::add, sequentialOnly());
         builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
         return builder.make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
     }
@@ -257,28 +259,33 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     **/
     private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
     {
-        Optional<Cached> cached = Optional.ofNullable(method.getAnnotation(Cached.class));
-        boolean isGetter = getter.test(method) || method.isAnnotationPresent(Delegate.class) || cached.isPresent();
-        String methodName = method.getName();
+        AnnotationList annotations = new AnnotationList(method);
+        boolean isGetter = getter.test(method) || annotations.contains(Delegate.class) || annotations.contains(Cached.class);
+        String methodName = annotations.get(Overrides.class).map(Overrides::value).orElse(method.getName());
         String propertyName = matcher.propertyName(methodName);
+                //annotations.get(Overrides.class).map(Overrides::value).orElse(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
-        Optional<Annotation> inject = getInject(method);
+        Optional<Annotation> inject = annotations.get(injected);
         Class<?> returnType = method.getReturnType();
-        TypeDescription.Generic type = isGetter? getFieldType(inject, cached, returnType):VOID.asGenericType();
+        TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
-        Implementation implementation = getAccessor(inject, cached, returnType, propertyName);
+        Implementation implementation = getAccessor(method, annotations, returnType, propertyName);
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
     }
 
-    Implementation getAccessor(Optional<Annotation> inject, Optional<Cached> cached, Type returnType, String property)
+    Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property)
     {
-        if (inject.isPresent())
+        if (annotations.contains(injected))
         {
             return get(property, returnType);
         }
-        if (cached.isPresent())
+        if (annotations.contains(Cached.class))
         {
-            return cached(cached.get(), property, returnType);
+            return cached(annotations.get(Cached.class).get(), property, returnType);
+        }
+        if (annotations.contains(Overrides.class))
+        {
+            return MethodCall.invoke(method);
         }
         return FieldAccessor.ofField(property);
     }
@@ -365,15 +372,15 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @param originalReturnType the return type of the method
     * @return the appropriate field type for the method
     **/
-    Generic getFieldType(Optional<Annotation> inject, Optional<Cached> cached, Class<?> originalReturnType)
+    Generic getFieldType(AnnotationList annotations, Class<?> originalReturnType)
     {
-        if (!inject.isPresent() && !cached.isPresent())
+        if (!annotations.contains(injected) && !annotations.contains(Cached.class))
         {
             return Generic.Builder.rawType(originalReturnType).build();
         }
         else
         {
-            Class<?> container = inject.isPresent()? getClass("javax.inject.Provider"):Cache.class;
+            Class<?> container = annotations.contains(injected)? getClass("javax.inject.Provider"):Cache.class;
             Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
             return Generic.Builder.parameterizedType(container, wrappedType).build();
         }
@@ -383,11 +390,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     Builder<_Artifact_> annotate(Optional<Annotation> annotation, _ValuableBuilder_ builder)
     {
         return annotation.isPresent()? builder.annotateField(annotation.get()):builder;
-    }
-
-    private Optional<Annotation> getInject(Method method)
-    {
-        return Stream.of(method.getAnnotations()).filter(injected).findFirst();
     }
 
     private Class<?> getClass(String name)

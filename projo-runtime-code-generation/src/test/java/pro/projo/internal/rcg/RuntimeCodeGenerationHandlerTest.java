@@ -15,13 +15,12 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
-import java.util.Optional;
 import javax.inject.Inject;
 import org.junit.Test;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import pro.projo.annotations.Cached;
+import pro.projo.utilities.AnnotationList;
 import static java.lang.reflect.Proxy.isProxyClass;
-import static java.util.Optional.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -63,7 +62,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testFieldTypeForRegularMethod()
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
-        Generic fieldType = handler.getFieldType(empty(), empty(), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(), String.class);
         assertEquals("class java.lang.String", fieldType.toString());
     }
 
@@ -73,7 +72,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Inject inject = getClass().getDeclaredMethod("testFieldTypeForInjectedMethod").getAnnotation(Inject.class);
-        Generic fieldType = handler.getFieldType(Optional.of(inject), empty(), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(inject), String.class);
         assertEquals("javax.inject.Provider<java.lang.String>", fieldType.toString());
     }
 
@@ -83,7 +82,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
-        Generic fieldType = handler.getFieldType(empty(), Optional.of(cached), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(cached), String.class);
         assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.String>", fieldType.toString());
     }
 
@@ -93,7 +92,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
-        Generic fieldType = handler.getFieldType(empty(), Optional.of(cached), int.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(cached), int.class);
         assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.Integer>", fieldType.toString());
     }
 }
