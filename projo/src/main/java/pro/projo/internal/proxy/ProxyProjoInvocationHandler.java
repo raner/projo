@@ -179,7 +179,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 }
                 else
                 {
-                    invoker = ProxyProjoInvocationHandler.this.regularInvoker;
+                    invoker = ProxyProjoInvocationHandler.this.regularInvoker(reifiedType);
                 }
                 initializationStack = null;
                 return instance;
@@ -193,96 +193,108 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
         }
     }
 
-    InvocationHandler regularInvoker = (Object proxy, Method method, Object... arguments) ->
-    {
-        if (setter.test(method))
-        {
-            return state.put(matcher.propertyName(method.getName()), arguments[0]);
-        }
-        if (getter.test(method))
-        {
-            Object value = state.get(matcher.propertyName(method.getName()));
-            return value != null? value:Default.VALUES.get(method.getReturnType());
-        }
-        if (equals.test(method))
-        {
-            return isValueObject(reifiedType)? isEqual(artifact(proxy), artifact(arguments[0])):proxy == arguments[0];
-        }
-        if (hashCode.test(method))
-        {
-            @SuppressWarnings("unchecked")
-            _Artifact_ artifact = (_Artifact_)proxy;
-            return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
-        }
-        if (toString.test(method))
-        {
-            @SuppressWarnings("unchecked")
-            _Artifact_ artifact = (_Artifact_)proxy;
-            return toString(artifact);
-        }
-        if (method.isDefault())
-        {
-            List<Object> key = null;
-            Map<List<Object>, Object> cache = null;
-            Cached cached = method.getAnnotation(Cached.class);
-            if (cached != null)
-            {
-                String property = matcher.propertyName(method.getName());
-                @SuppressWarnings("unchecked")
-                Map<List<Object>, Object> cacheState = (Map<List<Object>, Object>)state.get(property);
-                cache = cacheState;
-                if (cache == null)
-                {
-                    cache = new HashMap<>();
-                    state.put(property, cache);
-                }
-                key = arguments == null? emptyList():Arrays.asList(arguments);
-                Object value = cache.get(key);
-                if (value != null)
-                {
-                    return value;
-                }
-            }
-            if (System.getProperty("java.version").startsWith("1.8"))
-            {
-                Class<?> type = method.getDeclaringClass();
-                Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
-                constructor.setAccessible(true);
-                Object value = constructor
-                    .newInstance(type)
-                    .in(type)
-                    .unreflectSpecial(method, type)
-                    .bindTo(proxy)
-                    .invokeWithArguments(arguments);
-                if (cached != null)
-                {
-                    // Add value to cache if there is still space:
-                    //
-                    if (cache.size() < cached.cacheSize())
-                    {
-                        cache.put(key, value);
-                    }
-                }
-                return value;
-            }
-            else // assuming Java 9+
-            {
-                throw new UnsupportedOperationException("proxy functionality no longer fully available in Java 9 or higher");
-            }
-        }
-        throw new NoSuchMethodError(String.valueOf(method));
-    };
-
-    InvocationHandler proxyInvoker(Object delegate, Class<?> proxyInterface)
+    Map<String, Method> overrides(Method... methods)
     {
         // Find methods that are annotated with an @Overrides annotation:
         //
-        Method[] declaredMethods = proxyInterface != null? proxyInterface.getDeclaredMethods():new Method[] {};
-        Map<String, Method> overrides = Stream.of(declaredMethods)
+        return Stream.of(methods)
             .map(method -> new SimpleEntry<>(method, method.getAnnotation(Overrides.class)))
             .filter(pair -> pair.getValue() != null)
             .map(pair -> new SimpleEntry<>(pair.getValue().value(), pair.getKey()))
             .collect(toMap(Entry::getKey, Entry::getValue));
+    }
+
+    InvocationHandler regularInvoker(Class<?> declaringType)
+    {
+        return (Object proxy, Method method, Object... arguments) ->
+        {
+            Method overridden = overrides(declaringType.getDeclaredMethods()).get(method.getName());
+            if (overridden != null)
+            {
+                return overridden.invoke(proxy, arguments);
+            }
+            if (setter.test(method))
+            {
+                return state.put(matcher.propertyName(method.getName()), arguments[0]);
+            }
+            if (getter.test(method))
+            {
+                Object value = state.get(matcher.propertyName(method.getName()));
+                return value != null? value:Default.VALUES.get(method.getReturnType());
+            }
+            if (equals.test(method))
+            {
+                return isValueObject(reifiedType)? isEqual(artifact(proxy), artifact(arguments[0])):proxy == arguments[0];
+            }
+            if (hashCode.test(method))
+            {
+                @SuppressWarnings("unchecked")
+                _Artifact_ artifact = (_Artifact_)proxy;
+                return isValueObject(reifiedType)? hashCode(artifact):identityHashCode(artifact);
+            }
+            if (toString.test(method))
+            {
+                @SuppressWarnings("unchecked")
+                _Artifact_ artifact = (_Artifact_)proxy;
+                return toString(artifact);
+            }
+            if (method.isDefault())
+            {
+                List<Object> key = null;
+                Map<List<Object>, Object> cache = null;
+                Cached cached = method.getAnnotation(Cached.class);
+                if (cached != null)
+                {
+                    String property = matcher.propertyName(method.getName());
+                    @SuppressWarnings("unchecked")
+                    Map<List<Object>, Object> cacheState = (Map<List<Object>, Object>)state.get(property);
+                    cache = cacheState;
+                    if (cache == null)
+                    {
+                        cache = new HashMap<>();
+                        state.put(property, cache);
+                    }
+                    key = arguments == null? emptyList():Arrays.asList(arguments);
+                    Object value = cache.get(key);
+                    if (value != null)
+                    {
+                        return value;
+                    }
+                }
+                if (System.getProperty("java.version").startsWith("1.8"))
+                {
+                    Class<?> type = method.getDeclaringClass();
+                    Constructor<Lookup> constructor = Lookup.class.getDeclaredConstructor(Class.class);
+                    constructor.setAccessible(true);
+                    Object value = constructor
+                        .newInstance(type)
+                        .in(type)
+                        .unreflectSpecial(method, type)
+                        .bindTo(proxy)
+                        .invokeWithArguments(arguments);
+                    if (cached != null)
+                    {
+                        // Add value to cache if there is still space:
+                        //
+                        if (cache.size() < cached.cacheSize())
+                        {
+                            cache.put(key, value);
+                        }
+                    }
+                    return value;
+                }
+                else // assuming Java 9+
+                {
+                    throw new UnsupportedOperationException("proxy functionality no longer fully available in Java 9 or higher");
+                }
+            }
+            throw new NoSuchMethodError(String.valueOf(method));
+        };
+    }
+
+    InvocationHandler proxyInvoker(Object delegate, Class<?> proxyInterface)
+    {
+        Method[] declaredMethods = proxyInterface != null? proxyInterface.getDeclaredMethods():new Method[] {};
         Method delegateMethod = getDelegateMethod(declaredMethods).orElse(null);
 
         // TODO: this handler captures the delegate object from the closure;
@@ -302,7 +314,7 @@ public class ProxyProjoInvocationHandler<_Artifact_> extends ProjoHandler<_Artif
                 return delegate;
             }
             else if (method.getDeclaringClass().equals(Object.class)
-                && ((overrideMethod = overrides.get(method.getName()))) != null)
+                && ((overrideMethod = overrides(declaredMethods).get(method.getName()))) != null)
             {
                 // Invoke override method:
                 //

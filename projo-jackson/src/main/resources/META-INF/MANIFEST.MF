@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: pro.projo.projo-jackson
 Bundle-Vendor: Mirko Raner
-Bundle-Version: 1.4.0
+Bundle-Version: 1.5.0
 Bundle-SymbolicName: pro.projo.projo-jackson; singleton:=true
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: pro.projo.projo-jackson
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: pro.projo.jackson
-Require-Bundle: pro.projo.projo; bundle-version="1.4.0"
+Require-Bundle: pro.projo.projo; bundle-version="1.5.0"

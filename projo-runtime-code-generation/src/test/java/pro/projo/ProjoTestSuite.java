@@ -31,6 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
 ({
     CacheTest.class,
     BuilderTest.class,
+    OverridesTest.class,
     SimpleDelegateTest.class,
     ProjoTest.class,
     ProjoObjectTest.class,
