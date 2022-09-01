@@ -17,7 +17,9 @@ package pro.projo.internal.proxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import pro.projo.Projo;
+import pro.projo.annotations.Implements;
 import pro.projo.internal.ProjoObject;
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.util.Arrays.asList;
@@ -48,6 +50,9 @@ public class ProxyProjo extends Projo
     public <_Artifact_> ProxyProjoInvocationHandler<_Artifact_>.Initializer initializer(Class<_Artifact_> type, boolean defaultPackage, Class<?>... additionalInterfaces)
     {
         List<Class<?>> interfaces = new ArrayList<Class<?>>(asList(type, ProjoObject.class));
+        Implements annotation = type.getAnnotation(Implements.class);
+        Stream<String> stream = annotation != null? Stream.of(annotation.value()):Stream.empty();
+        stream.map(Projo::forName).forEach(interfaces::add);
         interfaces.addAll(asList(additionalInterfaces));
         ProxyProjoInvocationHandler<_Artifact_> handler = getHandler(type);
         @SuppressWarnings("unchecked")

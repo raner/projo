@@ -545,6 +545,24 @@ public abstract class Projo
         return Stream.of(getGetterMethods(type)).map(converter::convert).<Function<_Artifact_, ?>>toArray(Function[]::new);
     }
 
+    /**
+    * Loads a class by name without throwing exceptions.
+    *
+    * @param typeName the fully qualified class name
+    * @return a {@link Class} object or {@code null} if a problem occurred
+    **/
+    public static Class<?> forName(String typeName)
+    {
+        try
+        {
+            return Class.forName(typeName);
+        }
+        catch (Exception exception)
+        {
+            throw new RuntimeException(exception);
+        }
+    }
+
     private static Set<Class<?>> superInterfaces(Class<?> type)
     {
         Set<Class<?>> superInterfaces = new HashSet<>();
