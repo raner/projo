@@ -31,10 +31,13 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.field.FieldDescription;
 import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
@@ -48,6 +51,7 @@ import net.bytebuddy.utility.JavaConstant;
 import pro.projo.Projo;
 import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Implements;
 import pro.projo.annotations.Overrides;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
@@ -90,7 +94,9 @@ import static pro.projo.internal.Predicates.setter;
 **/
 public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Artifact_>
 {
-    private PropertyMatcher matcher = new PropertyMatcher();
+    private final PropertyMatcher matcher = new PropertyMatcher();
+
+    private final Pattern typeNamePattern = Pattern.compile("(?<base>[^<>]+)(<(?<arguments>[^>]+)>)?");
 
     /**
     * {@code implementationClassCache} is the cache that maps interface classes to implementation classes.
@@ -439,8 +445,35 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Builder<_Artifact_> create(Class<_Artifact_> type)
     {
+        Implements annotation = type.getAnnotation(Implements.class);
+        Stream<String> implemented = annotation != null? Stream.of(annotation.value()):Stream.empty();
+        Stream<TypeDefinition> additionalInterfaces = implemented.map(this::type);
+        TypeDefinition[] interfaces = Stream.concat(Stream.of(type(type), type(ProjoObject.class)), additionalInterfaces).toArray(TypeDefinition[]::new);
         @SuppressWarnings("unchecked")
-        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(type, ProjoObject.class);
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(interfaces);
         return builder;
+    }
+
+    private TypeDefinition type(Class<?> type)
+    {
+        return new TypeDescription.ForLoadedType(type);
+    }
+
+    private TypeDefinition type(String typeName)
+    {
+        Matcher matcher = typeNamePattern.matcher(typeName);
+        matcher.matches();
+        String baseType = matcher.group("base");
+        String typeArguments = matcher.group("arguments");
+        if (typeArguments == null)
+        {
+            return type(Projo.forName(baseType));
+        }
+        else
+        {
+            Stream<String> arguments = Stream.of(typeArguments.split("[, ]+"));
+            Type[] argumentTypes = arguments.map(Projo::forName).toArray(Type[]::new);
+            return Generic.Builder.parameterizedType(Projo.forName(baseType), argumentTypes).build();
+        }
     }
 }
