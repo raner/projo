@@ -23,6 +23,7 @@ import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Property;
+import pro.projo.annotations.Returns;
 
 /**
 * The {@link Predicates} class is a utility class that defines several commonly used predicates.
@@ -55,6 +56,8 @@ public interface Predicates
         && method.getAnnotation(Cached.class) != null;
     static Predicate<Method> overrides = method -> method.isDefault()
         && method.getAnnotation(Overrides.class) != null;
+    static Predicate<Method> returns = method -> method.isDefault()
+        && method.getAnnotation(Returns.class) != null;
     static Predicate<Method> getDelegate = method -> method.getName().equals("getDelegate")
         && method.getParameterCount() == 0
         && Object.class.equals(method.getReturnType());

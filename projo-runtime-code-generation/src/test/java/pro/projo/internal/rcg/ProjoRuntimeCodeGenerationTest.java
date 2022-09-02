@@ -15,15 +15,19 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.function.Function;
 import org.junit.Test;
 import pro.projo.Projo;
+import pro.projo.annotations.Implements;
+import pro.projo.annotations.Returns;
 import pro.projo.singles.Factory;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
 * The {@link ProjoRuntimeCodeGenerationTest} is a JUnit test that verifies general aspects
@@ -55,6 +59,28 @@ public class ProjoRuntimeCodeGenerationTest
     public static interface Named2
     {
         String name();
+    }
+
+    @Implements("java.lang.Appendable")
+    public static interface SpecialAppendable
+    {
+        @Returns("java.lang.Appendable")
+        default Object append(CharSequence csq)
+        {
+            return System.out;
+        }
+
+        @Returns("java.lang.Appendable")
+        default Object append(CharSequence csq, int start, int end)
+        {
+            return System.err;
+        }
+
+        @Returns("java.lang.Appendable")
+        default Object append(char c)
+        {
+            return null;
+        }
     }
 
     @Test
@@ -91,6 +117,15 @@ public class ProjoRuntimeCodeGenerationTest
         String[] nameAndFullClassName = {person.name(), person.getClass().getName()};
         String[] expected = {"John Doe", "Named2$Projo"};
         assertArrayEquals(expected, nameAndFullClassName);
+    }
+
+    @Test
+    public void testReturnAnnotation() throws IOException
+    {
+        Appendable appendable = (Appendable)Projo.create(SpecialAppendable.class);
+        assertEquals(System.out, appendable.append(""));
+        assertEquals(System.err, appendable.append("", 0, 0));
+        assertNull(appendable.append('\0'));
     }
 
     @Test

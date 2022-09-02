@@ -53,6 +53,7 @@ import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
 import pro.projo.annotations.Implements;
 import pro.projo.annotations.Overrides;
+import pro.projo.annotations.Returns;
 import pro.projo.internal.Predicates;
 import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
@@ -62,6 +63,7 @@ import pro.projo.internal.rcg.runtime.DefaultToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
+import pro.projo.internal.rcg.utilities.UncheckedMethodDescription;
 import pro.projo.utilities.AnnotationList;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
@@ -76,9 +78,12 @@ import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTI
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.DEFAULT;
 import static net.bytebuddy.implementation.bytecode.assign.Assigner.Typing.DYNAMIC;
 import static net.bytebuddy.matcher.ElementMatchers.named;
+import static pro.projo.Projo.delegateOverride;
+import static pro.projo.Projo.getMethods;
 import static pro.projo.internal.Predicates.cached;
 import static pro.projo.internal.Predicates.getter;
 import static pro.projo.internal.Predicates.overrides;
+import static pro.projo.internal.Predicates.returns;
 import static pro.projo.internal.Predicates.setter;
 
 /**
@@ -157,7 +162,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        builder = Projo.getMethods(type, getter, setter, cached, overrides).reduce(builder, this::add, sequentialOnly());
+        builder = getMethods(type, getter, setter, cached, overrides, returns).reduce(builder, this::add, sequentialOnly());
         builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
         return builder.make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
     }
@@ -269,13 +274,20 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         boolean isGetter = getter.test(method) || annotations.contains(Delegate.class) || annotations.contains(Cached.class);
         String methodName = annotations.get(Overrides.class).map(Overrides::value).orElse(method.getName());
         String propertyName = matcher.propertyName(methodName);
-                //annotations.get(Overrides.class).map(Overrides::value).orElse(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         Optional<Annotation> inject = annotations.get(injected);
         Class<?> returnType = method.getReturnType();
         TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
         Implementation implementation = getAccessor(method, annotations, returnType, propertyName);
+        Optional<Returns> returns = annotations.get(Returns.class);
+        if (returns.isPresent())
+        {
+            return addFieldForGetter.apply(builder)
+                .defineMethod(methodName, Projo.forName(returns.get().value()), PUBLIC)
+                .withParameters(method.getParameterTypes())
+                .intercept(implementation);
+        }
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
     }
 
@@ -291,7 +303,13 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
         if (annotations.contains(Overrides.class))
         {
-            return MethodCall.invoke(method);
+            return MethodCall.invoke(method).withAllArguments().withAssigner(DEFAULT, DYNAMIC);
+        }
+        if (annotations.contains(Returns.class))
+        {
+            MethodDescription description = new MethodDescription.ForLoadedMethod(method);
+            MethodDescription unchecked = delegateOverride(description, UncheckedMethodDescription.class);
+            return MethodCall.invoke(unchecked).onSuper().withAllArguments().withAssigner(DEFAULT, DYNAMIC);
         }
         return FieldAccessor.ofField(property);
     }
