@@ -18,9 +18,12 @@ package pro.projo.internal;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Expects;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Property;
 import pro.projo.annotations.Returns;
@@ -58,6 +61,8 @@ public interface Predicates
         && method.getAnnotation(Overrides.class) != null;
     static Predicate<Method> returns = method -> method.isDefault()
         && method.getAnnotation(Returns.class) != null;
+    static Predicate<Method> expects = method -> method.isDefault()
+        && Stream.of(method.getParameters()).map(it -> it.getAnnotation(Expects.class)).anyMatch(Objects::nonNull);
     static Predicate<Method> getDelegate = method -> method.getName().equals("getDelegate")
         && method.getParameterCount() == 0
         && Object.class.equals(method.getReturnType());

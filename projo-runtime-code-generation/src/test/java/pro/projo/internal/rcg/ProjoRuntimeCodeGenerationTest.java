@@ -17,9 +17,14 @@ package pro.projo.internal.rcg;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Formattable;
+import java.util.Formatter;
+import java.util.FormatterClosedException;
 import java.util.function.Function;
 import org.junit.Test;
 import pro.projo.Projo;
+import pro.projo.annotations.Expects;
 import pro.projo.annotations.Implements;
 import pro.projo.annotations.Returns;
 import pro.projo.singles.Factory;
@@ -83,6 +88,30 @@ public class ProjoRuntimeCodeGenerationTest
         }
     }
 
+    @Implements("java.util.Formattable")
+    public static interface SpecialFormattable
+    {
+        default void formatTo(@Expects("java.util.Formatter") Object formatter, int flags, int width, int precision)
+        {
+            try
+            {
+                formatter.getClass().getDeclaredMethod("out").invoke(formatter);
+            }
+            catch (InvocationTargetException exception)
+            {
+                if (exception.getCause() instanceof RuntimeException)
+                {
+                    throw (RuntimeException)exception.getCause();
+                }
+                throw new RuntimeException(exception.getCause());
+            }
+            catch (Throwable throwable)
+            {
+                throw new RuntimeException(throwable);
+            }
+        }
+    }
+
     @Test
     public void testRuntimeCodeGenerationProjoImplementation()
     {
@@ -120,12 +149,21 @@ public class ProjoRuntimeCodeGenerationTest
     }
 
     @Test
-    public void testReturnAnnotation() throws IOException
+    public void testReturnsAnnotation() throws IOException
     {
         Appendable appendable = (Appendable)Projo.create(SpecialAppendable.class);
         assertEquals(System.out, appendable.append(""));
         assertEquals(System.err, appendable.append("", 0, 0));
         assertNull(appendable.append('\0'));
+    }
+
+    @Test(expected=FormatterClosedException.class)
+    public void testExpectsAnnotation() throws IOException
+    {
+        Formatter formatter = new Formatter();
+        formatter.close(); // this will cause FormatterClosedException when calling formatTo(...)
+        Formattable formattable = (Formattable)Projo.create(SpecialFormattable.class);
+        formattable.formatTo(formatter, 0, 0, 0);
     }
 
     @Test
