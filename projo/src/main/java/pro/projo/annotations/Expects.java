@@ -17,30 +17,26 @@ package pro.projo.annotations;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-* The {@link Implements @Implements} annotation is used for indicating that an interface extends
-* another interface in scenarios where the extended interface is only on the runtime classpath but
-* not on the compile-time classpath. In other words, this annotation is a replacement for the
-* {@code extends} keyword in an interface declaration where the extended interface cannot be named
-* in the source code.
+* The {@link Expects @Expects} annotation is used for indicating that a method's parameter is of a
+* different type than suggested by its signature. This is useful when overriding or implementing
+* methods that have parameter types that are not on the compile-time classpath (but would be
+* available on the runtime classpath).
+*
+* This annotation is only honored when using Projo's runtime code generation feature. It will have
+* no effect (or may even cause errors) when used with proxy-based implementations.
 *
 * @author Mirko Raner
 **/
-@Target(TYPE)
+@Target(PARAMETER)
 @Retention(RUNTIME)
-public @interface Implements
+public @interface Expects
 {
     /**
-    * The fully qualified names of the extended interfaces. For proxy-based implementation, the
-    * type cannot contain type arguments for a parameterized type. For RCG-based implementation,
-    * type arguments may be specified (e.g., {@code a.b.Cc<d.e.Ff, g.h.Ii>}) but only a
-    * single level of type arguments is supported (i.e., {@code a.b.Cc<d.e.Ff<g.h.Ii>>} would not
-    * work.
-    *
-    * @return the fully qualified names of all extended interfaces
+    * @return the fully qualified name of the parameter type.
     **/
-    String[] value();
+    String value();
 }

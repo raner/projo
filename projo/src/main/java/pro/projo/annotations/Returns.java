@@ -36,7 +36,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Returns
 {
     /**
-    * The fully qualified name of the return type.
+    * @return the fully qualified name of the return type
     **/
     String value();
 }

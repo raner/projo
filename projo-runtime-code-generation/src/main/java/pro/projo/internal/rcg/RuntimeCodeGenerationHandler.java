@@ -33,6 +33,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.field.FieldDescription;
@@ -51,6 +52,7 @@ import net.bytebuddy.utility.JavaConstant;
 import pro.projo.Projo;
 import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
+import pro.projo.annotations.Expects;
 import pro.projo.annotations.Implements;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Returns;
@@ -69,6 +71,7 @@ import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.function.UnaryOperator.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.empty;
 import static net.bytebuddy.ClassFileVersion.JAVA_V8;
 import static net.bytebuddy.description.modifier.Visibility.PRIVATE;
@@ -81,6 +84,7 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static pro.projo.Projo.delegateOverride;
 import static pro.projo.Projo.getMethods;
 import static pro.projo.internal.Predicates.cached;
+import static pro.projo.internal.Predicates.expects;
 import static pro.projo.internal.Predicates.getter;
 import static pro.projo.internal.Predicates.overrides;
 import static pro.projo.internal.Predicates.returns;
@@ -162,9 +166,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        builder = getMethods(type, getter, setter, cached, overrides, returns).reduce(builder, this::add, sequentialOnly());
-        builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
-        return builder.make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
+        return getMethods(type, getter, setter, cached, overrides, returns, expects)
+            .reduce(builder, this::add, sequentialOnly())
+            .defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods))
+            .make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
     }
 
     @SuppressWarnings("unchecked")
@@ -281,11 +286,27 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
         Implementation implementation = getAccessor(method, annotations, returnType, propertyName);
         Optional<Returns> returns = annotations.get(Returns.class);
-        if (returns.isPresent())
+        List<Optional<Expects>> expects = Stream.of(method.getParameters())
+            .map(it -> Optional.ofNullable(it.getAnnotation(Expects.class)))
+            .collect(toList());
+        if (returns.isPresent() || expects.stream().anyMatch(Optional::isPresent))
         {
+            Class<?> returnsType = returns
+                .map(Returns::value)
+                .map(Projo::forName)
+                .map(Class.class::cast)
+                .orElse(returnType);
+            @SuppressWarnings("rawtypes")
+            List<Class> parameterTypes = IntStream.range(0, expects.size())
+                .mapToObj(index -> expects.get(index)
+                    .map(Expects::value)
+                    .map(Projo::forName)
+                    .map(Class.class::cast)
+                    .orElse(method.getParameterTypes()[index]))
+                    .collect(toList());
             return addFieldForGetter.apply(builder)
-                .defineMethod(methodName, Projo.forName(returns.get().value()), PUBLIC)
-                .withParameters(method.getParameterTypes())
+                .defineMethod(methodName, returnsType, PUBLIC)
+                .withParameters(parameterTypes.toArray(new Type[] {}))
                 .intercept(implementation);
         }
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
@@ -305,7 +326,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         {
             return MethodCall.invoke(method).withAllArguments().withAssigner(DEFAULT, DYNAMIC);
         }
-        if (annotations.contains(Returns.class))
+        if (annotations.contains(Returns.class) || expects.test(method))
         {
             MethodDescription description = new MethodDescription.ForLoadedMethod(method);
             MethodDescription unchecked = delegateOverride(description, UncheckedMethodDescription.class);
