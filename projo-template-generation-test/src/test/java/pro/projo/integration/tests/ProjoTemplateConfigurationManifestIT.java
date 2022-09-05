@@ -15,9 +15,7 @@
 //                                                                          //
 package pro.projo.integration.tests;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +25,7 @@ import pro.projo.test.utilities.ManifestTest;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class ProjoManifestIT extends ManifestTest
+public class ProjoTemplateConfigurationManifestIT extends ManifestTest
 {
     @Parameters(name="{0}")
     public static TestAttribute[] getTestAttributes()
@@ -35,72 +33,39 @@ public class ProjoManifestIT extends ManifestTest
         return testAttributes.toArray(new TestAttribute[] {});
     }
 
-    public ProjoManifestIT(TestAttribute testAttribute) throws Exception
+    public ProjoTemplateConfigurationManifestIT(TestAttribute testAttribute) throws Exception
     {
-        super("projo", testAttribute);
+        super("projo-template-configuration", testAttribute);
     }
 
     @Override
     public String expectedBundleName()
     {
-        return "pro.projo.projo";
+        return "pro.projo.projo-template-configuration";
     }
 
     @Override
     public String expectedBundleSymbolicName()
     {
-        return "pro.projo.projo; singleton:=true";
+        return "pro.projo.projo-template-configuration; singleton:=true";
     }
 
     @Override
     public String expectedAutomaticModuleName()
     {
-        return "pro.projo.projo";
+        return "pro.projo.projo-template-configuration";
     }
 
     @Override
     public Set<String> expectedExportPackage()
     {
-        List<String> exports = Arrays.asList
-        (
-            "pro.projo",
-            "pro.projo.$template",
-            "pro.projo.annotations",
-            "pro.projo.internal; x-internal:=true",
-            "pro.projo.internal.proxy; x-internal:=true",
-            "pro.projo.decuples",
-            "pro.projo.doubles",
-            "pro.projo.duodecuples",
-            "pro.projo.duovigintuples",
-            "pro.projo.nonuples",
-            "pro.projo.novemdecuples",
-            "pro.projo.novemvigintuples",
-            "pro.projo.octodecuples",
-            "pro.projo.octovigintuples",
-            "pro.projo.octuples",
-            "pro.projo.quadruples",
-            "pro.projo.quattuordecuples",
-            "pro.projo.quattuorvigintuples",
-            "pro.projo.quindecuples",
-            "pro.projo.quintuples",
-            "pro.projo.quinvigintuples",
-            "pro.projo.septendecuples",
-            "pro.projo.septenvigintuples",
-            "pro.projo.septuples",
-            "pro.projo.sexdecuples",
-            "pro.projo.sextuples",
-            "pro.projo.sexvigintuples",
-            "pro.projo.singles",
-            "pro.projo.tredecuples",
-            "pro.projo.trevigintuples",
-            "pro.projo.trigintuples",
-            "pro.projo.triples",
-            "pro.projo.undecuples",
-            "pro.projo.unvigintuples",
-            "pro.projo.vigintuples",
-            "pro.projo.utilities"
-        );
-        return new HashSet<String>(exports);
+        return Collections.singleton("pro.projo.template.configuration");
+    }
+
+    @Override
+    public Set<String> expectedRequireBundle()
+    {
+        return Collections.singleton("pro.projo.projo; bundle-version=\"" + version + "\"");
     }
 
     @Test

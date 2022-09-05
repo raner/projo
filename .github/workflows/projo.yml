@@ -1,5 +1,5 @@
 #                                                                          #
-# Copyright 2021 Mirko Raner                                               #
+# Copyright 2021 - 2022 Mirko Raner                                        #
 #                                                                          #
 # Licensed under the Apache License, Version 2.0 (the "License");          #
 # you may not use this file except in compliance with the License.         #
@@ -34,5 +34,5 @@ jobs:
       if: success() || failure() # always collect results, even if previous step failed
       with:
         name: tests
-        path: '**/surefire-reports/TEST-*.xml'
+        path: '**/*-reports/TEST-*.xml'
         reporter: java-junit

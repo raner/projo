@@ -21,7 +21,6 @@ import java.text.Format;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -39,10 +38,16 @@ public abstract class ManifestTest
         public String name;
         public Function<ManifestTest, Object> expected;
         
-        TestAttribute(String name, Function<ManifestTest, Object> expected)
+        public TestAttribute(String name, Function<ManifestTest, Object> expected)
         {
             this.name = name;
             this.expected = expected;
+        }
+
+        @Override
+        public String toString()
+        {
+            return name;
         }
     }
 
@@ -57,7 +62,9 @@ public abstract class ManifestTest
         new TestAttribute("Bundle-ActivationPolicy", ManifestTest::expectedBundleActivationPolicy),
         new TestAttribute("Bundle-RequiredExecutionEnvironment", ManifestTest::expectedBundleRequiredExecutionEnvironment),
         new TestAttribute("Automatic-Module-Name", ManifestTest::expectedAutomaticModuleName),
-        new TestAttribute("Export-Package", ManifestTest::expectedExportPackage)
+        new TestAttribute("Export-Package", ManifestTest::expectedExportPackage),
+        new TestAttribute("Require-Bundle", ManifestTest::expectedRequireBundle),
+        new TestAttribute("Fragment-Host", ManifestTest::expectedFragmentHost)
     );
 
     private static Format urlFormat = new MessageFormat("jar:file:/.*/{0}/target/{0}-.*\\.jar!/META-INF/MANIFEST.MF");
@@ -66,7 +73,7 @@ public abstract class ManifestTest
     private Pattern manifestPattern;
     private Attributes attributes;
     private TestAttribute testAttribute;
-    private String version;
+    protected final String version;
 
     protected ManifestTest(String moduleName, TestAttribute testAttribute) throws Exception
     {
@@ -79,8 +86,8 @@ public abstract class ManifestTest
             properties.load(versionProperties);
             version = properties.getProperty("version");
         }
-        Enumeration<URL> manifests = classLoader.getResources("META-INF/MANIFEST.MF");
-        Stream<URL> urls = Collections.list(manifests).stream();
+        List<URL> manifests = Collections.list(classLoader.getResources("META-INF/MANIFEST.MF"));
+        Stream<URL> urls = manifests.stream();
         URL url = urls.filter(it -> manifestPattern.matcher(it.toString()).matches()).findFirst().get();
         try (InputStream input = url.openStream())
         {
@@ -117,6 +124,16 @@ public abstract class ManifestTest
     public String expectedBundleVendor()
     {
         return "Mirko Raner";
+    }
+
+    public String expectedFragmentHost()
+    {
+        return null;
+    }
+
+    public Set<String> expectedRequireBundle()
+    {
+        return null;
     }
 
     public abstract String expectedBundleName();

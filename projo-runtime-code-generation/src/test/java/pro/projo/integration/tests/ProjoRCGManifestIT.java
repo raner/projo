@@ -16,6 +16,7 @@
 package pro.projo.integration.tests;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import pro.projo.test.utilities.ManifestTest;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class ProjoManifestIT extends ManifestTest
+public class ProjoRCGManifestIT extends ManifestTest
 {
     @Parameters(name="{0}")
     public static TestAttribute[] getTestAttributes()
@@ -35,27 +36,27 @@ public class ProjoManifestIT extends ManifestTest
         return testAttributes.toArray(new TestAttribute[] {});
     }
 
-    public ProjoManifestIT(TestAttribute testAttribute) throws Exception
+    public ProjoRCGManifestIT(TestAttribute testAttribute) throws Exception
     {
-        super("projo", testAttribute);
+        super("projo-runtime-code-generation", testAttribute);
     }
 
     @Override
     public String expectedBundleName()
     {
-        return "pro.projo.projo";
+        return "pro.projo.projo-runtime-code-generation";
     }
 
     @Override
     public String expectedBundleSymbolicName()
     {
-        return "pro.projo.projo; singleton:=true";
+        return "pro.projo.projo-runtime-code-generation; singleton:=true";
     }
 
     @Override
     public String expectedAutomaticModuleName()
     {
-        return "pro.projo.projo";
+        return "pro.projo.projo-runtime-code-generation";
     }
 
     @Override
@@ -63,44 +64,22 @@ public class ProjoManifestIT extends ManifestTest
     {
         List<String> exports = Arrays.asList
         (
-            "pro.projo",
-            "pro.projo.$template",
-            "pro.projo.annotations",
-            "pro.projo.internal; x-internal:=true",
-            "pro.projo.internal.proxy; x-internal:=true",
-            "pro.projo.decuples",
-            "pro.projo.doubles",
-            "pro.projo.duodecuples",
-            "pro.projo.duovigintuples",
-            "pro.projo.nonuples",
-            "pro.projo.novemdecuples",
-            "pro.projo.novemvigintuples",
-            "pro.projo.octodecuples",
-            "pro.projo.octovigintuples",
-            "pro.projo.octuples",
-            "pro.projo.quadruples",
-            "pro.projo.quattuordecuples",
-            "pro.projo.quattuorvigintuples",
-            "pro.projo.quindecuples",
-            "pro.projo.quintuples",
-            "pro.projo.quinvigintuples",
-            "pro.projo.septendecuples",
-            "pro.projo.septenvigintuples",
-            "pro.projo.septuples",
-            "pro.projo.sexdecuples",
-            "pro.projo.sextuples",
-            "pro.projo.sexvigintuples",
-            "pro.projo.singles",
-            "pro.projo.tredecuples",
-            "pro.projo.trevigintuples",
-            "pro.projo.trigintuples",
-            "pro.projo.triples",
-            "pro.projo.undecuples",
-            "pro.projo.unvigintuples",
-            "pro.projo.vigintuples",
-            "pro.projo.utilities"
+            "pro.projo.internal.rcg; x-internal:=true",
+            "pro.projo.internal.rcg.runtime; x-internal:=true"
         );
         return new HashSet<String>(exports);
+    }
+
+    @Override
+    public String expectedFragmentHost()
+    {
+        return "pro.projo.projo";
+    }
+
+    @Override
+    public Set<String> expectedRequireBundle()
+    {
+        return Collections.singleton("net.bytebuddy.byte-buddy; bundle-version=\"1.9.0\"");
     }
 
     @Test
