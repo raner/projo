@@ -80,6 +80,12 @@
  </modules>
 
  <build>
+  <resources>
+   <resource>
+    <directory>src/main/resources</directory>
+    <filtering>true</filtering>
+   </resource>
+  </resources>
   <testResources>
    <testResource>
     <directory>src/test/resources</directory>
@@ -189,7 +195,7 @@
       <goals>
        <goal>parse-version</goal>
       </goals>
-      <phase>generate-test-resources</phase>
+      <phase>generate-resources</phase>
      </execution>
     </executions>
    </plugin>
@@ -211,11 +217,12 @@
      <version>2.7</version>
     </plugin>
     <plugin>
+     <groupId>org.apache.maven.plugins</groupId> <!-- NOTE: Eclipse warning w/o this line :-( -->
      <artifactId>maven-jar-plugin</artifactId>
      <version>3.2.0</version>
      <configuration>
       <archive>
-       <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+       <manifestFile>target/classes/META-INF/MANIFEST.MF</manifestFile>
       </archive>
      </configuration>
     </plugin>

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: pro.projo.projo-template-generation
 Bundle-Vendor: Mirko Raner
-Bundle-Version: 1.5.0
+Bundle-Version: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
 Bundle-SymbolicName: pro.projo.projo-template-generation; singleton:=true
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: pro.projo.projo-template-generation
@@ -11,4 +11,4 @@ Export-Package: pro.projo.generation,
  pro.projo.generation.interfaces,
  pro.projo.generation.utilities,
  $package; x-internal:=true
-Require-Bundle: pro.projo.projo; bundle-version="1.5.0"
+Require-Bundle: pro.projo.projo; bundle-version="${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}"
