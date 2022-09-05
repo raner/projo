@@ -20,7 +20,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
-* The {@link ProjoTestSuite} brings in various JUnit tests from the main Projo project and runs them again in the
+* The {@link ProjoSuiteTest} suite brings in various JUnit tests from the main Projo project and runs them again in the
 * {@code projo-runtime-code-generation} project. This allows reusing the baseline tests that were created for the
 * proxy-based Projo implementation to be reused for the Projo implementation that uses runtime code generation.
 *
@@ -49,7 +49,7 @@ import org.junit.runners.Suite.SuiteClasses;
     MutableProjoTriplesTest.class,
     TransitiveValueObjectsTest.class
 })
-public class ProjoTestSuite
+public class ProjoSuiteTest
 {
     // No additional members...
 }
