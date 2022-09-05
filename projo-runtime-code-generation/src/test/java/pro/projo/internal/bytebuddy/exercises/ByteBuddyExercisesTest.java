@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,13 +29,13 @@ import static net.bytebuddy.dynamic.loading.ClassLoadingStrategy.Default.INJECTI
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 /**
-* The class {@link ByteBuddyExercises} contains various exercises for getting more familiary with the {@link ByteBuddy} API.
+* The class {@link ByteBuddyExercisesTest} contains various exercises for getting more familiary with the {@link ByteBuddy} API.
 * They are included as JUnit tests in the Projo sources, but they do not actually test any Projo functionality. Packaging
 * these exercises as unit tests was merely done for reasons of convenience.
 *
 * @author Mirko Raner
 **/
-public class ByteBuddyExercises
+public class ByteBuddyExercisesTest
 {
     static interface Exercise
     {
