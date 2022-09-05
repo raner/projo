@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2016 Mirko Raner                                               //
+// Copyright 2016 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -111,12 +111,10 @@ public class AddressBookIntegrationTest
     {
         return new TypeSafeMatcher<String>()
         {
-            private JsonParser parser = new JsonParser();
-
             @Override
             protected boolean matchesSafely(String actual)
             {
-                return parser.parse(expected).equals(parser.parse(actual));
+                return JsonParser.parseString(expected).equals(JsonParser.parseString(actual));
             }
 
             @Override
