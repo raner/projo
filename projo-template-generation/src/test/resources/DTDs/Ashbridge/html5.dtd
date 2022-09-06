@@ -1,0 +1,1678 @@
+<!--
+   HTML 5.0 DTD
+
+   $Revision: 1.0 $
+   $Date: 2015/01/13 $
+
+-->
+
+<!--================ Character mnemonic entities =========================-->
+
+<!ENTITY % HTMLlat1 PUBLIC
+   "-//W3C//ENTITIES Latin 1 for HTML//EN"
+   "HTMLlat1.ent">
+%HTMLlat1;
+
+<!ENTITY % HTMLsymbol PUBLIC
+   "-//W3C//ENTITIES Symbols for HTML//EN"
+   "HTMLsymbol.ent">
+%HTMLsymbol;
+
+<!ENTITY % HTMLspecial PUBLIC
+   "-//W3C//ENTITIES Special for HTML//EN"
+   "HTMLspecial.ent">
+%HTMLspecial;
+
+<!--================== Imported Names ====================================-->
+
+<!ENTITY % ContentType "CDATA">
+    <!-- media type, as per [RFC2045] -->
+
+<!ENTITY % ContentTypes "CDATA">
+    <!-- comma-separated list of media types, as per [RFC2045] -->
+
+<!ENTITY % Charset "CDATA">
+    <!-- a character encoding, as per [RFC2045] -->
+
+<!ENTITY % Charsets "CDATA">
+    <!-- a space separated list of character encodings, as per [RFC2045] -->
+
+<!ENTITY % LanguageCode "NMTOKEN">
+    <!-- a language code, as per [RFC3066] -->
+
+<!ENTITY % Character "CDATA">
+    <!-- a single character, as per section 2.2 of [XML] -->
+
+<!ENTITY % Number "CDATA">
+    <!-- one or more digits -->
+
+<!ENTITY % LinkTypes "CDATA">
+    <!-- space-separated list of link types -->
+
+<!ENTITY % MediaDesc "CDATA">
+    <!-- single or comma-separated list of media descriptors -->
+
+<!ENTITY % URI "CDATA">
+    <!-- a Uniform Resource Identifier, see [RFC2396] -->
+
+<!ENTITY % UriList "CDATA">
+    <!-- a space separated list of Uniform Resource Identifiers -->
+
+<!ENTITY % Datetime "CDATA">
+    <!-- date and time information. ISO date format -->
+
+<!ENTITY % Script "CDATA">
+    <!-- script expression -->
+
+<!ENTITY % StyleSheet "CDATA">
+    <!-- style sheet data -->
+
+<!ENTITY % Text "CDATA">
+    <!-- used for titles etc. -->
+
+<!ENTITY % Length "CDATA">
+    <!-- nn for pixels or nn% for percentage length -->
+
+<!ENTITY % MultiLength "CDATA">
+    <!-- pixel, percentage, or relative -->
+
+<!ENTITY % Pixels "CDATA">
+    <!-- integer representing length in pixels -->
+
+<!-- these are used for image maps -->
+<!ENTITY % Shape "(rect|circle|poly|default)">
+
+<!ENTITY % Coords "CDATA">
+    <!-- comma separated list of lengths -->
+    
+
+<!--=================== Global Attributes ===============================-->
+
+<!-- attributes are common to and may be specified on all HTML elements
+ accesskey              accessibility key character
+ class                  space separated list of classes
+ contenteditable    makes document region editable
+ dir                            direction for weak/neutral text
+ lang                           language code (backwards compatible)
+ hidden                     do not render element
+ id                             document-wide unique id
+ spellcheck             check spelling and grammar 
+ style                      associated style info
+ tabindex                   position in tabbing order
+ title                      advisory title/amplification
+ translate              localise and element's attributes or its TEXT node children
+
+-->
+<!ENTITY % globalattrs
+ "accesskey             %Character;             #IMPLIED
+  class                     CDATA                           #IMPLIED
+    contenteditable (contenteditable)   #IMPLIED
+    dir                         (ltr|rtl)                   #IMPLIED
+    hidden              (hidden)                    #IMPLIED
+    id                          ID                              #IMPLIED
+    lang                        %LanguageCode;      #IMPLIED
+    spellcheck      (spellcheck)            #IMPLIED
+  style                     %StyleSheet;            #IMPLIED
+  tabindex              %Number;                    #IMPLIED
+  title                     %Text;                      #IMPLIED
+  translate         (yes | no)              #IMPLIED"
+  >
+
+<!-- The following event handler content attributes may be specified on any HTML element:
+  onclick     a pointer button was clicked
+  ondblclick  a pointer button was double clicked
+  onmousedown a pointer button was pressed down
+  onmouseup   a pointer button was released
+  onmousemove a pointer was moved onto the element
+  onmouseout  a pointer was moved away from the element
+  onkeypress  a key was pressed and released
+  onkeydown   a key was pressed down
+  onkeyup     a key was released
+-->
+<!ENTITY % events
+ "onabort                       %Script;    #IMPLIED
+  onblur                        %Script;    #IMPLIED
+  oncancel                  %Script;    #IMPLIED
+  oncanplay                 %Script;    #IMPLIED
+  oncanplaythrough  %Script;    #IMPLIED
+  onchange                  %Script;    #IMPLIED
+  onclick                       %Script;    #IMPLIED
+  oncuechange               %Script;    #IMPLIED
+  ondblclick                %Script;    #IMPLIED
+  ondurationchange  %Script;    #IMPLIED
+  onemptied                 %Script;    #IMPLIED
+  onended                       %Script;    #IMPLIED
+  onerror                       %Script;    #IMPLIED
+  onfocus                       %Script;    #IMPLIED
+  oninput                       %Script;    #IMPLIED
+  oninvalid                 %Script;    #IMPLIED
+  onkeypress                %Script;    #IMPLIED
+  onkeydown                 %Script;    #IMPLIED
+  onkeyup                       %Script;    #IMPLIED
+  onload                        %Script;    #IMPLIED
+  onloadeddata          %Script;    #IMPLIED
+  onloadedmetadata  %Script;    #IMPLIED
+  onloadstart               %Script;    #IMPLIED
+  onmouseenter          %Script;    #IMPLIED
+  onmouseleave          %Script;    #IMPLIED
+  onmousedown               %Script;    #IMPLIED
+  onmouseup                 %Script;    #IMPLIED
+  onmouseover               %Script;    #IMPLIED
+  onmousemove               %Script;    #IMPLIED
+  onmouseout                %Script;    #IMPLIED
+  onmousewheel          %Script;    #IMPLIED
+  onpause                       %Script;    #IMPLIED
+  onplay                        %Script;    #IMPLIED
+  onplaying                 %Script;    #IMPLIED
+  onprogress                %Script;    #IMPLIED
+  onratechange          %Script;    #IMPLIED
+  onreset                       %Script;    #IMPLIED
+  onresize                  %Script;    #IMPLIED
+  onscroll                  %Script;    #IMPLIED
+  onseeked                  %Script;    #IMPLIED
+  onseeking                 %Script;    #IMPLIED
+  onselect                  %Script;    #IMPLIED
+  onshow                        %Script;    #IMPLIED
+  onstalled                 %Script;    #IMPLIED
+  onsubmit                  %Script;    #IMPLIED
+  onsuspend                 %Script;    #IMPLIED
+  ontimeupdate          %Script;    #IMPLIED
+  ontoggle                  %Script;    #IMPLIED
+  onvolumechange        %Script;    #IMPLIED
+  onwaiting                 %Script;    #IMPLIED"
+  >
+
+<!-- Media attributes introduced with HTML5
+ preload            whether the browser should load the entire media file when the page loads
+ autoplay       whether the media file should automatically start playing as soon as it can do so without stopping
+ mediagroup   sets or returns the name of the media group the audio/video is a part of
+ loop         specifies that the media file will start over again, every time it is finished.
+ muted          specifies that the audio output of the video should be muted.
+ controls       specifies that playback controls should be displayed.
+
+-->
+<!ENTITY % media
+ "src                   %URI;                               #IMPLIED
+  crossorigin (anonymous | use-credentials) #IMPLIED
+  preload           (auto | metadata)       #IMPLIED
+  autoplay    (autoplay)                    #IMPLIED
+  mediagroup  (group)                           #IMPLIED
+  loop        (loop)                            #IMPLIED
+  muted         (muted)                         #IMPLIED
+  controls    (controls)                    #IMPLIED"
+  >
+  
+<!-- ARIA global states and properties can be used on any HTML element.
+aria-atomic             present all, or only parts of, the changed region based on the change notifications. 
+aria-busy                   whether an element, and its subtree, are currently being updated.
+aria-controls           the element (or elements) whose contents or presence are controlled by the current element.
+aria-describedby    the element (or elements) that describes the object.
+aria-disabled           the element is perceivable but disabled, so it is not editable or otherwise operable.
+aria-dropeffect     functions can be performed when the dragged object is released on the drop target.
+aria-flowto             the next element (or elements) in an alternate reading order of content.
+aria-grabbed            an element's "grabbed" state in a drag-and-drop operation.
+aria-haspopup           the element has a popup context menu or sub-level menu.
+aria-hidden             the element and all of its descendants are not visible or perceivable to any user 
+aria-invalid            the entered value does not conform to the format expected by the application.
+aria-label              a string value that labels the current element.
+aria-labelledby     the element (or elements) that labels the current element.
+aria-live                   an element will be updated, and describes the types of updates for the live region.
+aria-owns                   define a visual, functional, or contextual parent/child relationship between DOM elements
+aria-relevant           the user agent change notifications assistive technologies will receive within a live region
+
+-->
+<!ENTITY % aria.global
+ "aria-atomic               (true | false)                          #IMPLIED
+    aria-busy               (true | false)                          #IMPLIED
+    aria-controls           CDATA                                               #IMPLIED
+    aria-describedby    CDATA                                               #IMPLIED
+    aria-disabled           (true | false)                          #IMPLIED
+    aria-dropeffect     CDATA                                               #IMPLIED
+    aria-flowto             CDATA                                               #IMPLIED
+    aria-grabbed            (true | false | undefined)  #IMPLIED
+    aria-haspopup           (true | false)                          #IMPLIED
+    aria-hidden             (true | false)                          #IMPLIED
+    aria-invalid            CDATA                                               #IMPLIED
+    aria-label              %Text;                                          #IMPLIED
+    aria-labelledby     CDATA                                               #IMPLIED
+    aria-live                   CDATA                                               #IMPLIED
+    aria-owns                   CDATA                                               #IMPLIED
+    aria-relevant           CDATA                                               #IMPLIED"
+>
+
+<!-- HTML5 allows custom data-* attributes for all elements.
+     Because the data-* elements are user defined, all we can do is add them here as they are encountered in code.
+-->
+<!ENTITY % data.attrs
+ "  data-action       CDATA               #IMPLIED
+    data-count      CDATA                       #IMPLIED
+    data-chrome     CDATA                       #IMPLIED
+    data-href         CDATA               #IMPLIED
+    data-layout       CDATA               #IMPLIED
+    data-link-color CDATA                      #IMPLIED
+    data-parent     CDATA                    #IMPLIED
+    data-show-count CDATA                       #IMPLIED
+    data-show-faces   CDATA               #IMPLIED
+    data-share        CDATA               #IMPLIED
+    data-sitekey        CDATA               #IMPLIED
+    data-target       CDATA             #IMPLIED
+    data-toggle     CDATA                       #IMPLIED
+    data-text       CDATA                          #IMPLIED
+    data-url        CDATA                     #IMPLIED
+    data-via        CDATA                       #IMPLIED
+    data-widget-id  CDATA                   #IMPLIED"
+>
+
+<!-- Schema (Microdata) mark-up required additional custom attributes for all elements
+     See schema.org for documentation
+-->
+<!ENTITY % schema.attrs
+ "  itemscope       CDATA               #IMPLIED
+    itemtype      CDATA                     #IMPLIED
+    itemprop  CDATA                 #IMPLIED"
+>
+
+<!ENTITY % attrs "%globalattrs; %events; %aria.global; %data.attrs; %schema.attrs;">
+
+<!--=================== Kinds of Content ====================================-->
+
+<!-- Metadata content sets up the presentation or behavior of the rest of the content -->
+<!ENTITY % metadata.content
+    "base | link | meta | noscript | script | style | template | title">
+
+<!-- Flow content includes most elements that are used in the body of documents and applications -->
+<!ENTITY % flow.content
+    "   a | abbr | area | audio | b | bdi | bdo |
+        blockquote | br | canvas | cite | code | data | datalist | del | dfn | 
+        div | dl | em | embed | fieldset | figure | hr | i | iframe | img | ins | kbd | label | 
+        map | mark | math | noscript | object | ol | p |
+        pre | q | ruby | s | samp | script | small | span |
+        strong | sub | sup | svg | template | time | u | ul | var | 
+        video | wbr">
+
+<!-- Sectioning content defines the scope of headings and footers -->
+<!ENTITY % sectioning.content
+    "article | aside | nav | section">
+
+<!-- Heading content defines the header of a section -->
+<!ENTITY % heading.content
+    "h1 | h2 | h3 | h4 | h5 | h6">
+
+<!-- Phrasing content is the text of the document, as well as elements that mark up that text at the intra-paragraph level -->
+<!ENTITY % phrasing.content
+    "   abbr | area | b | bdi | bdo | br | canvas | cite | code | 
+        data | datalist | del | em | i | ins | kbd | 
+        map | mark | math | noscript | output | 
+        q | ruby | s | samp | script | small | span | strong | sub | sup | svg |
+        template | time | u | var | wbr">
+
+<!-- Embedded content is content that imports another resource into the document, or content from another vocabulary that is inserted into the document -->
+<!ENTITY % embedded.content
+    "   audio | canvas | embed | iframe | img | math | object | svg | video">
+
+<!-- Interactive content is content that is specifically intended for user interaction --> 
+<!ENTITY % interactive.content
+    "   a | audio | button | embed | iframe | img | input | keygen | label | object | select | textarea | video">
+
+<!-- Palpable content includes elements any flow content or phrasing content that should have at least one node in its contents  -->
+<!ENTITY %  palpable.content
+    "   a | abbr | address | article | aside | audio | b | bdi | bdo | blockquote | button | 
+        canvas | cite | code | data | dfn | div | dl | em | embed | fieldset | figure | 
+        footer | form | h1 | h2 | h3 | h4 | h5 | h6 | header | i | iframe | img | input |
+        ins | kbd | keygen | label | main | map | mark | math | meter | nav | object | ol |
+        output | p | pre | progress | q | ruby | s | samp | section | select | small | span |
+        strong | sub | sup | svg | table | textarea | time | u | ul | var |video">
+
+<!-- Transparent content has a content model derived from that of its parent element (NOTE: Transparent also include Interactive content, not given here)  -->
+<!ENTITY %  transparent.content
+    "    abbr | address | article | aside | audio | b | bdi | bdo | blockquote | br  | canvas |
+    cite | code | data | datalist | del | dfn | div | dl | em | fieldset | figure | footer |
+    form | h1 | h2 | h3 | h4 | h5 | h6 | header | hr | i | img | ins | kbd | main | map | mark |
+    math | meter | nav | noscript | object | ol | output | p | pre | progress | q | ruby | s |
+    samp | script | section | small | span | strong | sub | sup | svg | table | template | time |
+    u | ul | var | video | wbr">
+    
+<!-- Script-supporting elements are those that do not represent anything themselves (i.e. they are not rendered), but are used to support scripts -->
+<!ENTITY % script.supporting
+    "   script | template">
+
+<!-- Labelable emements -->
+<!ENTITY % labelable.elements
+    "   button | input | keygen | meter | output | progress | select | textarea">
+
+<!-- Labelable emements -->
+<!ENTITY % table.elements
+    "   table | caption | thead | tfoot | tbody | colgroup | col | tr | td | th">
+
+<!--================== Content models =====================-->
+
+<!ENTITY % Metadata "(%metadata.content;)*">
+
+<!ENTITY % Flow "(#PCDATA | main | header | footer | form | address | table | hgroup | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements;)*">
+
+<!ENTITY % Flow.no.main "(#PCDATA | header | footer | form | address | table | hgroup | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements;)*">
+
+<!ENTITY % Flow.no.sections "(#PCDATA | form | address | table | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements;)*">
+
+<!ENTITY % Flow.basic "(#PCDATA | address | table | form | %flow.content; | %labelable.elements;)*">
+
+<!ENTITY % Sectioning "(%sectioning.content;)*">
+
+<!ENTITY % Heading "(%flow.content;)*">
+
+<!ENTITY % Heading.group "(%heading.content;)*">
+
+<!ENTITY % Phrasing "(#PCDATA | dfn | progress | meter | %phrasing.content; | %interactive.content;)*">
+
+<!ENTITY % Embedded "(%embedded.content;)*">
+
+<!ENTITY % Interactive "(%interactive.content;)*">
+
+<!ENTITY % Palpable "(%palpable.content;)*">
+
+<!ENTITY % Transparent "(%transparent.content; | %interactive.content;)*">
+
+<!ENTITY % Scripting "(%script.supporting;)*">
+
+
+<!--================== Content model exclusions =====================-->
+
+
+<!ENTITY % a.content "(#PCDATA | %transparent.content;)*">
+
+<!ENTITY % address.content "(#PCDATA | %flow.content;)*">
+
+<!ENTITY % dfn.content "(#PCDATA | %phrasing.content;)*">
+
+<!ENTITY % media.content "(#PCDATA | track | source | %embedded.content;)*">
+
+<!ENTITY % caption.content "(#PCDATA | %flow.content;)*">
+
+<!ENTITY % form.content "(#PCDATA | address | table | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements;)*">
+
+<!ENTITY % label.content "(#PCDATA  | dfn | progress | meter | %phrasing.content; | %interactive.content;)*">
+
+<!ENTITY % button.content "(#PCDATA | img | %phrasing.content;)*">
+
+<!ENTITY % progress.content "(#PCDATA | %phrasing.content;)*">
+
+<!ENTITY % meter.content "(#PCDATA | %phrasing.content;)*">
+
+<!ENTITY % fieldset.content "(legend? | table | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements;)*">
+
+<!ENTITY % object.content "(#PCDATA | param | %transparent.content;)*">
+
+<!ENTITY % figure.content "(figcaption | %flow.content;)*">
+
+<!ENTITY % template.content "(%metadata.content; | %flow.content; | %heading.content; | %sectioning.content; | %labelable.elements; | %palpable.content; | %table.elements; )*">
+
+<!ENTITY % picture.content "(#PCDATA | source | img)*">
+
+<!--***********************************************************************-->
+<!--**************** THE HTML5 ELEMENTS ***********************************-->
+<!--***********************************************************************-->
+
+<!--================ 4.1 The root element ==================================-->
+
+<!-- the namespace URI designates the document profile -->
+
+<!ELEMENT html (head, body)>
+<!ATTLIST html
+  %attrs;
+  manifest      CDATA                       #IMPLIED
+  >
+
+<!--================ 4.2 Document metadata ===================================-->
+
+<!ELEMENT head %Metadata;>
+<!ATTLIST head
+  %attrs;
+   profile     %URI;          #IMPLIED
+  >
+
+<!-- The title element is not considered part of the flow of text.
+       It should be displayed, for example as the page header or
+       window title. Exactly one title is required per document.
+    -->
+<!ELEMENT title (#PCDATA)>
+<!ATTLIST title 
+  %attrs;
+   >
+
+<!-- document base URI -->
+
+<!ELEMENT base EMPTY>
+<!ATTLIST base
+    %attrs;
+    href        %URI;          #REQUIRED
+  >
+
+<!--
+  Relationship values can be used in principle:
+
+   a) for document specific toolbars/menus when used
+      with the link element in document head e.g.
+        start, contents, previous, next, index, end, help
+   b) to link to a separate style sheet (rel="stylesheet")
+   c) to make a link to a script (rel="script")
+   d) by stylesheets to control how collections of
+      html nodes are rendered into printed documents
+   e) to make a link to a printable version of this document
+      e.g. a PostScript or PDF version (rel="alternate" media="print")
+-->
+<!-- 
+        NOTES:
+        Non-standard 'sizes' attribute added for use by rel="apple-touch-icon"
+-->
+<!ELEMENT link EMPTY>
+<!ATTLIST link
+  %attrs;
+  charset     %Charset;             #IMPLIED
+  href        %URI;                     #IMPLIED
+  hreflang    %LanguageCode;    #IMPLIED
+  type        %ContentType;     #IMPLIED
+  rel         %LinkTypes;           #IMPLIED
+  rev         %LinkTypes;           #IMPLIED
+  media       %MediaDesc;           #IMPLIED
+  sizes             %Text;                  #IMPLIED
+  aria-expanded     (true | false | undefined)  #IMPLIED
+ >
+
+<!-- generic metainformation -->
+<!ELEMENT meta EMPTY>
+<!ATTLIST meta
+  %attrs;
+  http-equiv  CDATA              #IMPLIED
+  name        CDATA              #IMPLIED
+  content     CDATA              #IMPLIED
+  scheme      CDATA              #IMPLIED
+  charset     %Charset;          #IMPLIED
+  >
+  
+ <!-- allows authors to embed style information in their documents -->
+<!ELEMENT style (#PCDATA)>
+<!ATTLIST style
+  %attrs;
+  media             %MediaDesc;         #IMPLIED
+  type              %ContentType;       #REQUIRED
+  >
+
+
+<!--=================== 4.3 Sections ====================================-->
+
+<!ELEMENT body %Flow;>
+<!ATTLIST body
+  %attrs;
+    onafterprint        %Script;    #IMPLIED
+    onbeforeprint       %Script;    #IMPLIED
+    onbeforeunload  %Script;    #IMPLIED
+    onhashchange        %Script;    #IMPLIED
+    onmessage               %Script;    #IMPLIED
+    onoffline               %Script;    #IMPLIED
+    ononline                %Script;    #IMPLIED
+    onpagehide          %Script;    #IMPLIED
+    onpageshow          %Script;    #IMPLIED
+    onpopstate          %Script;    #IMPLIED
+    onstorage               %Script;    #IMPLIED
+    onunload                %Script;    #IMPLIED
+  aria-expanded     (true | false | undefined)  #IMPLIED
+ >
+
+<!-- a complete, or self-contained, composition -->
+<!ELEMENT article %Flow;>
+<!ATTLIST article
+  %attrs;
+    role                        %Text;                                          #IMPLIED
+  aria-expanded     (true | false | undefined)  #IMPLIED
+  >
+
+<!-- thematic grouping of content -->
+<!ELEMENT section %Flow;>
+<!ATTLIST section
+  %attrs;
+    role                        %Text;                                              #IMPLIED
+  aria-expanded         (true | false | undefined)  #IMPLIED
+  aria-orientation  CDATA                                               #IMPLIED
+  >
+
+<!-- a section with navigation links -->
+<!ELEMENT nav %Flow;>
+<!ATTLIST nav
+  %attrs;
+    role                        %Text;                                              #IMPLIED
+  aria-expanded         (true | false | undefined)  #IMPLIED
+  >
+
+<!-- content that is tangentially related to the surrounding element content -->
+<!ELEMENT aside %Flow.no.main;>
+<!ATTLIST aside
+  %attrs;
+    role                        %Text;                                              #IMPLIED
+  aria-expanded         (true | false | undefined)  #IMPLIED
+  aria-orientation  CDATA                                               #IMPLIED
+  >
+
+<!--
+  There are six levels of headings from h1 (the most important)
+  to h6 (the least important).
+-->
+
+<!ELEMENT h1  %Phrasing;>
+<!ATTLIST h1
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+   >
+
+<!ELEMENT h2 %Phrasing;>
+<!ATTLIST h2
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!ELEMENT h3 %Phrasing;>
+<!ATTLIST h3
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!ELEMENT h4 %Phrasing;>
+<!ATTLIST h4
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!ELEMENT h5 %Phrasing;>
+<!ATTLIST h5
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!ELEMENT h6 %Phrasing;>
+<!ATTLIST h6
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!ELEMENT hgroup %Heading.group;>
+<!ATTLIST hgroup
+    %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-level      %Number;                                        #IMPLIED
+  >
+
+<!-- group of introductory or navigational aids -->
+<!ELEMENT header %Flow.no.sections;>
+<!ATTLIST header
+  %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!-- information document sections such as who wrote it, links to related documents, copyright data, etc -->
+<!ELEMENT footer %Flow.no.sections;>
+<!ATTLIST footer
+  %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!-- contact information for its nearest article or body element ancestor -->
+<!ELEMENT address %address.content;>
+<!ATTLIST address
+  %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!--=================== 4.4 Grouping content =======================================-->
+
+<!-- a paragraph -->
+<!ELEMENT p %Phrasing;>
+<!ATTLIST p
+  %attrs;
+    role                        %Text;  #IMPLIED
+  >
+
+<!-- paragraph-level thematic break -->
+<!ELEMENT hr EMPTY>
+<!ATTLIST hr
+  %attrs;
+    role                        %Text;  #IMPLIED
+  aria-valuetext    %Text;  #IMPLIED
+  >
+
+<!-- block of preformatted text -->
+<!-- content is %Inline; excluding "img|object|small|sub|sup" -->
+<!ELEMENT pre %Phrasing;>
+<!ATTLIST pre
+  %attrs;
+    role                        %Text;  #IMPLIED
+ >
+
+<!-- content that is quoted from another source -->
+<!ELEMENT blockquote %Flow;>
+<!ATTLIST blockquote
+  %attrs;
+  cite        %URI;       #IMPLIED
+    role                %Text;          #IMPLIED
+ >
+
+<!-- Ordered (numbered) list -->
+<!ELEMENT ol (li)+>
+<!ATTLIST ol
+  %attrs;
+  reversed                              (reversed)                                  #IMPLIED
+    start                                       %Number;                                        #IMPLIED
+    type                                        CDATA                                               #IMPLIED
+    role                                        %Text;                                          #IMPLIED
+    aria-expanded                       (true | false | undefined)  #IMPLIED
+    aria-multiselectable        (true | false)                          #IMPLIED
+    aria-required                       (true | false)                          #IMPLIED
+    aria-activedescendant       CDATA                                               #IMPLIED
+    aria-level                          %Number;                                        #IMPLIED
+  >
+
+<!-- Unordered list -->
+<!ELEMENT ul (li)+>
+<!ATTLIST ul
+  %attrs;
+    role                                        %Text;                                          #IMPLIED
+    aria-expanded                       (true | false | undefined)  #IMPLIED
+    aria-multiselectable        (true | false)                          #IMPLIED
+    aria-required                       (true | false)                          #IMPLIED
+    aria-activedescendant       CDATA                                               #IMPLIED
+    aria-level                          %Number;                                        #IMPLIED
+ >
+
+
+<!-- list item -->
+<!ELEMENT li %Flow;>
+<!ATTLIST li
+  %attrs;
+  value                                     %Number;                                        #IMPLIED
+    role                                        %Text;                                          #IMPLIED
+    aria-level                          %Number;                                        #IMPLIED
+    aria-posinset                       %Number;                                        #IMPLIED
+    aria-setsize                        %Number;                                        #IMPLIED
+    aria-expanded                       (true | false | undefined)  #IMPLIED
+    aria-checked                        CDATA                                               #IMPLIED
+    aria-selected                       (true | false | undefined)  #IMPLIED
+ >
+
+<!-- definition lists - dt for term, dd for its definition -->
+
+<!ELEMENT dl (dt|dd)+>
+<!ATTLIST dl
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!ELEMENT dt %Flow.basic;>
+<!ATTLIST dt
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!ELEMENT dd %Flow;>
+<!ATTLIST dd
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!-- annotate illustrations, diagrams, photos, code listings, etc. -->
+<!ELEMENT figure %figure.content;>
+<!ATTLIST figure
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!-- caption or legend for the figure element  -->
+<!ELEMENT figcaption %Flow;>
+<!ATTLIST figcaption
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!-- generic language/style container -->
+<!ELEMENT div %Flow;>
+<!ATTLIST div
+  %attrs;
+    role            %Text;      #IMPLIED
+  >
+
+<!-- main content of the body -->
+<!ELEMENT main %Flow;>
+<!ATTLIST main
+  %attrs;
+    role                    %Text;                                          #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!--================== 4.5 Text-level semantics ================================-->
+
+<!-- hypertext link or placeholder -->
+<!-- content is %Inline; except that anchors shouldn't be nested -->
+<!-- 
+        NOTES:
+        Non-standard 'height' added for use by Twitter scripts
+-->
+
+<!ELEMENT a %a.content;>
+<!ATTLIST a
+  %attrs;
+    href            %URI;                       #IMPLIED
+    target          %Text;                  #IMPLIED
+    download        %Text;                  #IMPLIED
+    rel             %LinkTypes;         #IMPLIED
+    hreflang        %LanguageCode;  #IMPLIED
+    type            %ContentType;       #IMPLIED
+    role            %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+    aria-pressed    CDATA                       #IMPLIED
+    aria-checked    CDATA                       #IMPLIED
+    aria-posinset   %Number;                #IMPLIED
+    aria-selected   (true | false | undefined)  #IMPLIED
+    aria-setsize    %Number;                #IMPLIED
+    height          %Length;                #IMPLIED
+    width           %Length;                #IMPLIED    
+  >
+
+<!-- emphasis -->
+<!ELEMENT em %Phrasing;>   
+<!ATTLIST em
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- strong emphasis -->
+<!ELEMENT strong %Phrasing;>   
+<!ATTLIST strong
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- smaller font -->
+<!ELEMENT small %Phrasing;>   
+<!ATTLIST small
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- no longer accurate or no longer relevant. -->
+<!ELEMENT s %Phrasing;>   
+<!ATTLIST s
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- citation -->
+<!ELEMENT cite %Phrasing;>   
+<!ATTLIST cite
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- inlined quote -->
+<!ELEMENT q %Phrasing;>   
+<!ATTLIST q
+  %attrs;
+  cite                  %URI;                   #IMPLIED
+  role                  %Text;              #IMPLIED
+  >
+
+<!-- definitional -->
+<!ELEMENT dfn %dfn.content;>   
+<!ATTLIST dfn
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- abbreviation -->
+<!ELEMENT abbr %Phrasing;>   
+<!ATTLIST abbr 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- data content; a machine-readable form in the value attribute -->
+<!ELEMENT data %Phrasing;>   
+<!ATTLIST data
+  %attrs;
+  data                  %Text;              #IMPLIED
+  role                  %Text;              #IMPLIED
+  >
+
+<!-- dates, times, time-zone offsets, and durations; a machine-readable form in datetime attribute -->
+<!ELEMENT time %Phrasing;>   
+<!ATTLIST time
+  %attrs;
+  datetime          %Text;              #IMPLIED
+  role                  %Text;              #IMPLIED
+  >
+
+<!-- program code -->
+<!ELEMENT code %Phrasing;>   
+<!ATTLIST code 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- variable -->
+<!ELEMENT var %Phrasing;>   
+<!ATTLIST var 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- (sample) output from a program or computing system -->
+<!ELEMENT samp %Phrasing;>   
+<!ATTLIST samp 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- user input (typically keyboard input, but may represent other input, such as voice commands) -->
+<!ELEMENT kbd %Phrasing;>  
+<!ATTLIST kbd 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- subscript -->
+<!ELEMENT sub %Phrasing;> 
+<!ATTLIST sub 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- superscript -->
+<!ELEMENT sup %Phrasing;> 
+<!ATTLIST sup 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- span of text in an alternate voice or mood -->
+<!ELEMENT i %Phrasing;>   
+<!ATTLIST i 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- text to which attention is being drawn for utilitarian purposes (no change in voice or mood) -->
+<!ELEMENT b %Phrasing;>   
+<!ATTLIST b 
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- text with an unarticulated, though explicitly rendered, non-textual annotation -->
+<!ELEMENT u %Phrasing;>   
+<!ATTLIST u  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- text marked or highlighted for reference purposes -->
+<!ELEMENT mark %Phrasing;>
+<!ATTLIST mark  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- content to be marked with ruby annotations -->
+<!ELEMENT ruby %Phrasing;>
+<!ATTLIST ruby  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- base text component of a ruby annotation -->
+<!ELEMENT rb %Phrasing;>
+<!ATTLIST rb  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- ruby text component of a ruby annotation -->
+<!ELEMENT rt %Phrasing;>
+<!ATTLIST rt  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- ruby text container for ruby text components -->
+<!ELEMENT rtc (#PCDATA | a | dfn | %phrasing.content; | rt)*>
+<!ATTLIST rtc  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- fallback text to be shown by user agents that don't support ruby annotations -->
+<!ELEMENT rp ((%phrasing.content; | rb)* , (rp+ | rt+) , (rp+ | rtc+))>
+<!ATTLIST rp  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- formatted in a different direction from other text -->
+<!ELEMENT bdi %Phrasing;>   
+<!ATTLIST bdi  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- explicit text directionality formatting control for its children -->
+<!ELEMENT bdo %Phrasing;>  
+<!ATTLIST bdo  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- generic language/style container -->
+<!ELEMENT span %Phrasing;> 
+<!ATTLIST span  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- forced line break -->
+<!ELEMENT br EMPTY>   
+<!ATTLIST br  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!-- line break opportunity -->
+<!ELEMENT wbr EMPTY>   
+<!ATTLIST wbr  
+    %attrs;
+    role                    %Text;                  #IMPLIED
+    >
+
+<!--================== 4.6 Edits ================================-->
+
+<!-- an addition to the document -->
+<!ELEMENT ins %Phrasing;>
+<!ATTLIST ins
+  %attrs;
+  cite              %URI;                       #IMPLIED
+  datetime      %Datetime;          #IMPLIED
+    role                %Text;                  #IMPLIED
+  >
+
+<!-- a removal from the document -->
+<!ELEMENT del %Phrasing;>
+<!ATTLIST del
+  %attrs;
+  cite        %URI;          #IMPLIED
+  datetime    %Datetime;     #IMPLIED
+    role                %Text;                  #IMPLIED
+ >
+
+<!--================== 4.7 Embedded content =========================-->
+
+<!-- a picture -->
+<!ELEMENT picture %picture.content;>
+<!ATTLIST picture
+  %attrs;
+  >
+
+<!-- an image -->
+<!ELEMENT img EMPTY>
+<!ATTLIST img
+  %attrs;
+  alt         %Text;                    #REQUIRED
+  src         %URI;                     #REQUIRED
+  crossorigin (anonymous | use-credentials) #IMPLIED
+  usemap      %URI;                     #IMPLIED
+  ismap       (ismap)                   #IMPLIED
+  height      %Length;              #IMPLIED
+  width       %Length;              #IMPLIED
+    role                %Text;                  #IMPLIED
+  >
+
+<!-- usemap points to a map element which may be in this document
+  or an external document, although the latter is not widely supported -->
+
+<!-- nested browsing context -->
+<!ELEMENT iframe %Flow;>
+<!ATTLIST iframe
+  %attrs;
+  src                   %URI;                       #IMPLIED
+  srcdoc            %URI;           #IMPLIED
+  name              NMTOKEN         #IMPLIED
+  sandbox           (allow-forms | allow-pointer-lock | allow-popups | allow-same-origin | allow-scripts | allow-top-navigation)    #IMPLIED
+  height            %Length;                #IMPLIED
+  width             %Length;                #IMPLIED
+    role                %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!--
+  embed defines a container for an external
+  application or interactive content (a plug-in)
+-->
+<!ELEMENT embed EMPTY>
+<!ATTLIST embed
+  %attrs;
+  src                   %URI;                       #IMPLIED
+  type              %ContentType;       #IMPLIED
+  height            %Length;                #IMPLIED
+  width             %Length;                #IMPLIED
+    role                %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+>
+
+<!--
+  object is used to embed objects as part of HTML pages.
+  param elements should precede other content. Parameters
+  can also be expressed as attribute/value pairs on the
+  object element itself when brevity is desired.
+-->
+
+<!ELEMENT object %object.content;>
+<!ATTLIST object
+  %attrs;
+  data                  %URI;                       #IMPLIED
+  type                  %ContentType;       #IMPLIED
+  typemustmatch (typemustmatch) #IMPLIED
+  name                  NMTOKEN                 #IMPLIED
+  usemap                %URI;                       #IMPLIED
+  form                  %Text;                  #IMPLIED
+  height                %Length;                #IMPLIED
+  width                 %Length;                #IMPLIED
+  classid               %Text;                  #IMPLIED
+    role                    %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+
+<!--
+  param is used to supply a named property value.
+-->
+<!ELEMENT param EMPTY>
+<!ATTLIST param
+  %attrs;
+  name                  CDATA                       #IMPLIED
+  value                 CDATA                       #IMPLIED
+  >
+
+<!--
+  video is used to embed videos as part of HTML pages.
+  source elements should precede other content. Source
+  can also be expressed as attribute/value pairs on the
+  video element itself when brevity is desired.
+-->
+
+<!ELEMENT video %media.content;>
+<!ATTLIST video
+  %attrs;
+  %media;
+  poster            %URI;                       #IMPLIED
+  height            %Length;                #IMPLIED
+  width             %Length;                #IMPLIED
+  role              %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+ >
+  
+<!--
+  audio is used to embed sound files as part of HTML pages.
+  source elements should precede other content. Source
+  can also be expressed as attribute/value pairs on the
+  audio element itself when brevity is desired.
+-->
+
+<!ELEMENT audio %media.content;>
+<!ATTLIST audio
+  %attrs;
+  %media;
+  role              %Text;                  #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+  
+<!ELEMENT source EMPTY>
+<!ATTLIST source
+  %attrs;
+  src  %URI;          #IMPLIED
+  type %ContentType;  #IMPLIED
+  srcset %UriList;  #IMPLIED
+  sizes %Coords;  #IMPLIED
+  media %MediaDesc;   #IMPLIED
+  >
+  
+<!ELEMENT track EMPTY>
+<!ATTLIST track
+  %attrs;
+    kind (subtitles|captions|descriptions|chapters|metadata) #IMPLIED
+  src               %URI;          #IMPLIED
+  srclang       %LanguageCode; #IMPLIED
+  label         %Text;         #IMPLIED
+  default       (default)       #IMPLIED
+  >
+
+<!-- These can be placed in the same document or grouped in a
+     separate document although this isn't yet widely supported -->
+
+<!ELEMENT map ((%phrasing.content;)+ | area+)>
+<!ATTLIST map
+  %attrs;
+  name        NMTOKEN        #IMPLIED
+  >
+
+<!ELEMENT area EMPTY>
+<!ATTLIST area
+  %attrs;
+  alt         %Text;                    #REQUIRED
+  coords      %Coords;              #IMPLIED
+    download        %Text;                  #IMPLIED
+  href        %URI;                     #IMPLIED
+  hreflang      %LanguageCode;  #IMPLIED
+  rel                   %LinkTypes;         #IMPLIED
+    shape       %Shape;                 "rect"
+    target          %Text;                  #IMPLIED
+  type              %ContentType;       #IMPLIED
+    aria-expanded   (true | false | undefined)  #IMPLIED
+  >
+ 
+<!-- The math element from the MathML namespace -->
+<!ELEMENT math (#PCDATA) >
+<!ATTLIST math 
+    id                                      ID                              #IMPLIED
+    xref                                    IDREF                           #IMPLIED
+    class                                   CDATA                           #IMPLIED
+  style                                 %StyleSheet;            #IMPLIED
+  href                            %URI;                         #IMPLIED
+  scriptlevel                       %Number;                    #IMPLIED
+  displaystyle                  (true | false)      #IMPLIED
+  scriptsizemultiplier  %Number;                    #IMPLIED
+  scriptminsize                 %Length;                    #IMPLIED
+  infixlinebreakstyle   (before | after | duplicate)    #IMPLIED
+  decimalpoint                  %Character;             #IMPLIED
+  display                               (block | inline)    #IMPLIED
+  maxwidth                          %Length;                    #IMPLIED
+  overflow                          (linebreak | scroll | elide | truncate | scale) #IMPLIED
+  altimg                                %URI;                           #IMPLIED
+  altimg-width                  %Length;                    #IMPLIED
+  altimg-height                 %Length;                    #IMPLIED
+  altimg-valign                 (%Length; | top | middle | bottom) #IMPLIED
+  alttext                               %Text;                      #IMPLIED
+  cdgroup                           %URI;                       #IMPLIED
+    >
+ 
+<!-- The svg element from the SVG 1.1 namespace -->
+<!ELEMENT svg (#PCDATA) >
+<!ATTLIST svg 
+    requiredFeatures                            CDATA                           #IMPLIED
+    requiredExtensions                      CDATA                           #IMPLIED
+    systemLanguage                              CDATA                           #IMPLIED
+    id                                                      ID                              #IMPLIED
+    xml:base                                            CDATA                           #IMPLIED
+    xml:lang                                            CDATA                           #IMPLIED
+    xml:space                                           CDATA                           #IMPLIED
+    onunload                                            %Script;                    #IMPLIED
+    onabort                                             %Script;                    #IMPLIED
+    onerror                                             %Script;                    #IMPLIED
+    onresize                                            %Script;                    #IMPLIED
+    onscroll                                            %Script;                    #IMPLIED
+    onzoom                                              %Script;                    #IMPLIED
+    onfocusin                                           %Script;                    #IMPLIED
+    onfocusout                                      %Script;                    #IMPLIED
+    onactivate                                      %Script;                    #IMPLIED
+    onclick                                             %Script;                    #IMPLIED
+    onmousedown                                     %Script;                    #IMPLIED
+    onmouseup                                           %Script;                    #IMPLIED
+    onmouseover                                     %Script;                    #IMPLIED
+    onmousemove                                     %Script;                    #IMPLIED
+    onmouseout                                      %Script;                    #IMPLIED
+    onload                                              %Script;                    #IMPLIED
+    alignment-baseline                      CDATA                           #IMPLIED
+    baseline-shift                              CDATA                           #IMPLIED
+    clip                                                    CDATA                           #IMPLIED
+    clip-path                                           CDATA                           #IMPLIED
+    clip-rule                                           CDATA                           #IMPLIED
+    color                                                   CDATA                           #IMPLIED
+    color-interpolation                     CDATA                           #IMPLIED
+    color-interpolation-filters     CDATA                           #IMPLIED
+    color-profile                                   CDATA                           #IMPLIED
+    color-rendering                             CDATA                           #IMPLIED
+    cursor                                              CDATA                           #IMPLIED
+    direction                                           CDATA                           #IMPLIED
+    display                                             CDATA                           #IMPLIED
+    dominant-baseline                           CDATA                           #IMPLIED
+    enable-background                           CDATA                           #IMPLIED
+    fill                                                    CDATA                           #IMPLIED
+    fill-opacity                                    CDATA                           #IMPLIED
+    fill-rule                                           CDATA                           #IMPLIED
+    filter                                              CDATA                           #IMPLIED
+    flood-color                                     CDATA                           #IMPLIED
+    flood-opacity                                   CDATA                           #IMPLIED
+    font-family                                     CDATA                           #IMPLIED
+    font-size                                           CDATA                           #IMPLIED
+    font-size-adjust                            CDATA                           #IMPLIED
+    font-stretch                                    CDATA                           #IMPLIED
+    font-style                                      CDATA                           #IMPLIED
+    font-variant                                    CDATA                           #IMPLIED
+    font-weight                                     CDATA                           #IMPLIED
+    glyph-orientation-horizontal    CDATA                           #IMPLIED
+    glyph-orientation-vertical      CDATA                           #IMPLIED
+    image-rendering                             CDATA                           #IMPLIED
+    kerning                                             CDATA                           #IMPLIED
+    letter-spacing                              CDATA                           #IMPLIED
+    lighting-color                              CDATA                           #IMPLIED
+    marker-end                                      CDATA                           #IMPLIED
+    marker-mid                                      CDATA                           #IMPLIED
+    marker-start                                    CDATA                           #IMPLIED
+    mask                                                    CDATA                           #IMPLIED
+    opacity                                             CDATA                           #IMPLIED
+    overflow                                            CDATA                           #IMPLIED
+    pointer-events                              CDATA                           #IMPLIED
+    shape-rendering                             CDATA                           #IMPLIED
+    stop-color                                      CDATA                           #IMPLIED
+    stop-opacity                                    CDATA                           #IMPLIED
+    stroke                                              CDATA                           #IMPLIED
+    stroke-dasharray                            CDATA                           #IMPLIED
+    stroke-dashoffset                           CDATA                           #IMPLIED
+    stroke-linecap                              CDATA                           #IMPLIED
+    stroke-linejoin                             CDATA                           #IMPLIED
+    stroke-miterlimit                           CDATA                           #IMPLIED
+    stroke-opacity                              CDATA                           #IMPLIED
+    stroke-width                                    CDATA                           #IMPLIED
+    text-anchor                                     CDATA                           #IMPLIED
+    text-decoration                             CDATA                           #IMPLIED
+    text-rendering                              CDATA                           #IMPLIED
+    unicode-bidi                                    CDATA                           #IMPLIED
+    visibility                                      CDATA                           #IMPLIED
+    word-spacing                                    CDATA                           #IMPLIED
+    writing-mode                                    CDATA                           #IMPLIED
+    class                                                   CDATA                           #IMPLIED
+    style                                                   CDATA                           #IMPLIED
+    externalResourcesRequired           CDATA                           #IMPLIED
+    x                                                           CDATA                           #IMPLIED
+    y                                                           CDATA                           #IMPLIED
+    width                                                   CDATA                           #IMPLIED
+    height                                              CDATA                           #IMPLIED
+    viewBox                                             CDATA                           #IMPLIED
+    preserveAspectRatio                     CDATA                           #IMPLIED
+    zoomAndPan                                      CDATA                           #IMPLIED
+    version                                             CDATA                           #IMPLIED
+    baseProfile                                     CDATA                           #IMPLIED
+    contentScriptType                           CDATA                           #IMPLIED
+    contentStyleType                            CDATA                           #IMPLIED
+    >
+
+<!--======================= 4.9 Tabular data =======================================-->
+
+<!-- data with more than one dimension, in the form of a table -->
+<!ELEMENT table (caption?, (col*|colgroup*), thead?, tfoot?, (tbody+|tr+))>
+<!ATTLIST table
+  %attrs;
+  border            %Pixels;                #IMPLIED
+  sortable      (sortable)          #IMPLIED
+  role              %Text;                  #IMPLIED
+  >
+
+<!-- title of the table that is its parent -->
+<!ELEMENT caption  %caption.content;>
+<!ATTLIST caption
+  %attrs;
+  role              %Text;                  #IMPLIED
+ >
+
+<!-- a group of one or more columns in the table -->
+<!ELEMENT colgroup (col)*>
+<!ATTLIST colgroup
+  %attrs;
+  span        %Number;       "1"
+  >
+
+<!-- one or more columns in the column group -->
+<!ELEMENT col      EMPTY>
+<!ATTLIST col
+  %attrs;
+  span        %Number;       "1"
+  >
+
+<!-- a block of rows that consist of a body of data for a table  -->
+<!ELEMENT tbody    (tr | %script.supporting;)*>
+<!ATTLIST tbody
+  %attrs;
+  role              %Text;                  #IMPLIED
+ >
+
+<!-- the block of rows that consist of the column labels (headers) for a table -->
+<!ELEMENT thead    (tr | %script.supporting;)*>
+<!ATTLIST thead
+  %attrs;
+  role              %Text;                  #IMPLIED
+  >
+
+<!-- the block of rows that consist of the column summaries (footers) for a table  -->
+<!ELEMENT tfoot    (tr | %script.supporting;)*>
+<!ATTLIST tfoot
+  %attrs;
+  role              %Text;                  #IMPLIED
+  >
+
+<!-- a row of cells in a table -->
+<!ELEMENT tr       (th | td | %script.supporting;)*>
+<!ATTLIST tr
+  %attrs;
+  role              %Text;                  #IMPLIED
+  >
+
+<!-- a  data cell in a table -->
+<!ELEMENT td       %Flow;>
+<!ATTLIST td
+  %attrs;
+  colspan       %Number;                "1"
+  rowspan           %Number;                "1"
+  headers           IDREFS                  #IMPLIED
+  role              %Text;                  #IMPLIED
+ >
+
+<!-- a header cell in a table -->
+<!ELEMENT th       %Flow.basic;>
+<!ATTLIST th
+  %attrs;
+  colspan     %Number;              "1"
+  rowspan     %Number;              "1"
+  headers     IDREFS                    #IMPLIED
+  scope       (row | col | rowgroup | colgroup | auto)  #IMPLIED
+  abbr        %Text;                    #IMPLIED
+  sorted            CDATA                       #IMPLIED
+  role              %Text;                  #IMPLIED
+  >
+
+<!--================ 4.10 Forms ===========================================-->
+
+<!-- a collection of form-associated elements -->
+<!ELEMENT form %form.content;>
+<!ATTLIST form
+  %attrs;
+  accept-charset    %Charsets;          #IMPLIED
+  accept                    %ContentTypes;  #IMPLIED
+  action                    %URI;                       #IMPLIED
+    autocomplete        (on | off)          #IMPLIED
+  enctype                   %ContentType;       "application/x-www-form-urlencoded"
+    method                  (get | post)        "get"
+  name                      NMTOKEN                 #IMPLIED
+  novalidate            (novalidate)        #IMPLIED
+    target                  %Text;                  #IMPLIED
+  role                      %Text;                  #IMPLIED
+  > 
+
+<!-- a caption in a user interface -->
+<!ELEMENT label %label.content;>
+<!ATTLIST label
+  %attrs;
+  form                      IDREF                       #IMPLIED
+  for                           IDREF                       #IMPLIED
+  >
+
+<!ENTITY % InputType
+  "(hidden  | text  | search    | tel   | url | email   | password  | date  | time  | number    | range | color | checkbox  | radio | file  | submit    | image | reset | button)"
+   >
+
+<!ELEMENT input EMPTY>
+<!ATTLIST input
+  %attrs;
+  accept                    %ContentTypes;      #IMPLIED
+  alt                           CDATA                           #IMPLIED
+  autocomplete      (on | off)              #IMPLIED
+  autofocus             (autofocus)             #IMPLIED
+  checked                   (checked)                   #IMPLIED
+  dirname                   CDATA                           #IMPLIED
+  disabled              (disabled)              #IMPLIED
+  form                      IDREF                           #IMPLIED
+  formaction            %URI;                           #IMPLIED
+    formenctype         %ContentType;           "application/x-www-form-urlencoded"
+    formmethod          (get | post)            "get"
+    formnovalidate  (formnovalidate)    #IMPLIED
+    formtarget          %Text;                      #IMPLIED
+    height                  %Length;                    #IMPLIED
+    inputmode               CDATA                           #IMPLIED
+    list                        IDREF                           #IMPLIED
+    max                         %Number;                    #IMPLIED
+    maxlength               %Length;                    #IMPLIED
+    min                         %Number;                    #IMPLIED
+    minlength               %Length;                    #IMPLIED
+  multiple              (multiple)              #IMPLIED
+  name                      NMTOKEN                     #IMPLIED
+    pattern                 CDATA                           #IMPLIED
+    placeholder         %Text;                      #IMPLIED
+  readonly              (readonly)              #IMPLIED
+  required              (required)              #IMPLIED
+  size                      %Number;                    #IMPLIED
+  src                           %URI;                           #IMPLIED
+    step                        CDATA                           #IMPLIED
+  type                      %InputType;             "text"
+  value                     CDATA                           #IMPLIED
+  width                     %Length;                    #IMPLIED
+  role                      %Text;                      #IMPLIED
+ >
+
+<!-- a button labeled by its contents
+Content is %Flow; excluding a, form and form controls
+--> 
+<!ELEMENT button %button.content;>  
+<!ATTLIST button
+  %attrs;
+  autofocus             (autofocus)                                 #IMPLIED
+  disabled              (disabled)                                  #IMPLIED
+  form                      IDREF                                               #IMPLIED
+  formaction            %URI;                                               #IMPLIED
+    formenctype         %ContentType;                               "application/x-www-form-urlencoded"
+    formmethod          (get | post)                                "get"
+    formnovalidate  (formnovalidate)                        #IMPLIED
+    formtarget          %Text;                                          #IMPLIED
+  menu                      IDREF                                               #IMPLIED
+  name                      NMTOKEN                                         #IMPLIED
+  type                      (button | submit | reset)       "submit"
+  value                     CDATA                                               #IMPLIED
+  role                      %Text;                                          #IMPLIED
+    aria-level          %Number;                                        #IMPLIED
+    aria-posinset       %Number;                                        #IMPLIED
+    aria-setsize        %Number;                                        #IMPLIED
+    aria-expanded       (true | false | undefined)  #IMPLIED
+    aria-checked        CDATA                                               #IMPLIED
+    aria-selected       (true | false | undefined)  #IMPLIED
+   >
+
+<!--  a control for selecting amongst a set of options -->
+<!ELEMENT select (optgroup | option | %script.supporting;)*>  
+<!ATTLIST select
+  %attrs;
+  autofocus             (autofocus)                                 #IMPLIED
+  disabled              (disabled)                                  #IMPLIED
+  form                      IDREF                                               #IMPLIED
+  multiple              (multiple)                                  #IMPLIED
+  name                      NMTOKEN                                         #IMPLIED
+  required              (required)                                  #IMPLIED
+  size                      %Number;                                        #IMPLIED
+  role                      %Text;                                          #IMPLIED
+  aria-expanded                     (true | false | undefined)  #IMPLIED
+    aria-multiselectable        (true | false)                          #IMPLIED
+    aria-required                       (true | false)                          #IMPLIED
+    aria-activedescendant       CDATA                                               #IMPLIED
+  >
+
+<!--  a control for selecting amongst a set of options -->
+<!ELEMENT datalist (option | %phrasing.content;)*>  
+<!ATTLIST datalist
+  %attrs;
+  aria-expanded                     (true | false | undefined)  #IMPLIED
+    aria-multiselectable        (true | false)                          #IMPLIED
+    aria-required                       (true | false)                          #IMPLIED
+    aria-activedescendant       CDATA                                               #IMPLIED
+  >
+
+<!-- a group of option elements with a common label -->
+<!ELEMENT optgroup (option | %script.supporting;)*>
+<!ATTLIST optgroup
+  %attrs;
+  disabled          (disabled)          #IMPLIED
+  label                 %Text;                  #REQUIRED
+  >
+  
+<!-- an option in a select element or as part of a list of suggestions in a datalist element -->
+<!ELEMENT option (#PCDATA)>     
+<!ATTLIST option
+  %attrs;
+  selected              (selected)                                  #IMPLIED
+  disabled              (disabled)                                  #IMPLIED
+  label                     %Text;                                          #IMPLIED
+  value                     CDATA                                               #IMPLIED
+    role                        %Text;                                          #IMPLIED
+  aria-valuetext    %Text;                                          #IMPLIED
+    aria-posinset       %Number;                                        #IMPLIED
+    aria-setsize        %Number;                                        #IMPLIED
+    aria-expanded       (true | false | undefined)  #IMPLIED
+    aria-checked        CDATA                                               #IMPLIED
+    aria-selected       (true | false | undefined)  #IMPLIED
+  >
+
+<!-- a multiline plain text edit control for the element's raw value -->
+<!ELEMENT textarea (#PCDATA)>     
+<!ATTLIST textarea
+  %attrs;
+  autocomplete                      (on | off)              #IMPLIED
+  autofocus                             (autofocus)             #IMPLIED
+  cols                                      %Number;                    #IMPLIED
+  dirname                                   CDATA                           #IMPLIED
+  disabled                              (disabled)              #IMPLIED
+  form                                      IDREF                           #IMPLIED
+    inputmode                               CDATA                           #IMPLIED
+    maxlength                               %Length;                    #IMPLIED
+    minlength                               %Length;                    #IMPLIED
+  name                                      NMTOKEN                     #IMPLIED
+    placeholder                         %Text;                      #IMPLIED
+  readonly                              (readonly)              #IMPLIED
+  required                              (required)              #IMPLIED
+  rows                                      %Number;                    #IMPLIED
+    wrap                                        (wrap)                      #IMPLIED
+    aria-activedescendant       CDATA                           #IMPLIED
+    aria-autocomplete               CDATA                           #IMPLIED
+    aria-multiline                  (true | false)      #IMPLIED
+    aria-readonly                       (true | false)      #IMPLIED
+    aria-required                       (true | false)      #IMPLIED
+  >
+
+<!-- a key pair generator control -->
+<!ELEMENT keygen EMPTY>
+<!ATTLIST keygen
+  %attrs;
+    autofocus                               (autofocus)             #IMPLIED
+    challenge                               CDATA                           #IMPLIED
+  disabled                              (disabled)              #IMPLIED
+  form                                      IDREF                           #IMPLIED
+  keytype                                   CDATA                           #IMPLIED
+  name                                      NMTOKEN                     #IMPLIED
+  >
+
+<!-- the result of a calculation or user action -->
+<!ELEMENT output %Phrasing;>
+<!ATTLIST output
+  %attrs;
+  for                                           %Text;                          #IMPLIED
+  form                                      IDREF                               #IMPLIED
+  name                                      NMTOKEN                         #IMPLIED
+    aria-expanded       (true | false | undefined)  #IMPLIED
+  >
+
+<!-- the completion progress of a task -->
+<!ELEMENT progress %progress.content;>
+<!ATTLIST progress
+  %attrs;
+    max                                         %Number;                    #IMPLIED
+  value                                     CDATA                           #IMPLIED
+    aria-valuemax                       %Number;                    #IMPLIED
+    aria-valuemin                       %Number;                    #IMPLIED
+    aria-valuenow                       %Number;                    #IMPLIED
+    aria-valuetext                  %Text;                      #IMPLIED
+  >
+
+<!-- a scalar measurement within a known range, or a fractional value -->
+<!ELEMENT meter %meter.content;>
+<!ATTLIST meter
+  %attrs;
+  value                                     CDATA                           #IMPLIED
+    min                                         %Number;                    #IMPLIED
+    max                                         %Number;                    #IMPLIED
+    low                                         %Number;                    #IMPLIED
+    high                                        %Number;                    #IMPLIED
+    optimum                                 %Number;                    #IMPLIED
+  >
+
+<!-- a set of form controls optionally grouped under a common name -->
+<!ELEMENT fieldset %fieldset.content;>
+<!ATTLIST fieldset
+  %attrs;
+  disabled                              (disabled)                  #IMPLIED
+  form                                      IDREF                               #IMPLIED
+  name                                      NMTOKEN                         #IMPLIED
+    role                                        %Text;                          #IMPLIED
+    aria-activedescendant       CDATA                               #IMPLIED
+    aria-expanded       (true | false | undefined)  #IMPLIED
+  >
+
+<!-- a caption for the rest of the contents of the fieldset -->
+<!ELEMENT legend %Phrasing;>
+<!ATTLIST legend
+  %attrs;
+    role                                        %Text;                          #IMPLIED
+  >
+
+<!--=================== 4.11 Scripting ====================================-->
+
+<!-- allows authors to include dynamic script and data blocks in their documents -->
+<!ELEMENT script (#PCDATA)>
+<!ATTLIST script
+  %attrs;
+  src                                           %URI;                           #IMPLIED
+  type                                      %ContentType;           #IMPLIED
+  charset                                   %Charset;                   #IMPLIED
+  async                                     (async)                     #IMPLIED
+  defer                                     (defer)                     #IMPLIED
+  crossorigin   (anonymous | use-credentials)   #IMPLIED
+  >
+
+<!-- displays its children if scripting is disabled. -->
+<!ELEMENT noscript %Palpable;>
+<!ATTLIST noscript
+  %attrs;
+  >
+
+<!-- used to declare fragments of HTML that can be cloned and inserted in the document by script -->
+<!ELEMENT template %template.content;>
+<!ATTLIST template
+  %attrs;
+  >
+
+<!-- provides scripts with a resolution-dependent bitmap canvas -->
+<!ELEMENT canvas (#PCDATA)>
+<!ATTLIST canvas
+  %attrs;
+    role                                        %Text;                      #IMPLIED
+  height                                    %Length;                    #IMPLIED
+  width                                     %Length;                    #IMPLIED
+  >
