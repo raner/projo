@@ -1,0 +1,3785 @@
+<!--
+    SGML DTD for parsing the W3C HTML5.1 markup language
+    using the sgmljs.net SGML system
+
+    This DTD was automatically generated from WHATWG materials
+    but is not endorsed by WHATWG or W3C.
+
+    The HTML5 specification imposes additional syntactic constraints
+    that cannot be expressed by DTDs, including, but not limited to:
+
+    - attribute defaults
+    - individual element content model rules as noticed by the text
+      "Not all model constraints are represented in this declaration"
+
+    See http://sgmljs.net/docs/html51.html for details
+    including IMPORTANT SECURITY NOTES.
+
+    The HTML syntax this DTD is attempting to represent is
+    following the markup language described at
+
+         https://www.w3.org/TR/2016/REC-html51-20161101/
+
+    or the equivalent WHATWG revision at
+
+          https://html.spec.whatwg.org
+
+    but there is ABSOLUTELY NO GUARANTEE OR WARRANTY of
+    any kind that the targetted HTML syntax version is
+    represented completely or correctly, nor of suitability
+    for any purpose at all.
+
+    Permission to use for any purpose is granted, provided
+    this notice is left intact, and changes are marked clearly. -->
+
+
+<!--============ Preamble ============-->
+
+<!-- import entity set for HTML predefined entities
+     (unless no_entities has value "INCLUDE")  -->
+
+<!ENTITY % no_entities "INCLUDE">
+<![ %no_entities; [
+    <!ENTITY % if_entities "IGNORE">
+]]>
+<!ENTITY % if_entities "INCLUDE">
+<![ %if_entities; [
+    <!ENTITY % htmlmathml-f
+        PUBLIC "-//W3C//ENTITIES HTML MathML Set//EN//XML"
+        "http://www.w3.org/2003/entities/2007/htmlmathml-f.ent">
+    %htmlmathml-f;
+]]>
+
+<!-- conditional import of ARIA attributes
+     (see notes on SVG and MathML for importing);
+     this is using the current published ARIA attributes DTD
+     as of WAI-ARIA 1.0 (https:/www.w3.org/TR/wai-aria/)
+     normatively referenced by the HTML5.1 specification -->
+
+<!ENTITY % if_aria "IGNORE">
+<![ %if_aria; [
+    <!ENTITY % no_aria "IGNORE">
+    <!ENTITY % ariamod
+        PUBLIC "-//W3C//ENTITIES XHTML ARIA Attributes 1.0//EN"
+        "http://www.w3.org/MarkUp/DTD/aria-attributes-1.mod">
+        %ariamod;
+    <!ENTITY % ariaattrs "%ARIA.attrib">
+]]>
+<!ENTITY % no_aria "INCLUDE">
+<![ %no_aria; [
+    <!ENTITY % ariaattrs "">
+]]>
+
+<!-- conditional import of the SVG and MathML DTDs;
+     a declaration for the svg and math elements
+     as having declared content ANY will
+     be included if the if_svg and if_mathml parameter,
+     resp., are undeclared; set if_svg and/or if_mathml
+     to INCLUDE as invocation parameter to include the
+     respective DTDs -->
+
+<!ENTITY % if_svg "IGNORE">
+<![ %if_svg; [
+    <!ENTITY % no_svg "IGNORE">
+
+    <!-- SVG DTD customization to include vector-effect, tabindex,
+         and aria-attributes as required (section 4.7.19) -->
+    <!ENTITY % SVG.External.attrib
+        "vector-effect (non-scaling-stroke) #IMPLIED">
+    <!ENTITY % SVG.Core.extra.attrib
+            "tabindex NUMBER #IMPLIED
+             %ariaattrs;">
+
+    <!-- SVG DTD customization to exclude declaration of the
+         title and other elements (which will clash with same-named
+         HTML attributes) -->
+    <!ENTITY % SVG.title.element "IGNORE">
+    <!ENTITY % SVG.title.attlist "IGNORE">
+    <!ENTITY % SVG.style.element "IGNORE">
+    <!ENTITY % SVG.style.attlist "IGNORE">
+    <!ENTITY % SVG.a.element "IGNORE">
+    <!ENTITY % SVG.a.attlist "IGNORE">
+    <!ENTITY % SVG.script.element "IGNORE">
+    <!ENTITY % SVG.script.attlist "IGNORE">
+
+    <!ENTITY % svgdtd
+        SYSTEM "svg/svg11.dtd">
+    %svgdtd;
+
+    <!-- HTML DTD customization to include the xlink:href
+         attribute on the a element and the xmlns:xlink
+         attribute on the svg element -->
+    <!ENTITY % xlinkhrefattr "xlink:href CDATA #IMPLIED">
+    <!ENTITY % xlinknsattr
+        "xmlns:xlink CDATA #FIXED 'http://www.w3.org/1999/xlink'">
+]]>
+<!ENTITY % no_svg "INCLUDE">
+<![ %no_svg; [
+    <!ELEMENT svg - - ANY>
+    <!ENTITY % xlinkhrefattr "">
+    <!ENTITY % xlinknsattr "">
+]]>
+
+<!ENTITY % if_mathml "IGNORE">
+<![ %if_mathml; [
+    <!ENTITY % no_mathml "IGNORE">
+    <!ENTITY % mathmldtd
+        PUBLIC "-//W3C//DTD MathML 3.0//EN"
+        "http://www.w3.org/Math/DTD/mathml3/mathml3.dtd">
+    %mathmldtd;
+]]>
+<!ENTITY % no_mathml "INCLUDE">
+<![ %no_mathml; [
+    <!ELEMENT math - - ANY>
+]]>
+
+<!-- as HTML subset customization feature, marked section
+     keyword parameters with "INCLUDE" default values
+     for eg. HTML.div.element, HTML.span.element, etc.
+     can be preempted in an eg. internal subset for
+     conditional exclusion of the respective declarations -->
+
+
+
+<!--========== Element categories ==========-->
+<!--(elements can be contained in more than one category, or none at all)-->
+
+<!-- Metadata content (section 3.2.4.2.1). -->
+<!ENTITY % metadata "base|link|meta|noscript|script|style|template|title">
+
+<!-- Flow content (section 3.2.4.2.2).
+     Note: the script element is not included in this namegroup. -->
+<!ENTITY % flow "a|abbr|address|area|article|aside|audio|b|bdi|bdo|blockquote|br|button|canvas|cite|code|data|datalist|del|details|dfn|div|dl|em|embed|fieldset|figure|footer|form|h1|h2|h3|h4|h5|h6|header|hr|i|iframe|img|input|ins|kbd|keygen|label|main|map|mark|math|menu|meter|nav|noscript|object|ol|output|p|picture|pre|progress|q|ruby|s|samp|section|select|small|span|strong|sub|sup|svg|table|template|textarea|time|u|ul|var|video|wbr">
+
+<!-- Flow content that is not also phrasing content. -->
+<!ENTITY % flow_only "address|article|aside|blockquote|details|div|dl|fieldset|figure|footer|form|h1|h2|h3|h4|h5|h6|header|hr|main|menu|nav|ol|p|pre|section|table|ul">
+
+<!-- Sectioning content (section 3.2.4.2.3). -->
+<!ENTITY % sectioning "article|aside|nav|section">
+
+<!-- Heading content (section 3.2.4.2.4). -->
+<!ENTITY % heading "h1|h2|h3|h4|h5|h6">
+
+<!-- Phrasing content (section 3.2.4.2.5).
+     Note: the script element is not included in this namegroup. -->
+<!ENTITY % phrasing "a|abbr|area|audio|b|bdi|bdo|br|button|canvas|cite|code|data|datalist|del|dfn|em|embed|i|iframe|img|input|ins|kbd|keygen|label|map|mark|math|meter|noscript|object|output|picture|progress|q|ruby|s|samp|select|small|span|strong|sub|sup|svg|template|textarea|time|u|var|video|wbr">
+
+<!-- Embedded content (section 3.2.4.2.6). -->
+<!ENTITY % embedded "audio|canvas|embed|iframe|img|math|object|picture|svg|video">
+
+<!-- Interactive content (section 3.2.4.2.7). -->
+<!ENTITY % interactive "a|audio|button|details|embed|iframe|input|keygen|label|select|textarea|video">
+
+<!-- Script-supporting elements (section 3.2.4.2.9). -->
+<!ENTITY % scripting "script|template">
+
+<!-- Utility parameter entity containing all HTML elements. -->
+<!ENTITY % HTML.all "html|head|title|base|link|meta|style|body|article|section|nav|aside|h1|h2|h3|h4|h5|h6|header|footer|address|p|hr|pre|blockquote|ol|ul|li|dl|dt|dd|figure|figcaption|main|div|a|em|strong|small|s|cite|q|dfn|abbr|ruby|rb|rt|rtc|rp|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|bdi|bdo|span|br|wbr|ins|del|picture|img|iframe|embed|object|param|video|audio|source|track|map|area|table|caption|colgroup|col|tbody|thead|tfoot|tr|td|th|form|label|input|button|select|datalist|optgroup|option|textarea|keygen|output|progress|meter|fieldset|legend|details|summary|menu|menuitem|script|noscript|template|canvas">
+
+<!ENTITY % all "%HTML.all;">
+
+<!--========== Global attributes ==========-->
+
+<!-- Event handler content attributes (section 3.2.5) -->
+<!ENTITY % eventhandlerattrs
+ "onabort          CDATA             #IMPLIED          
+  onblur           CDATA             #IMPLIED          
+  oncancel         CDATA             #IMPLIED          
+  oncanplay        CDATA             #IMPLIED          
+  oncanplaythrough CDATA             #IMPLIED          
+  onchange         CDATA             #IMPLIED          
+  onclick          CDATA             #IMPLIED          
+  onclose          CDATA             #IMPLIED          
+  oncontextmenu    CDATA             #IMPLIED          
+  oncopy           CDATA             #IMPLIED          
+  oncuechange      CDATA             #IMPLIED          
+  oncut            CDATA             #IMPLIED          
+  ondblclick       CDATA             #IMPLIED          
+  ondrag           CDATA             #IMPLIED          
+  ondragend        CDATA             #IMPLIED          
+  ondragenter      CDATA             #IMPLIED          
+  ondragexit       CDATA             #IMPLIED          
+  ondragleave      CDATA             #IMPLIED          
+  ondragover       CDATA             #IMPLIED          
+  ondragstart      CDATA             #IMPLIED          
+  ondrop           CDATA             #IMPLIED          
+  ondurationchange CDATA             #IMPLIED          
+  onemptied        CDATA             #IMPLIED          
+  onended          CDATA             #IMPLIED          
+  onerror          CDATA             #IMPLIED          
+  onfocus          CDATA             #IMPLIED          
+  oninput          CDATA             #IMPLIED          
+  oninvalid        CDATA             #IMPLIED          
+  onkeydown        CDATA             #IMPLIED          
+  onkeypress       CDATA             #IMPLIED          
+  onkeyup          CDATA             #IMPLIED          
+  onload           CDATA             #IMPLIED          
+  onloadeddata     CDATA             #IMPLIED          
+  onloadedmetadata CDATA             #IMPLIED          
+  onloadstart      CDATA             #IMPLIED          
+  onmousedown      CDATA             #IMPLIED          
+  onmouseenter     CDATA             #IMPLIED          
+  onmouseleave     CDATA             #IMPLIED          
+  onmousemove      CDATA             #IMPLIED          
+  onmouseout       CDATA             #IMPLIED          
+  onmouseover      CDATA             #IMPLIED          
+  onmouseup        CDATA             #IMPLIED          
+  onwheel          CDATA             #IMPLIED          
+  onpaste          CDATA             #IMPLIED          
+  onpause          CDATA             #IMPLIED          
+  onplay           CDATA             #IMPLIED          
+  onplaying        CDATA             #IMPLIED          
+  onprogress       CDATA             #IMPLIED          
+  onratechange     CDATA             #IMPLIED          
+  onreset          CDATA             #IMPLIED          
+  onresize         CDATA             #IMPLIED          
+  onscroll         CDATA             #IMPLIED          
+  onseeked         CDATA             #IMPLIED          
+  onseeking        CDATA             #IMPLIED          
+  onselect         CDATA             #IMPLIED          
+  onshow           CDATA             #IMPLIED          
+  onstalled        CDATA             #IMPLIED          
+  onsubmit         CDATA             #IMPLIED          
+  onsuspend        CDATA             #IMPLIED          
+  ontimeupdate     CDATA             #IMPLIED          
+  ontoggle         CDATA             #IMPLIED          
+  onvolumechange   CDATA             #IMPLIED          
+  onwaiting        CDATA             #IMPLIED">        
+
+<!-- Body event handler content attributes (section 6.1.5.2) -->
+<!ENTITY % bodyeventhandlerattrs
+ "onafterprint     CDATA             #IMPLIED          
+  onbeforeprint    CDATA             #IMPLIED          
+  onbeforeunload   CDATA             #IMPLIED          
+  onhashchange     CDATA             #IMPLIED          
+  onmessage        CDATA             #IMPLIED          
+  onoffline        CDATA             #IMPLIED          
+  ononline         CDATA             #IMPLIED          
+  onpagehide       CDATA             #IMPLIED          
+  onpageshow       CDATA             #IMPLIED          
+  onpopstate       CDATA             #IMPLIED          
+  onstorage        CDATA             #IMPLIED          
+  onunload         CDATA             #IMPLIED">        
+
+<!-- Parameter entity containing common attributes of all HTML elements 
+     for reference in individual ATTLIST declarations -->
+<!ENTITY % extensionattrs "%eventhandlerattrs; %ariaattrs;">
+
+
+<!--========== The root element ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.1)-->
+
+<!ENTITY % HTML.html.element "INCLUDE">
+<![ %HTML.html.element [
+<!-- The html element (section 4.1).
+     Content: A head element followed by a body element.
+     Tag omission: An html element's start tag can be omitted if the first thing
+     inside the html element is not a comment. An html element's end tag can be
+     omitted if the html element is not immediately followed by a comment. -->
+<!ELEMENT html O O (head,body) +(script)>
+]]>
+
+<!ENTITY % HTML.html.attlist "INCLUDE">
+<![ %HTML.html.attlist [
+<!ATTLIST html
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+
+<!--========== Document metadata ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.2)-->
+
+<!ENTITY % HTML.head.element "INCLUDE">
+<![ %HTML.head.element [
+<!-- The head element (section 4.2).
+     Content: If the document is an iframe srcdoc document or if title
+     information is available from a higher-level protocol: Zero or more
+     elements of metadata content, of which no more than one is a title element
+     and no more than one is a base element.
+     Otherwise: One or more elements of metadata content, of which exactly one
+     is a title element and no more than one is a base element.
+     Tag omission: A head element's start tag may be omitted if the element is
+     empty, or if the first thing inside the head element is an element. A head
+     element's end tag may be omitted if the head element is not immediately
+     followed by a space character or a comment.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT head O O (%metadata;)*>
+]]>
+
+<!ENTITY % HTML.head.attlist "INCLUDE">
+<![ %HTML.head.attlist [
+<!ATTLIST head
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.title.element "INCLUDE">
+<![ %HTML.title.element [
+<!-- The title element (section 4.2).
+     Content: Text that is not inter-element whitespace.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT title - - (#PCDATA)>
+]]>
+
+<!ENTITY % HTML.title.attlist "INCLUDE">
+<![ %HTML.title.attlist [
+<!ATTLIST title
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.base.element "INCLUDE">
+<![ %HTML.base.element [
+<!-- The base element (section 4.2).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT base - O EMPTY>
+]]>
+
+<!ENTITY % HTML.base.attlist "INCLUDE">
+<![ %HTML.base.attlist [
+<!ATTLIST base
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  href             CDATA             #IMPLIED          
+  target           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.link.element "INCLUDE">
+<![ %HTML.link.element [
+<!-- The link element (section 4.2).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT link - O EMPTY>
+]]>
+
+<!ENTITY % HTML.link.attlist "INCLUDE">
+<![ %HTML.link.attlist [
+<!ATTLIST link
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  href             CDATA             #IMPLIED          
+  crossorigin      (anonymous|use-credentials) #IMPLIED          
+  rel              NMTOKENS          #IMPLIED          
+  rev              NMTOKENS          #IMPLIED          
+  media            CDATA             #IMPLIED          
+  hreflang         CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  sizes            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.meta.element "INCLUDE">
+<![ %HTML.meta.element [
+<!-- The meta element (section 4.2).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT meta - O EMPTY>
+]]>
+
+<!ENTITY % HTML.meta.attlist "INCLUDE">
+<![ %HTML.meta.attlist [
+<!ATTLIST meta
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  name             CDATA             #IMPLIED          
+  http-equiv       CDATA             #IMPLIED          
+  content          CDATA             #IMPLIED          
+  charset          CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.style.element "INCLUDE">
+<![ %HTML.style.element [
+<!-- The style element (section 4.2).
+     Content: Depends on the value of the type attribute, but must match
+     requirements described in prose below.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT style - - CDATA>
+]]>
+
+<!ENTITY % HTML.style.attlist "INCLUDE">
+<![ %HTML.style.attlist [
+<!ATTLIST style
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  media            CDATA             #IMPLIED          
+  nonce            CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED>         
+]]>
+
+
+<!--========== Sections ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.3)-->
+
+<!ENTITY % HTML.body.element "INCLUDE">
+<![ %HTML.body.element [
+<!-- The body element (section 4.3).
+     Content: Flow content.
+     Tag omission: A body element's start tag may be omitted if the element is
+     empty, or if the first thing inside the body element is not a space
+     character or a comment, except if the first thing inside the body element
+     is a meta, link, script, style, or template element. A body element's end
+     tag may be omitted if the body element is not immediately followed by a
+     comment. -->
+<!ELEMENT body O O (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.body.attlist "INCLUDE">
+<![ %HTML.body.attlist [
+<!ATTLIST body
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  %bodyeventhandlerattrs;
+  >                
+]]>
+
+<!ENTITY % HTML.article.element "INCLUDE">
+<![ %HTML.article.element [
+<!-- The article element (section 4.3).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT article - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.article.attlist "INCLUDE">
+<![ %HTML.article.attlist [
+<!ATTLIST article
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.section.element "INCLUDE">
+<![ %HTML.section.element [
+<!-- The section element (section 4.3).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT section - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.section.attlist "INCLUDE">
+<![ %HTML.section.attlist [
+<!ATTLIST section
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.nav.element "INCLUDE">
+<![ %HTML.nav.element [
+<!-- The nav element (section 4.3).
+     Content: Flow content, but with no main element descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT nav - - (#PCDATA|%flow;)* -(main)>
+]]>
+
+<!ENTITY % HTML.nav.attlist "INCLUDE">
+<![ %HTML.nav.attlist [
+<!ATTLIST nav
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.aside.element "INCLUDE">
+<![ %HTML.aside.element [
+<!-- The aside element (section 4.3).
+     Content: Flow content, but with no main element descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT aside - - (#PCDATA|%flow;)* -(main)>
+]]>
+
+<!ENTITY % HTML.aside.attlist "INCLUDE">
+<![ %HTML.aside.attlist [
+<!ATTLIST aside
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.h1_h2_h3_h4_h5_h6.element "INCLUDE">
+<![ %HTML.h1_h2_h3_h4_h5_h6.element [
+<!-- The (h1|h2|h3|h4|h5|h6) element (section 4.3).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT (h1|h2|h3|h4|h5|h6) - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.h1_h2_h3_h4_h5_h6.attlist "INCLUDE">
+<![ %HTML.h1_h2_h3_h4_h5_h6.attlist [
+<!ATTLIST (h1|h2|h3|h4|h5|h6)
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.header.element "INCLUDE">
+<![ %HTML.header.element [
+<!-- The header element (section 4.3).
+     Content: Flow content, but with no main element descendants, or header,
+     footer elements that are not descendants of sectioning content which is a
+     descendant of the header.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT header - - (#PCDATA|%flow;)* -(header|footer|main)>
+]]>
+
+<!ENTITY % HTML.header.attlist "INCLUDE">
+<![ %HTML.header.attlist [
+<!ATTLIST header
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.footer.element "INCLUDE">
+<![ %HTML.footer.element [
+<!-- The footer element (section 4.3).
+     Content: Flow content, but with no main element descendants, or header,
+     footer elements that are not descendants of sectioning content which is a
+     descendant of the footer.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT footer - - (#PCDATA|%flow;)* -(header|footer|main)>
+]]>
+
+<!ENTITY % HTML.footer.attlist "INCLUDE">
+<![ %HTML.footer.attlist [
+<!ATTLIST footer
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.address.element "INCLUDE">
+<![ %HTML.address.element [
+<!-- The address element (section 4.3).
+     Content: Flow content, but with no heading content descendants, no
+     sectioning content descendants, and no header, footer, or address element
+     descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT address - - (#PCDATA|%flow;)* -(%heading;|%sectioning;|header|footer|address)>
+]]>
+
+<!ENTITY % HTML.address.attlist "INCLUDE">
+<![ %HTML.address.attlist [
+<!ATTLIST address
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+
+<!--========== Grouping content ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.4)-->
+
+<!ENTITY % HTML.p.element "INCLUDE">
+<![ %HTML.p.element [
+<!-- The p element (section 4.4).
+     Content: Phrasing content.
+     Tag omission: A p element's end tag may be omitted if the p element is
+     immediately followed by an address, article, aside, blockquote, details,
+     div, dl, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5,
+     h6, header, hr, main, menu, nav, ol, p, pre, section, table, or ul,
+     element, or if there is no more content in the parent element and the
+     parent element is an HTML element that is not an a, audio, del, ins, map,
+     noscript, or video element. -->
+<!ELEMENT p - O (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.p.attlist "INCLUDE">
+<![ %HTML.p.attlist [
+<!ATTLIST p
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.hr.element "INCLUDE">
+<![ %HTML.hr.element [
+<!-- The hr element (section 4.4).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT hr - O EMPTY>
+]]>
+
+<!ENTITY % HTML.hr.attlist "INCLUDE">
+<![ %HTML.hr.attlist [
+<!ATTLIST hr
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.pre.element "INCLUDE">
+<![ %HTML.pre.element [
+<!-- The pre element (section 4.4).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT pre - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.pre.attlist "INCLUDE">
+<![ %HTML.pre.attlist [
+<!ATTLIST pre
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.blockquote.element "INCLUDE">
+<![ %HTML.blockquote.element [
+<!-- The blockquote element (section 4.4).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT blockquote - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.blockquote.attlist "INCLUDE">
+<![ %HTML.blockquote.attlist [
+<!ATTLIST blockquote
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  cite             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.ol.element "INCLUDE">
+<![ %HTML.ol.element [
+<!-- The ol element (section 4.4).
+     Content: Zero or more li and script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT ol - - (li)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.ol.attlist "INCLUDE">
+<![ %HTML.ol.attlist [
+<!ATTLIST ol
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  reversed         (reversed)        #IMPLIED          
+  start            NUMBER            #IMPLIED          
+  type             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.ul.element "INCLUDE">
+<![ %HTML.ul.element [
+<!-- The ul element (section 4.4).
+     Content: Zero or more li and script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT ul - - (li)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.ul.attlist "INCLUDE">
+<![ %HTML.ul.attlist [
+<!ATTLIST ul
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.li.element "INCLUDE">
+<![ %HTML.li.element [
+<!-- The li element (section 4.4).
+     Content: Flow content.
+     Tag omission: An li element's end tag may be omitted if the li element is
+     immediately followed by another li element or if there is no more content
+     in the parent element. -->
+<!ELEMENT li - O (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.li.attlist "INCLUDE">
+<![ %HTML.li.attlist [
+<!ATTLIST li
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  value            NUMBER            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.dl.element "INCLUDE">
+<![ %HTML.dl.element [
+<!-- The dl element (section 4.4).
+     Content: Zero or more groups each consisting of one or more dt elements
+     followed by one or more dd elements, optionally intermixed with
+     script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT dl - - (dt+,dd+)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.dl.attlist "INCLUDE">
+<![ %HTML.dl.attlist [
+<!ATTLIST dl
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.dt.element "INCLUDE">
+<![ %HTML.dt.element [
+<!-- The dt element (section 4.4).
+     Content: Flow content, but with no header, footer, sectioning content, or
+     heading content descendants.
+     Tag omission: A dt element's end tag may be omitted if the dt element is
+     immediately followed by another dt element or a dd element. -->
+<!ELEMENT dt - O (#PCDATA|%flow;)* -(%heading;|%sectioning;|header|footer)>
+]]>
+
+<!ENTITY % HTML.dt.attlist "INCLUDE">
+<![ %HTML.dt.attlist [
+<!ATTLIST dt
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.dd.element "INCLUDE">
+<![ %HTML.dd.element [
+<!-- The dd element (section 4.4).
+     Content: Flow content.
+     Tag omission: A dd element's end tag may be omitted if the dd element is
+     immediately followed by another dd element or a dt element, or if there is
+     no more content in the parent element. -->
+<!ELEMENT dd - O (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.dd.attlist "INCLUDE">
+<![ %HTML.dd.attlist [
+<!ATTLIST dd
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.figure.element "INCLUDE">
+<![ %HTML.figure.element [
+<!-- The figure element (section 4.4).
+     Content: Flow content optionally including a figcaption child element.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT figure - - (#PCDATA|%flow;)* +(figcaption)>
+]]>
+
+<!ENTITY % HTML.figure.attlist "INCLUDE">
+<![ %HTML.figure.attlist [
+<!ATTLIST figure
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.figcaption.element "INCLUDE">
+<![ %HTML.figcaption.element [
+<!-- The figcaption element (section 4.4).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT figcaption - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.figcaption.attlist "INCLUDE">
+<![ %HTML.figcaption.attlist [
+<!ATTLIST figcaption
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.main.element "INCLUDE">
+<![ %HTML.main.element [
+<!-- The main element (section 4.4).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT main - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.main.attlist "INCLUDE">
+<![ %HTML.main.attlist [
+<!ATTLIST main
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.div.element "INCLUDE">
+<![ %HTML.div.element [
+<!-- The div element (section 4.4).
+     Content: Flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT div - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.div.attlist "INCLUDE">
+<![ %HTML.div.attlist [
+<!ATTLIST div
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+
+<!--========== Text-level semantics ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.5)-->
+
+<!ENTITY % HTML.a.element "INCLUDE">
+<![ %HTML.a.element [
+<!-- The a element (section 4.5).
+     Content: Transparent, but there must be no interactive content or a element
+     descendants.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT a - - ANY -(%interactive;)>
+]]>
+
+<!ENTITY % HTML.a.attlist "INCLUDE">
+<![ %HTML.a.attlist [
+<!ATTLIST a
+  %extensionattrs; 
+  %xlinkhrefattr;  
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  href             CDATA             #IMPLIED          
+  target           CDATA             #IMPLIED          
+  download         CDATA             #IMPLIED          
+  rel              NMTOKENS          #IMPLIED          
+  rev              NMTOKENS          #IMPLIED          
+  hreflang         CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.em.element "INCLUDE">
+<![ %HTML.em.element [
+<!-- The em element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT em - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.em.attlist "INCLUDE">
+<![ %HTML.em.attlist [
+<!ATTLIST em
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.strong.element "INCLUDE">
+<![ %HTML.strong.element [
+<!-- The strong element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT strong - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.strong.attlist "INCLUDE">
+<![ %HTML.strong.attlist [
+<!ATTLIST strong
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.small.element "INCLUDE">
+<![ %HTML.small.element [
+<!-- The small element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT small - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.small.attlist "INCLUDE">
+<![ %HTML.small.attlist [
+<!ATTLIST small
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.s.element "INCLUDE">
+<![ %HTML.s.element [
+<!-- The s element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT s - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.s.attlist "INCLUDE">
+<![ %HTML.s.attlist [
+<!ATTLIST s
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.cite.element "INCLUDE">
+<![ %HTML.cite.element [
+<!-- The cite element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT cite - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.cite.attlist "INCLUDE">
+<![ %HTML.cite.attlist [
+<!ATTLIST cite
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.q.element "INCLUDE">
+<![ %HTML.q.element [
+<!-- The q element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT q - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.q.attlist "INCLUDE">
+<![ %HTML.q.attlist [
+<!ATTLIST q
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  cite             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.dfn.element "INCLUDE">
+<![ %HTML.dfn.element [
+<!-- The dfn element (section 4.5).
+     Content: Phrasing content, but there must be no dfn element descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT dfn - - (#PCDATA|%phrasing;)* -(dfn|%flow_only;)>
+]]>
+
+<!ENTITY % HTML.dfn.attlist "INCLUDE">
+<![ %HTML.dfn.attlist [
+<!ATTLIST dfn
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.abbr.element "INCLUDE">
+<![ %HTML.abbr.element [
+<!-- The abbr element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT abbr - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.abbr.attlist "INCLUDE">
+<![ %HTML.abbr.attlist [
+<!ATTLIST abbr
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.ruby.element "INCLUDE">
+<![ %HTML.ruby.element [
+<!-- The ruby element (section 4.5).
+     Content: See prose.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT ruby - - (((#PCDATA|%phrasing;|rb)+)|(((rt|rtc)&rp)+))+ -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.ruby.attlist "INCLUDE">
+<![ %HTML.ruby.attlist [
+<!ATTLIST ruby
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.rb.element "INCLUDE">
+<![ %HTML.rb.element [
+<!-- The rb element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: An rb element's end tag may be omitted if the rb element is
+     immediately followed by an rb, rt, rtc or rp element, or if there is no
+     more content in the parent element. -->
+<!ELEMENT rb - O (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.rb.attlist "INCLUDE">
+<![ %HTML.rb.attlist [
+<!ATTLIST rb
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.rt.element "INCLUDE">
+<![ %HTML.rt.element [
+<!-- The rt element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: An rt element's end tag may be omitted if the rt element is
+     immediately followed by an rb, rt, rtc or rp element, or if there is no
+     more content in the parent element. -->
+<!ELEMENT rt - O (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.rt.attlist "INCLUDE">
+<![ %HTML.rt.attlist [
+<!ATTLIST rt
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.rtc.element "INCLUDE">
+<![ %HTML.rtc.element [
+<!-- The rtc element (section 4.5).
+     Content: Phrasing content, rt, or rp elements.
+     Tag omission: An rtc element's end tag may be omitted if the rtc element is
+     immediately followed by an rb or rtc element, or if there is no more
+     content in the parent element. -->
+<!ELEMENT rtc - O (#PCDATA|%phrasing;|rt|rp)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.rtc.attlist "INCLUDE">
+<![ %HTML.rtc.attlist [
+<!ATTLIST rtc
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.rp.element "INCLUDE">
+<![ %HTML.rp.element [
+<!-- The rp element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: An rp element's end tag may be omitted if the rp element is
+     immediately followed by an rb, rt, rtc or rp element, or if there is no
+     more content in the parent element. -->
+<!ELEMENT rp - O (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.rp.attlist "INCLUDE">
+<![ %HTML.rp.attlist [
+<!ATTLIST rp
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.data.element "INCLUDE">
+<![ %HTML.data.element [
+<!-- The data element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT data - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.data.attlist "INCLUDE">
+<![ %HTML.data.attlist [
+<!ATTLIST data
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  value            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.time.element "INCLUDE">
+<![ %HTML.time.element [
+<!-- The time element (section 4.5).
+     Content: If the element has a datetime attribute: Phrasing content.
+     Otherwise: Text , but must match requirements described in prose below.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT time - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.time.attlist "INCLUDE">
+<![ %HTML.time.attlist [
+<!ATTLIST time
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  datetime         CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.code.element "INCLUDE">
+<![ %HTML.code.element [
+<!-- The code element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT code - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.code.attlist "INCLUDE">
+<![ %HTML.code.attlist [
+<!ATTLIST code
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.var.element "INCLUDE">
+<![ %HTML.var.element [
+<!-- The var element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT var - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.var.attlist "INCLUDE">
+<![ %HTML.var.attlist [
+<!ATTLIST var
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.samp.element "INCLUDE">
+<![ %HTML.samp.element [
+<!-- The samp element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT samp - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.samp.attlist "INCLUDE">
+<![ %HTML.samp.attlist [
+<!ATTLIST samp
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.kbd.element "INCLUDE">
+<![ %HTML.kbd.element [
+<!-- The kbd element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT kbd - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.kbd.attlist "INCLUDE">
+<![ %HTML.kbd.attlist [
+<!ATTLIST kbd
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.sub_sup.element "INCLUDE">
+<![ %HTML.sub_sup.element [
+<!-- The (sub|sup) element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT (sub|sup) - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.sub_sup.attlist "INCLUDE">
+<![ %HTML.sub_sup.attlist [
+<!ATTLIST (sub|sup)
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.i.element "INCLUDE">
+<![ %HTML.i.element [
+<!-- The i element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT i - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.i.attlist "INCLUDE">
+<![ %HTML.i.attlist [
+<!ATTLIST i
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.b.element "INCLUDE">
+<![ %HTML.b.element [
+<!-- The b element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT b - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.b.attlist "INCLUDE">
+<![ %HTML.b.attlist [
+<!ATTLIST b
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.u.element "INCLUDE">
+<![ %HTML.u.element [
+<!-- The u element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT u - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.u.attlist "INCLUDE">
+<![ %HTML.u.attlist [
+<!ATTLIST u
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.mark.element "INCLUDE">
+<![ %HTML.mark.element [
+<!-- The mark element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT mark - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.mark.attlist "INCLUDE">
+<![ %HTML.mark.attlist [
+<!ATTLIST mark
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.bdi.element "INCLUDE">
+<![ %HTML.bdi.element [
+<!-- The bdi element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT bdi - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.bdi.attlist "INCLUDE">
+<![ %HTML.bdi.attlist [
+<!ATTLIST bdi
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.bdo.element "INCLUDE">
+<![ %HTML.bdo.element [
+<!-- The bdo element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT bdo - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.bdo.attlist "INCLUDE">
+<![ %HTML.bdo.attlist [
+<!ATTLIST bdo
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.span.element "INCLUDE">
+<![ %HTML.span.element [
+<!-- The span element (section 4.5).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT span - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.span.attlist "INCLUDE">
+<![ %HTML.span.attlist [
+<!ATTLIST span
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.br.element "INCLUDE">
+<![ %HTML.br.element [
+<!-- The br element (section 4.5).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT br - O EMPTY>
+]]>
+
+<!ENTITY % HTML.br.attlist "INCLUDE">
+<![ %HTML.br.attlist [
+<!ATTLIST br
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.wbr.element "INCLUDE">
+<![ %HTML.wbr.element [
+<!-- The wbr element (section 4.5).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT wbr - O EMPTY>
+]]>
+
+<!ENTITY % HTML.wbr.attlist "INCLUDE">
+<![ %HTML.wbr.attlist [
+<!ATTLIST wbr
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+
+<!--========== Edits ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.6)-->
+
+<!ENTITY % HTML.ins.element "INCLUDE">
+<![ %HTML.ins.element [
+<!-- The ins element (section 4.6).
+     Content: Transparent.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT ins - - ANY>
+]]>
+
+<!ENTITY % HTML.ins.attlist "INCLUDE">
+<![ %HTML.ins.attlist [
+<!ATTLIST ins
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  cite             CDATA             #IMPLIED          
+  datetime         CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.del.element "INCLUDE">
+<![ %HTML.del.element [
+<!-- The del element (section 4.6).
+     Content: Transparent.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT del - - ANY>
+]]>
+
+<!ENTITY % HTML.del.attlist "INCLUDE">
+<![ %HTML.del.attlist [
+<!ATTLIST del
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  cite             CDATA             #IMPLIED          
+  datetime         CDATA             #IMPLIED>         
+]]>
+
+
+<!--========== Embedded content ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.7)-->
+
+<!ENTITY % HTML.picture.element "INCLUDE">
+<![ %HTML.picture.element [
+<!-- The picture element (section 4.7).
+     Content: Zero or more source elements, followed by one img element,
+     optionally intermixed with script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT picture - - (source?,img) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.picture.attlist "INCLUDE">
+<![ %HTML.picture.attlist [
+<!ATTLIST picture
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.img.element "INCLUDE">
+<![ %HTML.img.element [
+<!-- The img element (section 4.7).
+     Content: Nothing
+     Tag omission: No end tag. -->
+<!ELEMENT img - O EMPTY>
+]]>
+
+<!ENTITY % HTML.img.attlist "INCLUDE">
+<![ %HTML.img.attlist [
+<!ATTLIST img
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  alt              CDATA             #IMPLIED          
+  src              CDATA             #IMPLIED          
+  srcset           CDATA             #IMPLIED          
+  sizes            CDATA             #IMPLIED          
+  crossorigin      (anonymous|use-credentials) #IMPLIED          
+  usemap           CDATA             #IMPLIED          
+  ismap            (ismap)           #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.iframe.element "INCLUDE">
+<![ %HTML.iframe.element [
+<!-- The iframe element (section 4.7).
+     Content: Text that conforms to the requirements given in the prose.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT iframe - - ANY -(head|body)>
+]]>
+
+<!ENTITY % HTML.iframe.attlist "INCLUDE">
+<![ %HTML.iframe.attlist [
+<!ATTLIST iframe
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  srcdoc           CDATA             #IMPLIED          
+  name             CDATA             #IMPLIED          
+  sandbox          (allow-forms|allow-pointer-lock|allow-popups|allow-same-origin|allow-scripts|allow-top-navigation) #IMPLIED          
+  allowfullscreen  (allowfullscreen) #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.embed.element "INCLUDE">
+<![ %HTML.embed.element [
+<!-- The embed element (section 4.7).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT embed - O EMPTY>
+]]>
+
+<!ENTITY % HTML.embed.attlist "INCLUDE">
+<![ %HTML.embed.attlist [
+<!ATTLIST embed
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.object.element "INCLUDE">
+<![ %HTML.object.element [
+<!-- The object element (section 4.7).
+     Content: Zero or more param elements, then, transparent.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT object - - ANY>
+]]>
+
+<!ENTITY % HTML.object.attlist "INCLUDE">
+<![ %HTML.object.attlist [
+<!ATTLIST object
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  data             CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  typemustmatch    CDATA             #IMPLIED          
+  name             CDATA             #IMPLIED          
+  form             IDREF             #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.param.element "INCLUDE">
+<![ %HTML.param.element [
+<!-- The param element (section 4.7).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT param - O EMPTY>
+]]>
+
+<!ENTITY % HTML.param.attlist "INCLUDE">
+<![ %HTML.param.attlist [
+<!ATTLIST param
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  name             CDATA             #IMPLIED          
+  value            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.video.element "INCLUDE">
+<![ %HTML.video.element [
+<!-- The video element (section 4.7).
+     Content: If the element has a src attribute: zero or more track elements,
+     then transparent, but with no media element descendants.
+     If the element does not have a src attribute: zero or more source elements,
+     then zero or more track elements, then transparent, but with no media
+     element descendants.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT video - - ((track*|source*),(#PCDATA|%flow;)*) -(media)>
+]]>
+
+<!ENTITY % HTML.video.attlist "INCLUDE">
+<![ %HTML.video.attlist [
+<!ATTLIST video
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  crossorigin      (anonymous|use-credentials) #IMPLIED          
+  poster           CDATA             #IMPLIED          
+  preload          (none|metadata|auto) #IMPLIED          
+  autoplay         (autoplay)        #IMPLIED          
+  loop             (loop)            #IMPLIED          
+  muted            (muted)           #IMPLIED          
+  controls         (controls)        #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.audio.element "INCLUDE">
+<![ %HTML.audio.element [
+<!-- The audio element (section 4.7).
+     Content: If the element has a src attribute: zero or more track elements,
+     then transparent, but with no media element descendants.
+     If the element does not have a src attribute: zero or more source elements,
+     then zero or more track elements, then transparent, but with no media
+     element descendants.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT audio - - ((track*|source*),(#PCDATA|%flow;)*) -(media)>
+]]>
+
+<!ENTITY % HTML.audio.attlist "INCLUDE">
+<![ %HTML.audio.attlist [
+<!ATTLIST audio
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  crossorigin      (anonymous|use-credentials) #IMPLIED          
+  preload          (none|metadata|auto) #IMPLIED          
+  autoplay         (autoplay)        #IMPLIED          
+  loop             (loop)            #IMPLIED          
+  muted            (muted)           #IMPLIED          
+  controls         (controls)        #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.source.element "INCLUDE">
+<![ %HTML.source.element [
+<!-- The source element (section 4.7).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT source - O EMPTY>
+]]>
+
+<!ENTITY % HTML.source.attlist "INCLUDE">
+<![ %HTML.source.attlist [
+<!ATTLIST source
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.track.element "INCLUDE">
+<![ %HTML.track.element [
+<!-- The track element (section 4.7).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT track - O EMPTY>
+]]>
+
+<!ENTITY % HTML.track.attlist "INCLUDE">
+<![ %HTML.track.attlist [
+<!ATTLIST track
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  kind             (subtitles|captions|descriptions|chapters|metadata) #IMPLIED          
+  src              CDATA             #IMPLIED          
+  srclang          CDATA             #IMPLIED          
+  label            CDATA             #IMPLIED          
+  default          (default)         #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.map.element "INCLUDE">
+<![ %HTML.map.element [
+<!-- The map element (section 4.7).
+     Content: Transparent.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT map - - (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.map.attlist "INCLUDE">
+<![ %HTML.map.attlist [
+<!ATTLIST map
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  name             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.area.element "INCLUDE">
+<![ %HTML.area.element [
+<!-- The area element (section 4.7).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT area - O EMPTY>
+]]>
+
+<!ENTITY % HTML.area.attlist "INCLUDE">
+<![ %HTML.area.attlist [
+<!ATTLIST area
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  alt              CDATA             #IMPLIED          
+  coords           CDATA             #IMPLIED          
+  download         CDATA             #IMPLIED          
+  href             CDATA             #IMPLIED          
+  hreflang         CDATA             #IMPLIED          
+  rel              NMTOKENS          #IMPLIED          
+  shape            (circle|default|poly|rect) #IMPLIED          
+  target           CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED>         
+]]>
+
+
+<!--========== Tabular data ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.9)-->
+
+<!ENTITY % HTML.table.element "INCLUDE">
+<![ %HTML.table.element [
+<!-- The table element (section 4.9).
+     Content: In this order: optionally a caption element, followed by zero or
+     more colgroup elements, followed optionally by a thead element, followed by
+     either zero or more tbody elements or one or more tr elements, followed
+     optionally by a tfoot element, optionally intermixed with one or more
+     script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT table - - (caption?,colgroup*,thead?,(tbody*|tr+),tfoot?) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.table.attlist "INCLUDE">
+<![ %HTML.table.attlist [
+<!ATTLIST table
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  border           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.caption.element "INCLUDE">
+<![ %HTML.caption.element [
+<!-- The caption element (section 4.9).
+     Content: Flow content, but with no descendant table elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT caption - - (#PCDATA|%flow;)* -(table)>
+]]>
+
+<!ENTITY % HTML.caption.attlist "INCLUDE">
+<![ %HTML.caption.attlist [
+<!ATTLIST caption
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.colgroup.element "INCLUDE">
+<![ %HTML.colgroup.element [
+<!-- The colgroup element (section 4.9).
+     Content: If the span attribute is present: Nothing.
+     If the span attribute is absent: Zero or more col and template elements.
+     Tag omission: A colgroup element's end tag may be omitted if the colgroup
+     element is not immediately followed by a space character or a comment.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT colgroup - - (col|template)*>
+]]>
+
+<!ENTITY % HTML.colgroup.attlist "INCLUDE">
+<![ %HTML.colgroup.attlist [
+<!ATTLIST colgroup
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  span             NUMBER            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.col.element "INCLUDE">
+<![ %HTML.col.element [
+<!-- The col element (section 4.9).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT col - O EMPTY>
+]]>
+
+<!ENTITY % HTML.col.attlist "INCLUDE">
+<![ %HTML.col.attlist [
+<!ATTLIST col
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  span             NUMBER            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.tbody.element "INCLUDE">
+<![ %HTML.tbody.element [
+<!-- The tbody element (section 4.9).
+     Content: Zero or more tr and script-supporting elements.
+     Tag omission: A tbody element's start tag may be omitted if the first thing
+     inside the tbody element is a tr element, and if the element is not
+     immediately preceded by a tbody, thead, or tfoot element whose end tag has
+     been omitted. (It can't be omitted if the element is empty.). A tbody
+     element's end tag may be omitted if the tbody element is immediately
+     followed by a tbody or tfoot element, or if there is no more content in the
+     parent element. -->
+<!ELEMENT tbody O O (tr*) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.tbody.attlist "INCLUDE">
+<![ %HTML.tbody.attlist [
+<!ATTLIST tbody
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.thead.element "INCLUDE">
+<![ %HTML.thead.element [
+<!-- The thead element (section 4.9).
+     Content: Zero or more tr and script-supporting elements.
+     Tag omission: A thead element's end tag may be omitted if the thead element
+     is immediately followed by a tbody or tfoot element. -->
+<!ELEMENT thead - O (tr*) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.thead.attlist "INCLUDE">
+<![ %HTML.thead.attlist [
+<!ATTLIST thead
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.tfoot.element "INCLUDE">
+<![ %HTML.tfoot.element [
+<!-- The tfoot element (section 4.9).
+     Content: Zero or more tr and script-supporting elements.
+     Tag omission: A tfoot element's end tag may be omitted if the tfoot element
+     is immediately followed by a tbody element, or if there is no more content
+     in the parent element. -->
+<!ELEMENT tfoot - O (tr*) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.tfoot.attlist "INCLUDE">
+<![ %HTML.tfoot.attlist [
+<!ATTLIST tfoot
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.tr.element "INCLUDE">
+<![ %HTML.tr.element [
+<!-- The tr element (section 4.9).
+     Content: Zero or more td, th, and script-supporting elements.
+     Tag omission: A tr element's end tag may be omitted if the tr element is
+     immediately followed by another tr element, or if there is no more content
+     in the parent element. -->
+<!ELEMENT tr - O (td|th)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.tr.attlist "INCLUDE">
+<![ %HTML.tr.attlist [
+<!ATTLIST tr
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.td.element "INCLUDE">
+<![ %HTML.td.element [
+<!-- The td element (section 4.9).
+     Content: Flow content.
+     Tag omission: A td element's end tag may be omitted if the td element is
+     immediately followed by a td or th element, or if there is no more content
+     in the parent element. -->
+<!ELEMENT td - O (#PCDATA|%flow;)*>
+]]>
+
+<!ENTITY % HTML.td.attlist "INCLUDE">
+<![ %HTML.td.attlist [
+<!ATTLIST td
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  colspan          NUMBER            #IMPLIED          
+  rowspan          CDATA             #IMPLIED          
+  headers          IDREFS            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.th.element "INCLUDE">
+<![ %HTML.th.element [
+<!-- The th element (section 4.9).
+     Content: Flow content, but with no header, footer, sectioning content, or
+     heading content descendants
+     Tag omission: A th element's end tag may be omitted if the th element is
+     immediately followed by a td or th element, or if there is no more content
+     in the parent element. -->
+<!ELEMENT th - O (#PCDATA|%flow;)* -(header|footer|%sectioning;|%heading;)>
+]]>
+
+<!ENTITY % HTML.th.attlist "INCLUDE">
+<![ %HTML.th.attlist [
+<!ATTLIST th
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  colspan          NUMBER            #IMPLIED          
+  rowspan          CDATA             #IMPLIED          
+  headers          IDREFS            #IMPLIED          
+  scope            (row|col|rowgroup|colgroup) #IMPLIED          
+  abbr             CDATA             #IMPLIED>         
+]]>
+
+
+<!--========== Forms ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.10)-->
+
+<!ENTITY % HTML.form.element "INCLUDE">
+<![ %HTML.form.element [
+<!-- The form element (section 4.1).
+     Content: Flow content, but with no form element descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT form - - (#PCDATA|%flow;)* -(form)>
+]]>
+
+<!ENTITY % HTML.form.attlist "INCLUDE">
+<![ %HTML.form.attlist [
+<!ATTLIST form
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  accept-charset   CDATA             #IMPLIED          
+  action           CDATA             #IMPLIED          
+  autocomplete     CDATA             #IMPLIED          
+  enctype          CDATA             #IMPLIED          
+  method           (get|post)        #IMPLIED          
+  name             CDATA             #IMPLIED          
+  novalidate       (novalidate)      #IMPLIED          
+  target           CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.label.element "INCLUDE">
+<![ %HTML.label.element [
+<!-- The label element (section 4.1).
+     Content: Phrasing content, but with no descendant labelable elements unless
+     it is the element's labeled control, and no descendant label elements.
+     Tag omission: Neither tag is omissable.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT label - - (#PCDATA|%phrasing;)* -(label|%flow_only;)>
+]]>
+
+<!ENTITY % HTML.label.attlist "INCLUDE">
+<![ %HTML.label.attlist [
+<!ATTLIST label
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  for              IDREF             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.input.element "INCLUDE">
+<![ %HTML.input.element [
+<!-- The input element (section 4.1).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT input - O EMPTY>
+]]>
+
+<!ENTITY % HTML.input.attlist "INCLUDE">
+<![ %HTML.input.attlist [
+<!ATTLIST input
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  accept           CDATA             #IMPLIED          
+  alt              CDATA             #IMPLIED          
+  autocomplete     CDATA             #IMPLIED          
+  autofocus        (autofocus)       #IMPLIED          
+  checked          (checked)         #IMPLIED          
+  dirname          CDATA             #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  formaction       CDATA             #IMPLIED          
+  formenctype      CDATA             #IMPLIED          
+  formmethod       (GET|POST)        #IMPLIED          
+  formnovalidate   (formnovalidate)  #IMPLIED          
+  formtarget       CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED          
+  inputmode        CDATA             #IMPLIED          
+  list             IDREF             #IMPLIED          
+  max              CDATA             #IMPLIED          
+  maxlength        CDATA             #IMPLIED          
+  min              CDATA             #IMPLIED          
+  minlength        CDATA             #IMPLIED          
+  multiple         (multiple)        #IMPLIED          
+  name             CDATA             #IMPLIED          
+  pattern          CDATA             #IMPLIED          
+  placeholder      CDATA             #IMPLIED          
+  readonly         (readonly)        #IMPLIED          
+  required         (required)        #IMPLIED          
+  size             NUMBER            #IMPLIED          
+  src              CDATA             #IMPLIED          
+  step             CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  value            CDATA             #IMPLIED          
+  width            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.button.element "INCLUDE">
+<![ %HTML.button.element [
+<!-- The button element (section 4.1).
+     Content: Phrasing content, but there must be no interactive content
+     descendant.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT button - - (#PCDATA|%phrasing;)* -(%interactive;)>
+]]>
+
+<!ENTITY % HTML.button.attlist "INCLUDE">
+<![ %HTML.button.attlist [
+<!ATTLIST button
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  autofocus        (autofocus)       #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  formaction       CDATA             #IMPLIED          
+  formenctype      CDATA             #IMPLIED          
+  formmethod       (GET|POST)        #IMPLIED          
+  formnovalidate   (formnovalidate)  #IMPLIED          
+  formtarget       CDATA             #IMPLIED          
+  menu             IDREF             #IMPLIED          
+  name             CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  value            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.select.element "INCLUDE">
+<![ %HTML.select.element [
+<!-- The select element (section 4.1).
+     Content: Zero or more option, optgroup, and script-supporting elements.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT select - - (option|optgroup)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.select.attlist "INCLUDE">
+<![ %HTML.select.attlist [
+<!ATTLIST select
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  autofocus        (autofocus)       #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  multiple         (multiple)        #IMPLIED          
+  name             CDATA             #IMPLIED          
+  required         (required)        #IMPLIED          
+  size             NUMBER            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.datalist.element "INCLUDE">
+<![ %HTML.datalist.element [
+<!-- The datalist element (section 4.1).
+     Content: Either: phrasing content.
+     Or: Zero or more option and script-supporting elements.
+     Tag omission: Neither tag is omissible.
+     Note: Only script is accepted as script-supporting element. -->
+<!ELEMENT datalist - - ((#PCDATA|%phrasing;)*|(option|script)*) -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.datalist.attlist "INCLUDE">
+<![ %HTML.datalist.attlist [
+<!ATTLIST datalist
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.optgroup.element "INCLUDE">
+<![ %HTML.optgroup.element [
+<!-- The optgroup element (section 4.1).
+     Content: Zero or more option and script-supporting elements.
+     Tag omission: An optgroup element's end tag may be omitted if the optgroup
+     element is immediately followed by another optgroup element, or if there is
+     no more content in the parent element. -->
+<!ELEMENT optgroup - - (option*) +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.optgroup.attlist "INCLUDE">
+<![ %HTML.optgroup.attlist [
+<!ATTLIST optgroup
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  label            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.option.element "INCLUDE">
+<![ %HTML.option.element [
+<!-- The option element (section 4.1).
+     Content: If the element has a label attribute and a value attribute:
+     Nothing.
+     If the element has a label attribute but no value attribute: Text.
+     If the element has no label attribute: Text.
+     Tag omission: An option element's end tag may be omitted if the option
+     element is immediately followed by another option element, or if it is
+     immediately followed by an optgroup element, or if there is no more content
+     in the parent element.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT option - - (#PCDATA)*>
+]]>
+
+<!ENTITY % HTML.option.attlist "INCLUDE">
+<![ %HTML.option.attlist [
+<!ATTLIST option
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  label            CDATA             #IMPLIED          
+  selected         (selected)        #IMPLIED          
+  value            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.textarea.element "INCLUDE">
+<![ %HTML.textarea.element [
+<!-- The textarea element (section 4.1).
+     Content: Text.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT textarea - - RCDATA>
+]]>
+
+<!ENTITY % HTML.textarea.attlist "INCLUDE">
+<![ %HTML.textarea.attlist [
+<!ATTLIST textarea
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  autocomplete     CDATA             #IMPLIED          
+  autofocus        (autofocus)       #IMPLIED          
+  cols             NUMBER            #IMPLIED          
+  dirname          CDATA             #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  inputmode        CDATA             #IMPLIED          
+  maxlength        CDATA             #IMPLIED          
+  minlength        CDATA             #IMPLIED          
+  name             CDATA             #IMPLIED          
+  placeholder      CDATA             #IMPLIED          
+  readonly         (readonly)        #IMPLIED          
+  required         (required)        #IMPLIED          
+  rows             NUMBER            #IMPLIED          
+  wrap             (soft|hard)       #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.keygen.element "INCLUDE">
+<![ %HTML.keygen.element [
+<!-- The keygen element (section 4.1).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT keygen - O EMPTY>
+]]>
+
+<!ENTITY % HTML.keygen.attlist "INCLUDE">
+<![ %HTML.keygen.attlist [
+<!ATTLIST keygen
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  autofocus        (autofocus)       #IMPLIED          
+  challenge        CDATA             #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  keytype          CDATA             #IMPLIED          
+  name             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.output.element "INCLUDE">
+<![ %HTML.output.element [
+<!-- The output element (section 4.1).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT output - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.output.attlist "INCLUDE">
+<![ %HTML.output.attlist [
+<!ATTLIST output
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  for              IDREF             #IMPLIED          
+  form             IDREF             #IMPLIED          
+  name             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.progress.element "INCLUDE">
+<![ %HTML.progress.element [
+<!-- The progress element (section 4.1).
+     Content: Phrasing content, but there must be no progress element
+     descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT progress - - (#PCDATA|%phrasing;)* -(progress|%flow_only;)>
+]]>
+
+<!ENTITY % HTML.progress.attlist "INCLUDE">
+<![ %HTML.progress.attlist [
+<!ATTLIST progress
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  value            CDATA             #IMPLIED          
+  max              CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.meter.element "INCLUDE">
+<![ %HTML.meter.element [
+<!-- The meter element (section 4.1).
+     Content: Phrasing content, but there must be no meter element descendants.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT meter - - (#PCDATA|%phrasing;)* -(meter|%flow_only;)>
+]]>
+
+<!ENTITY % HTML.meter.attlist "INCLUDE">
+<![ %HTML.meter.attlist [
+<!ATTLIST meter
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  value            CDATA             #IMPLIED          
+  min              CDATA             #IMPLIED          
+  max              CDATA             #IMPLIED          
+  low              CDATA             #IMPLIED          
+  high             CDATA             #IMPLIED          
+  optimum          CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.fieldset.element "INCLUDE">
+<![ %HTML.fieldset.element [
+<!-- The fieldset element (section 4.1).
+     Content: Optionally a legend element, followed by flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT fieldset - - (legend?,(#PCDATA|%flow;)*)>
+]]>
+
+<!ENTITY % HTML.fieldset.attlist "INCLUDE">
+<![ %HTML.fieldset.attlist [
+<!ATTLIST fieldset
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  form             IDREF             #IMPLIED          
+  name             CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.legend.element "INCLUDE">
+<![ %HTML.legend.element [
+<!-- The legend element (section 4.1).
+     Content: Phrasing content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT legend - - (#PCDATA|%phrasing;)* -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.legend.attlist "INCLUDE">
+<![ %HTML.legend.attlist [
+<!ATTLIST legend
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+
+<!--========== Interactive elements ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.11)-->
+
+<!ENTITY % HTML.details.element "INCLUDE">
+<![ %HTML.details.element [
+<!-- The details element (section 4.1).
+     Content: One summary element followed by flow content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT details - - (summary,(#PCDATA|%flow;))>
+]]>
+
+<!ENTITY % HTML.details.attlist "INCLUDE">
+<![ %HTML.details.attlist [
+<!ATTLIST details
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  open             (open)            #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.summary.element "INCLUDE">
+<![ %HTML.summary.element [
+<!-- The summary element (section 4.1).
+     Content: Either: phrasing content.
+     Or: one element of heading content.
+     Tag omission: Neither tag is omissible. -->
+<!ELEMENT summary - - ((#PCDATA|%phrasing;)+|(%heading;)) -(%flow_only;)>
+]]>
+
+<!ENTITY % HTML.summary.attlist "INCLUDE">
+<![ %HTML.summary.attlist [
+<!ATTLIST summary
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.menu.element "INCLUDE">
+<![ %HTML.menu.element [
+<!-- The menu element (section 4.1).
+     Content: If the element's type attribute is in the popup menu state: in any
+     order, zero or more menuitem elements, zero or more hr elements, zero or
+     more menu elements whose type attributes are in the popup menu state, and
+     zero or more script-supporting elements.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT menu - - (menuitem|hr|menu)* +(%scripting;)>
+]]>
+
+<!ENTITY % HTML.menu.attlist "INCLUDE">
+<![ %HTML.menu.attlist [
+<!ATTLIST menu
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  type             CDATA             #IMPLIED          
+  label            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.menuitem.element "INCLUDE">
+<![ %HTML.menuitem.element [
+<!-- The menuitem element (section 4.1).
+     Content: Nothing.
+     Tag omission: No end tag. -->
+<!ELEMENT menuitem - O EMPTY>
+]]>
+
+<!ENTITY % HTML.menuitem.attlist "INCLUDE">
+<![ %HTML.menuitem.attlist [
+<!ATTLIST menuitem
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  type             CDATA             #IMPLIED          
+  label            CDATA             #IMPLIED          
+  icon             CDATA             #IMPLIED          
+  disabled         (disabled)        #IMPLIED          
+  checked          (checked)         #IMPLIED          
+  radiogroup       CDATA             #IMPLIED          
+  default          (default)         #IMPLIED>         
+]]>
+
+
+<!--========== Scripting ==========-->
+<!--(see https://www.w3.org/TR/2016/REC-html51-20161101/, section 4.12)-->
+
+<!ENTITY % HTML.script.element "INCLUDE">
+<![ %HTML.script.element [
+<!-- The script element (section 4.1).
+     Content: If there is no src attribute, depends on the value of the type
+     attribute, but must match script content restrictions.
+     If there is a src attribute, the element must be either empty or contain
+     only script documentation that also matches script content restrictions.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT script - - (#PCDATA)>
+]]>
+
+<!ENTITY % HTML.script.attlist "INCLUDE">
+<![ %HTML.script.attlist [
+<!ATTLIST script
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  src              CDATA             #IMPLIED          
+  type             CDATA             #IMPLIED          
+  charset          CDATA             #IMPLIED          
+  async            (async)           #IMPLIED          
+  defer            (defer)           #IMPLIED          
+  crossorigin      (anonymous|use-credentials) #IMPLIED          
+  nonce            CDATA             #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.noscript.element "INCLUDE">
+<![ %HTML.noscript.element [
+<!-- The noscript element (section 4.1).
+     Content: When scripting is disabled, in a head element: in any order, zero
+     or more link elements, zero or more style elements, and zero or more meta
+     elements.
+     When scripting is disabled, not in a head element: transparent, but there
+     must be no noscript element descendants.
+     Otherwise: text that conforms to the requirements given in the prose.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT noscript - - ANY>
+]]>
+
+<!ENTITY % HTML.noscript.attlist "INCLUDE">
+<![ %HTML.noscript.attlist [
+<!ATTLIST noscript
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.template.element "INCLUDE">
+<![ %HTML.template.element [
+<!-- The template element (section 4.1).
+     Content: Either: Metadata content.
+     Or: Flow content.
+     Or: The content model of ol and ul elements.
+     Or: The content model of dl elements.
+     Or: The content model of figure elements.
+     Or: The content model of ruby elements.
+     Or: The content model of object elements.
+     Or: The content model of video and audio elements.
+     Or: The content model of table elements.
+     Or: The content model of colgroup elements.
+     Or: The content model of thead, tbody, and tfoot elements.
+     Or: The content model of tr elements.
+     Or: The content model of fieldset elements.
+     Or: The content model of select elements.
+     Or: The content model of details elements.
+     Or: The content model of menu elements whose type attribute is in the popup
+     menu state.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT template - - ANY>
+]]>
+
+<!ENTITY % HTML.template.attlist "INCLUDE">
+<![ %HTML.template.attlist [
+<!ATTLIST template
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED>         
+]]>
+
+<!ENTITY % HTML.canvas.element "INCLUDE">
+<![ %HTML.canvas.element [
+<!-- The canvas element (section 4.1).
+     Content: Transparent.
+     Tag omission: Neither tag is omissible.
+     Note: Not all model constraints are represented in this declaration. -->
+<!ELEMENT canvas - - ANY>
+]]>
+
+<!ENTITY % HTML.canvas.attlist "INCLUDE">
+<![ %HTML.canvas.attlist [
+<!ATTLIST canvas
+  %extensionattrs; 
+  accesskey        NMTOKENS          #IMPLIED          
+  class            NMTOKENS          #IMPLIED          
+  contenteditable  (true|false)      #IMPLIED          
+  contextmenu      IDREF             #IMPLIED          
+  dir              (ltr|rtl|auto)    #IMPLIED          
+  draggable        (true|false)      #IMPLIED          
+  dropzone         NMTOKENS          #IMPLIED          
+  hidden           (hidden)          #IMPLIED          
+  id               ID                #IMPLIED          
+  lang             NMTOKEN           #IMPLIED          
+  spellcheck       (true|false)      #IMPLIED          
+  style            CDATA             #IMPLIED          
+  tabindex         NUMBER            #IMPLIED          
+  title            CDATA             #IMPLIED          
+  translate        (yes|no)          #IMPLIED          
+  width            CDATA             #IMPLIED          
+  height           CDATA             #IMPLIED>         
+]]>
