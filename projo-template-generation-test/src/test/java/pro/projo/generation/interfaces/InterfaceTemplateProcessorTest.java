@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2020 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -54,6 +54,12 @@ public class InterfaceTemplateProcessorTest
     {
         Class<?> callable = Class.forName("pro.projo.generation.interfaces.test.Callable");
         callable.getDeclaredMethod("call");
+    }
+
+    @Test
+    public void testHtmlClassIsGenerated() throws Exception
+    {
+        Class.forName("pro.projo.generation.interfaces.test.html.Html");
     }
 
     @Test
