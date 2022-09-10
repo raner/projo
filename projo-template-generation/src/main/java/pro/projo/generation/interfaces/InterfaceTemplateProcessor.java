@@ -100,6 +100,8 @@ import static javax.lang.model.type.TypeKind.NONE;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static javax.tools.StandardLocation.CLASS_PATH;
+import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Dtd;
+import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Dtds;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
@@ -109,16 +111,24 @@ import static pro.projo.interfaces.annotation.Ternary.FALSE;
 import static pro.projo.interfaces.annotation.Ternary.TRUE;
 
 /**
-* The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects source files
-* that have an {@link Interface @Interface}/{@link Enum @Enum} annotation and will use these sources for
-* generating synthetic interfaces/enums.
+* The {@link InterfaceTemplateProcessor} is an annotation processor that, at compile time, detects
+* source files that have an {@link Interface @Interface}, {@link Enum @Enum} or {@link Dtd @Dtd}
+* annotation and will use these sources for generating synthetic interfaces and enums.
 *
 * @author Mirko Raner
 **/
 @SupportedSourceVersion(RELEASE_8)
-@SupportedAnnotationTypes({Enum, Enums, Interface, Interfaces})
+@SupportedAnnotationTypes({Dtd, Dtds, Enum, Enums, Interface, Interfaces})
 public class InterfaceTemplateProcessor extends ProjoProcessor
 {
+    // Shortcuts for supported annotation types
+    //
+    // NOTE: annotations are apparently still processed even if they are not among the
+    //       @SupportedAnnotationTypes, but Projo's annotations are listed nonetheless,
+    //       if only to keep up with best practices...
+    //
+    final static String Dtd = "pro.projo.interfaces.annotation.Dtd";
+    final static String Dtds = "pro.projo.interfaces.annotation.Dtds";
     final static String Enum = "pro.projo.interfaces.annotation.Enum";
     final static String Enums = "pro.projo.interfaces.annotation.Enums";
     final static String Interface = "pro.projo.interfaces.annotation.Interface";
