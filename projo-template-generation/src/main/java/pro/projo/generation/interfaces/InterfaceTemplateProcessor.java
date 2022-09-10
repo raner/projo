@@ -99,7 +99,7 @@ import static javax.lang.model.element.Modifier.STATIC;
 import static javax.lang.model.type.TypeKind.NONE;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
-import static javax.tools.StandardLocation.SOURCE_PATH;
+import static javax.tools.StandardLocation.CLASS_PATH;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
@@ -147,6 +147,8 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         process(round, this::getInterfaceConfiguration, Interface.class, $package.$InterfaceTemplate.class);
         messager.printMessage(NOTE, "Processing enums...");
         process(round, this::getEnumConfiguration, Enum.class, $package.$EnumTemplate.class);
+        messager.printMessage(NOTE, "Processing DTDs...");
+        process(round, this::getDtdConfiguration, Dtd.class, $package.$InterfaceTemplate.class);
         messager.printMessage(NOTE, "Done processing...");
         return true;
     }
@@ -391,7 +393,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                         packageInfo = path.substring(0, lastSlash);
                         resourceName = path.substring(lastSlash + 1);
                     }
-                    FileObject file = filer.getResource(SOURCE_PATH, packageInfo, resourceName);
+                    FileObject file = filer.getResource(CLASS_PATH, packageInfo, resourceName);
                     InputStream stream = file.openInputStream();
                     InputSource source = new InputSource(stream);
                     source.setSystemId(file.toUri().toURL().toString());

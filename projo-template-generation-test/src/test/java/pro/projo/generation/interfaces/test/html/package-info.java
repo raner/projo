@@ -13,26 +13,14 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
+@Dtd(path="html5/html5.dtd")
+package pro.projo.generation.interfaces.test.html;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import pro.projo.interfaces.annotation.Dtd;
 
 /**
-* The {@link Dtd} annotation captures the necessary information for generating an API from a DTD.
+* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
+* for the {@link Dtd} annotation, based on a DTD for HTML5.
 *
 * @author Mirko Raner
 **/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-@Repeatable(Dtds.class)
-public @interface Dtd
-{
-    /**
-    * @return the path to the main DTD file (may reference additional entity files)
-    **/
-    String path();
-}

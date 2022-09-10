@@ -15,24 +15,23 @@
 //                                                                          //
 package pro.projo.interfaces.annotation;
 
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-* The {@link Dtd} annotation captures the necessary information for generating an API from a DTD.
+* The {@link Dtds} annotation is the container annotation for
+* {@link java.lang.annotation.Repeatable @Repeatable} {@link Dtd @Dtd} annotations.
 *
 * @author Mirko Raner
 **/
 @Target(PACKAGE)
 @Retention(RUNTIME)
-@Repeatable(Dtds.class)
-public @interface Dtd
+public @interface Dtds
 {
     /**
-    * @return the path to the main DTD file (may reference additional entity files)
+    * @return the {@link Dtd @Dtd} annotations contained within this annotation
     **/
-    String path();
+    Dtd[] value();
 }
