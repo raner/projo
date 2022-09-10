@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,13 +15,16 @@
 //                                                                          //
 package pro.projo.generation.interfaces;
 
+import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.AnnotationFormatError;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.Method;
 import java.util.AbstractMap.SimpleEntry;
@@ -61,8 +64,12 @@ import javax.lang.model.util.ElementScanner8;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import com.sun.xml.dtdparser.DTDParser;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
+import pro.projo.generation.dtd.DtdElementCollector;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.MergeOptions;
 import pro.projo.generation.utilities.MethodFilter;
@@ -73,6 +80,7 @@ import pro.projo.generation.utilities.Source.EnumSource;
 import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.generation.utilities.TypeConverter;
 import pro.projo.generation.utilities.TypeConverter.Type;
+import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.Enum;
 import pro.projo.interfaces.annotation.Enums;
 import pro.projo.interfaces.annotation.Interface;
@@ -91,6 +99,7 @@ import static javax.lang.model.element.Modifier.STATIC;
 import static javax.lang.model.type.TypeKind.NONE;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
+import static javax.tools.StandardLocation.SOURCE_PATH;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enum;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Enums;
 import static pro.projo.generation.interfaces.InterfaceTemplateProcessor.Interface;
@@ -227,7 +236,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     /**
     * Generates code generation configurations for declared {@link Interface @Interface} annotations.
     *
-    * @param packageName the package name in which interfaces will be generated
+    * @param element the package in which interfaces will be generated
     * @param interfaces the set of {@link Interface @Interface} annotations containing the configuration data
     * @return a collection of code generation configurations, one for each generated interface
     **/
@@ -351,6 +360,68 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             };
         };
         return interfaces.stream().map(getConfiguration).collect(toList());
+    }
+
+    /**
+    * Generates code generation configurations for declared {@link Dtd @Dtd} annotations.
+    *
+    * @param element the package in which interfaces will be generated
+    * @param dtds the set of {@link Dtd @Dtd} annotations containing the configuration data
+    * @return a collection of code generation configurations, one for each generated interface
+    **/
+    public Collection<? extends Configuration> getDtdConfiguration(PackageElement element, List<Dtd> dtds)
+    {
+        Name packageName = element.getQualifiedName();
+        Stream<InputSource> inputSources = dtds.stream().map
+        (
+            dtd ->
+            {
+                try
+                {
+                    String path = dtd.path();
+                    int lastSlash = path.lastIndexOf('/');
+                    String packageInfo, resourceName;
+                    if (lastSlash == -1)
+                    {
+                        packageInfo = "";
+                        resourceName = path;
+                    }
+                    else
+                    {
+                        packageInfo = path.substring(0, lastSlash);
+                        resourceName = path.substring(lastSlash + 1);
+                    }
+                    FileObject file = filer.getResource(SOURCE_PATH, packageInfo, resourceName);
+                    InputStream stream = file.openInputStream();
+                    InputSource source = new InputSource(stream);
+                    source.setSystemId(file.toUri().toURL().toString());
+                    return source;
+                }
+                catch (IOException exception)
+                {
+                    throw new AnnotationFormatError(exception);
+                }
+            }
+        );
+        Stream<Configuration> configurations = inputSources.flatMap
+        (
+            inputSource ->
+            {
+                DTDParser parser = new DTDParser();
+                DtdElementCollector handler = new DtdElementCollector(packageName);
+                parser.setDtdHandler(handler);
+                try
+                {
+                    parser.parse(inputSource);
+                    return handler.configurations();
+                }
+                catch (IOException|SAXException exception)
+                {
+                    throw new IOError(exception);
+                }
+            }
+        );
+        return configurations.collect(toList());
     }
 
     @SafeVarargs
