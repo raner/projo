@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -37,6 +37,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import pro.projo.interfaces.annotation.Options;
@@ -130,6 +131,12 @@ public class TypeConverter implements TypeMirrorUtilities
             .collect(toMap(entry -> entry.getKey().toString(), entry -> qualify(entry.getValue())));
         imports = new HashSet<>(generates.values());
         sources.collect(toMap(keyMapper, valueMapper, this::rejectDuplicates, () -> generates));
+    }
+
+    @Override
+    public Elements elements()
+    {
+        return null;
     }
 
     public Type convert(TypeMirror element)

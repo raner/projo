@@ -26,6 +26,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.junit.Test;
+import pro.projo.generation.interfaces.test.html.baseclasses.Element;
+import pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
@@ -60,6 +62,27 @@ public class InterfaceTemplateProcessorTest
     public void testHtmlClassIsGenerated() throws Exception
     {
         Class.forName("pro.projo.generation.interfaces.test.html.Html");
+    }
+
+    @Test
+    public void testHtmlClassHasNoSuperInterfaces() throws Exception
+    {
+        Class<?> classHtml = Class.forName("pro.projo.generation.interfaces.test.html.Html");
+        assertEquals(0, classHtml.getInterfaces().length);
+    }
+
+    @Test
+    public void testHtmlClassHasElementSuperInterface() throws Exception
+    {
+        Class<?> classHtml = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Html");
+        assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
+    }
+
+    @Test
+    public void testImgClassHasEmptyElementSuperInterface() throws Exception
+    {
+        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Img");
+        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classImg.getInterfaces());
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDHandlerBase;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
@@ -38,12 +39,14 @@ public class DtdElementCollector extends DTDHandlerBase
     private Name packageName;
     private UnaryOperator<String> typeNameTransformer;
     private String currentContentModel;
-    // private boolean currentContentModelIsVoidElement;
-    // private boolean currentContentModelIsMixedElement;
+    private TypeElement baseInterface;
+    private TypeElement baseInterfaceEmpty;
 
-    public DtdElementCollector(Name packageName)
+    public DtdElementCollector(Name packageName, TypeElement baseInterface, TypeElement baseInterfaceEmpty)
     {
         this(packageName, UnaryOperator.identity());
+        this.baseInterface = baseInterface;
+        this.baseInterfaceEmpty = baseInterfaceEmpty;
     }
 
     public DtdElementCollector(Name packageName, UnaryOperator<String> typeNameTransformer)
@@ -69,14 +72,15 @@ public class DtdElementCollector extends DTDHandlerBase
             throw new IllegalStateException("duplicate content model: " + elementName);
         }
         currentContentModel = elementName;
-        // currentContentModelIsVoidElement = contentModelType == CONTENT_MODEL_EMPTY;
-        // currentContentModelIsMixedElement = contentModelType == CONTENT_MODEL_MIXED;
         Map<String, Object> parameters = new HashMap<>();
         String typeName = typeNameTransformer.apply(typeName(elementName));
+        TypeElement superType = contentModelType == CONTENT_MODEL_EMPTY? baseInterfaceEmpty:baseInterface;
+        boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
+        String extend = isObject? "":(" extends " + superType.getSimpleName());
         parameters.put("package", packageName.toString());
         parameters.put("imports", new String[] {"javax.annotation.Generated"});
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-        parameters.put("InterfaceTemplate", typeName);
+        parameters.put("InterfaceTemplate", typeName + extend);
         parameters.put("methods", new String[] {});
         Configuration configuration = new Configuration()
         {

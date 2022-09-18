@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 - 2020 Mirko Raner                                        //
+// Copyright 2018 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -53,6 +53,12 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
     private Filer filer;
     private Elements elements;
     private Messager messager;
+
+    @Override
+    public Elements elements()
+    {
+        return elements;
+    }
 
     @Override
     public synchronized void init(ProcessingEnvironment environment)

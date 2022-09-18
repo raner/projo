@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -18,8 +18,10 @@ package pro.projo.generation.utilities;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import pro.projo.interfaces.annotation.Interface;
 import static java.util.stream.Collectors.toMap;
 
@@ -30,6 +32,14 @@ import static java.util.stream.Collectors.toMap;
 **/
 public interface TypeMirrorUtilities
 {
+    /**
+    * Provides access to the {@link Elements}.
+    * This method must be implemented by the client type.
+    *
+    * @return the {@link Elements}
+    **/
+    Elements elements();
+
     /**
     * Converts a {@link Class} into a {@link TypeMirror}.
     *
@@ -48,6 +58,18 @@ public interface TypeMirrorUtilities
             return mirroredTypeException.getTypeMirror();
         }
         return null;
+    }
+
+    /**
+     * Converts a {@link Class} into a {@link TypeElement}.
+     *
+     * @param supplier a method that returns the {@link Class} (as the {@link Class} itself will not
+     * work during annotation processing)
+     * @return the corresponding {@link TypeElement}
+     **/
+    default TypeElement getTypeElement(Supplier<Class<?>> supplier)
+    {
+        return elements().getTypeElement(getTypeMirror(supplier).toString());
     }
 
     /**
