@@ -64,12 +64,12 @@ import javax.lang.model.util.ElementScanner8;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDParser;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.dtd.DtdElementCollector;
+import pro.projo.generation.dtd.DtdInputSource;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.MergeOptions;
 import pro.projo.generation.utilities.MethodFilter;
@@ -139,6 +139,12 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     private Types types;
     private Elements elements;
     private Messager messager;
+
+    @Override
+    public Elements elements()
+    {
+        return elements;
+    }
 
     @Override
     public synchronized void init(ProcessingEnvironment environment)
@@ -384,7 +390,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
     public Collection<? extends Configuration> getDtdConfiguration(PackageElement element, List<Dtd> dtds)
     {
         Name packageName = element.getQualifiedName();
-        Stream<InputSource> inputSources = dtds.stream().map
+        Stream<DtdInputSource> inputSources = dtds.stream().map
         (
             dtd ->
             {
@@ -405,7 +411,9 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     }
                     FileObject file = filer.getResource(CLASS_PATH, packageInfo, resourceName);
                     InputStream stream = file.openInputStream();
-                    InputSource source = new InputSource(stream);
+                    TypeElement baseInterface = getTypeElement(dtd::baseInterface);
+                    TypeElement baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
+                    DtdInputSource source = new DtdInputSource(stream, baseInterface, baseInterfaceEmpty);
                     source.setSystemId(file.toUri().toURL().toString());
                     return source;
                 }
@@ -417,14 +425,14 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         );
         Stream<Configuration> configurations = inputSources.flatMap
         (
-            inputSource ->
+            source ->
             {
                 DTDParser parser = new DTDParser();
-                DtdElementCollector handler = new DtdElementCollector(packageName);
+                DtdElementCollector handler = new DtdElementCollector(packageName, source.getBaseInterface(), source.getBaseInterfaceEmpty());
                 parser.setDtdHandler(handler);
                 try
                 {
-                    parser.parse(inputSource);
+                    parser.parse(source);
                     return handler.configurations();
                 }
                 catch (IOException|SAXException exception)
@@ -469,8 +477,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         Name packageName = packageElement.getQualifiedName();
         Function<pro.projo.interfaces.annotation.Enum, Configuration> getConfiguration = annotation ->
         {
-            TypeMirror originalClass = getTypeMirror(annotation::from);
-            TypeElement typeElement = elements.getTypeElement(originalClass.toString());
+            TypeElement typeElement = getTypeElement(annotation::from);
             List<Name> values = new ArrayList<>();
             ElementScanner8<Void, List<Name>> scanner = new ElementScanner8<Void, List<Name>>()
             {
@@ -493,7 +500,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                 {
                     Collection<String> imports = options().addAnnotations() != FALSE? singleton(Generated.class.getName()):emptyList();
                     Map<String, Object> parameters = getParameters(packageName, imports, options());
-                    parameters.put("javadoc", "This enum was extracted from " + originalClass + ".");
+                    parameters.put("javadoc", "This enum was extracted from " + typeElement.getQualifiedName() + ".");
                     parameters.put("EnumTemplate", annotation.generate());
                     parameters.put("values", values);
                     return parameters;

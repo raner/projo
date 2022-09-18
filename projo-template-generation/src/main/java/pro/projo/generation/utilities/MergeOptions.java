@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 - 2021 Mirko Raner                                        //
+// Copyright 2020 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -19,6 +19,7 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import javax.lang.model.util.Elements;
 import javax.tools.StandardLocation;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.Ternary;
@@ -35,6 +36,12 @@ public class MergeOptions implements TypeMirrorUtilities
 {
     private Options packageLevelOptions;
     private Options annotationLevelOptions;
+
+    @Override
+    public Elements elements()
+    {
+        return null;
+    }
 
     public MergeOptions(Options packageLevelOptions, Options annotationLevelOptions)
     {

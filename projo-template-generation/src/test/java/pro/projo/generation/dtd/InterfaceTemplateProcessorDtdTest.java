@@ -24,8 +24,13 @@ import java.util.Set;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
 import org.junit.Test;
+import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.Name;
 import pro.projo.interfaces.annotation.Dtd;
@@ -45,6 +50,8 @@ public class InterfaceTemplateProcessorDtdTest
         String dtdPath = "/DTDs/Ashbridge/html5.dtd";
         InterfaceTemplateProcessor processor = new InterfaceTemplateProcessor();
         ProcessingEnvironment environment = mock(ProcessingEnvironment.class);
+        TypeMirror object = mock(TypeMirror.class);
+        Elements elements = mock(Elements.class);
         Filer filer = mock(Filer.class);
         FileObject dtdFile = mock(FileObject.class);
         URI dtdUri = getClass().getResource(dtdPath).toURI();
@@ -53,7 +60,10 @@ public class InterfaceTemplateProcessorDtdTest
         when(dtdFile.toUri()).thenReturn(dtdUri);
         when(dtdFile.openInputStream()).thenReturn(getClass().getResourceAsStream(dtdPath));
         when(filer.getResource(any(), any(), any())).thenReturn(dtdFile);
+        when(object.toString()).thenReturn(Object.class.getName());
+        when(elements.getTypeElement(any())).thenAnswer(call -> typeElement(call.getArgument(0, String.class)));
         when(environment.getFiler()).thenReturn(filer);
+        when(environment.getElementUtils()).thenReturn(elements);
         processor.init(environment);
         Dtd dtd = new Dtd()
         {
@@ -67,6 +77,18 @@ public class InterfaceTemplateProcessorDtdTest
             public String path()
             {
                 return "DTDs/Ashbridge/html5.dtd";
+            }
+
+            @Override
+            public Class<?> baseInterface()
+            {
+                throw new MirroredTypeException(object);
+            }
+
+            @Override
+            public Class<?> baseInterfaceEmpty()
+            {
+                throw new MirroredTypeException(object);
             }
         };
         Collection<? extends Configuration> configurations = processor.getDtdConfiguration(packageElement, singletonList(dtd));
@@ -86,5 +108,18 @@ public class InterfaceTemplateProcessorDtdTest
             "Noscript", "Template", "Canvas"
         };
         assertEquals(new HashSet<>(Arrays.asList(expected)), types);
+    }
+
+    private TypeElement typeElement(String fullyQualifiedName)
+    {
+        try
+        {
+            Class<?> type = Class.forName(fullyQualifiedName);
+            return ReflectionTypes.getInstance().typeElement(type);
+        }
+        catch (ClassNotFoundException exception)
+        {
+            throw new NoClassDefFoundError(exception.getMessage());
+        }
     }
 }

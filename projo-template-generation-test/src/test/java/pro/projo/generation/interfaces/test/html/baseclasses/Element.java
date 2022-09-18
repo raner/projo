@@ -13,39 +13,6 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
+package pro.projo.generation.interfaces.test.html.baseclasses;
 
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-/**
-* The {@link Dtd} annotation captures the necessary information for generating an API from a DTD.
-*
-* @author Mirko Raner
-**/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-@Repeatable(Dtds.class)
-public @interface Dtd
-{
-    /**
-    * @return the path to the main DTD file (may reference additional entity files)
-    **/
-    String path();
-
-    /**
-    * @return the default base interface to use for model elements (must be an interface;
-    * {@link Object} indicates that no specific base interface will be extended)
-    **/
-    Class<?> baseInterface() default Object.class;
-
-    /**
-     * @return the default base interface to use for empty (or "void") model elements
-     * (must be an interface; {@link Object} indicates that no specific base interface will
-     * be extended)
-     **/
-    Class<?> baseInterfaceEmpty() default Object.class;
-}
+public interface Element {}
