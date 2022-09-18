@@ -86,6 +86,20 @@ public class InterfaceTemplateProcessorTest
     }
 
     @Test
+    public void testHtmlClassHasElementSuperInterfaceFromOtherPackage() throws Exception
+    {
+        Class<?> classHtml = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.otherpackage.Html");
+        assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
+    }
+
+    @Test
+    public void testImgClassHasEmptyElementSuperInterfaceFromOtherPackage() throws Exception
+    {
+        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.otherpackage.Img");
+        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classImg.getInterfaces());
+    }
+
+    @Test
     public void testMathClassHasAllMethodsFromJavaLangMath() throws Exception
     {
         Predicate<Method> publicStatic = method -> (method.getModifiers() & (PUBLIC|STATIC)) == (PUBLIC|STATIC);

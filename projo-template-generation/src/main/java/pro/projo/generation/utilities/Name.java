@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -63,11 +63,11 @@ public class Name implements javax.lang.model.element.Name
     @Override
     public boolean equals(Object other)
     {
-        if (!(other instanceof Name))
+        if (!(other instanceof javax.lang.model.element.Name))
         {
             return false;
         }
-        return name.equals(((Name)other).name);
+        return toString().equals(String.valueOf(other));
     }
 
     @Override

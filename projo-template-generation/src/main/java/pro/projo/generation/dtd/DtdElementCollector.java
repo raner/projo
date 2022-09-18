@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.dtd;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.UnaryOperator;
@@ -24,6 +25,7 @@ import javax.lang.model.element.TypeElement;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDHandlerBase;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
+import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.template.annotation.Configuration;
 
 /**
@@ -36,6 +38,7 @@ import pro.projo.template.annotation.Configuration;
 public class DtdElementCollector extends DTDHandlerBase
 {
     private Map<String, Configuration> configurations = new HashMap<>();
+    private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private UnaryOperator<String> typeNameTransformer;
     private String currentContentModel;
@@ -77,8 +80,19 @@ public class DtdElementCollector extends DTDHandlerBase
         TypeElement superType = contentModelType == CONTENT_MODEL_EMPTY? baseInterfaceEmpty:baseInterface;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
+        Name superPackageName = packageName(superType);
+        boolean superTypeSamePackage = superPackageName.equals(packageName);
+        Name generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
+        Name superTypeName = superType.getQualifiedName();
+        Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
+        String[] imports = imported
+            .sorted(importOrder)
+            .map(Name::toString)
+            .filter(name -> !name.startsWith("java.lang."))
+            .toArray(String[]::new);
+        // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
-        parameters.put("imports", new String[] {"javax.annotation.Generated"});
+        parameters.put("imports", imports);
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
         parameters.put("InterfaceTemplate", typeName + extend);
         parameters.put("methods", new String[] {});
@@ -114,5 +128,16 @@ public class DtdElementCollector extends DTDHandlerBase
         String firstLetter = elementName.substring(0, 1);
         String remainingLetters = elementName.substring(1);
         return firstLetter.toUpperCase() + remainingLetters.toLowerCase();
+    }
+ 
+    private Name packageName(TypeElement element)
+    {
+        String name = element.getQualifiedName().toString();
+        int lastDot = name.lastIndexOf('.');
+        if (lastDot == -1)
+        {
+            return new pro.projo.generation.utilities.Name("");
+        }
+        return new pro.projo.generation.utilities.Name(name.substring(0, lastDot));
     }
 }
