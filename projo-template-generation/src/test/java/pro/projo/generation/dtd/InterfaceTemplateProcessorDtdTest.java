@@ -110,7 +110,9 @@ public class InterfaceTemplateProcessorDtdTest
             }
         };
         Collection<? extends Configuration> configurations = processor.getDtdConfiguration(packageElement, singletonList(dtd));
-        Set<String> types = configurations.stream().map(it -> (String)it.parameters().get("InterfaceTemplate")).collect(toSet());
+        Set<String> types = configurations.stream().map(it -> (String)it.parameters().get("InterfaceTemplate"))
+            .map(it -> {int index = it.indexOf("<"); return index == -1? it:it.substring(0, index);})
+            .collect(toSet());
         String[] expected =
         {
             "Html", "Head", "Title", "Base", "Link", "Meta", "Style", "Body", "Article", "Section",

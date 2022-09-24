@@ -37,14 +37,17 @@ public @interface Dtd
     String path();
 
     /**
-    * @return the default base interface to use for model elements (must be an interface;
+    * @return the default base interface to use for model elements (this must be an interface
+    * with two type parameters: the first parameter for the parent content element type, and
+    * the second for the element's own content type;
     * {@link Object} indicates that no specific base interface will be extended)
     **/
     Class<?> baseInterface() default Object.class;
 
     /**
     * @return the default base interface to use for empty (or "void") model elements
-    * (must be an interface; {@link Object} indicates that no specific base interface will
+    * (this must be an interface with one type parameter, which designates the parent content
+    * element type; {@link Object} indicates that no specific base interface will
     * be extended)
     **/
     Class<?> baseInterfaceEmpty() default Object.class;
@@ -52,7 +55,8 @@ public @interface Dtd
     /**
     * @return the default base interface to use for mixed content elements that do not
     * have any permitted child elements, i.e. they can only contain plain text
-    * (must be an interface; {@link Object} indicates that no specific base interface will
+    * (this must be an interface with one type parameter, which designates the parent content
+    * element type; {@link Object} indicates that no specific base interface will
     * be extended)
     **/
     Class<?> baseInterfaceText() default Object.class;

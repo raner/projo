@@ -115,6 +115,8 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
+        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ">":">");
         Name superPackageName = packageName(superType);
         boolean superTypeSamePackage = superPackageName.equals(packageName);
         Name generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
@@ -130,7 +132,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         parameters.put("imports", imports);
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-        parameters.put("InterfaceTemplate", typeName + extend);
+        parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extend + (isObject? "":typeParameters));
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
@@ -141,17 +143,16 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         if (currentContentModelHasChildren)
         {
             parameters = new HashMap<>();
-            typeName = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
             // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
             parameters.put("package", packageName.toString());
             parameters.put("imports", new String[] {generated.toString()});
             parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
             parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-            parameters.put("InterfaceTemplate", typeName);
+            parameters.put("InterfaceTemplate", contentType);
             parameters.put("methods", new String[] {});
-            fullyQualifiedClassName = packageName.toString() + "." + typeName;
+            fullyQualifiedClassName = packageName.toString() + "." + contentType;
             configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
-            configurations.put(typeName, configuration);
+            configurations.put(contentType, configuration);
         }
 
         // Reset content model:
