@@ -15,4 +15,9 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test.html.baseclasses;
 
-public interface TextElement extends Element {}
+import java.util.function.Supplier;
+
+public interface TextElement<PARENT>
+{
+    PARENT $(Supplier<String> content);
+}

@@ -120,6 +120,30 @@ public class InterfaceTemplateProcessorTest
     }
 
     @Test
+    public void testHtmlClassHasParentTypeParameter() throws Exception
+    {
+        Class<?> classHtml = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Html");
+        String parentInterface = classHtml.getGenericInterfaces()[0].toString();
+        assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.Element<PARENT, pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent>", parentInterface);
+    }
+
+    @Test
+    public void testImgClassHasParentTypeParameter() throws Exception
+    {
+        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Img");
+        String parentInterface = classImg.getGenericInterfaces()[0].toString();
+        assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement<PARENT>", parentInterface);
+    }
+
+    @Test
+    public void testTitleClassHasParentTypeParameter() throws Exception
+    {
+        Class<?> classTitle = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Title");
+        String parentInterface = classTitle.getGenericInterfaces()[0].toString();
+        assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.TextElement<PARENT>", parentInterface);
+    }
+
+    @Test
     public void testMathClassHasAllMethodsFromJavaLangMath() throws Exception
     {
         Predicate<Method> publicStatic = method -> (method.getModifiers() & (PUBLIC|STATIC)) == (PUBLIC|STATIC);

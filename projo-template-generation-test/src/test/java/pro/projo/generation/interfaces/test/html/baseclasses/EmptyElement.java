@@ -15,4 +15,7 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test.html.baseclasses;
 
-public interface EmptyElement extends Element {}
+public interface EmptyElement<PARENT>
+{
+    PARENT $();
+}
