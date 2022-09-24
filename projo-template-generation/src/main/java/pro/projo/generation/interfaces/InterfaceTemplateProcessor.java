@@ -411,9 +411,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
                     }
                     FileObject file = filer.getResource(CLASS_PATH, packageInfo, resourceName);
                     InputStream stream = file.openInputStream();
-                    TypeElement baseInterface = getTypeElement(dtd::baseInterface);
-                    TypeElement baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
-                    DtdInputSource source = new DtdInputSource(stream, baseInterface, baseInterfaceEmpty);
+                    DtdInputSource source = new DtdInputSource(stream, dtd);
                     source.setSystemId(file.toUri().toURL().toString());
                     return source;
                 }
@@ -428,7 +426,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             source ->
             {
                 DTDParser parser = new DTDParser();
-                DtdElementCollector handler = new DtdElementCollector(packageName, source.getBaseInterface(), source.getBaseInterfaceEmpty());
+                DtdElementCollector handler = new DtdElementCollector(packageName, source.getDtd(), elements);
                 parser.setDtdHandler(handler);
                 try
                 {

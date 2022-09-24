@@ -13,14 +13,8 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    baseInterface=Element.class,
-    baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class
-)
-package pro.projo.generation.interfaces.test.html.baseclasses;
+@Dtd(path="html5/html5.dtd", elementNameFormat="{0}Element", contentNameFormat="{0}Contents")
+package pro.projo.generation.interfaces.test.html.nameformats;
 
 import pro.projo.interfaces.annotation.Dtd;
 

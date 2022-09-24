@@ -15,6 +15,8 @@
 //                                                                          //
 package pro.projo.generation.dtd;
 
+import java.text.Format;
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,10 +24,14 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDHandlerBase;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
+import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
+import pro.projo.generation.utilities.TypeMirrorUtilities;
+import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.template.annotation.Configuration;
 
 /**
@@ -35,27 +41,42 @@ import pro.projo.template.annotation.Configuration;
 *
 * @author Mirko Raner
 **/
-public class DtdElementCollector extends DTDHandlerBase
+public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUtilities
 {
     private Map<String, Configuration> configurations = new HashMap<>();
+    private Map<String, Integer> contentChildren = new HashMap<>();
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private UnaryOperator<String> typeNameTransformer;
     private String currentContentModel;
     private TypeElement baseInterface;
     private TypeElement baseInterfaceEmpty;
+    private TypeElement baseInterfaceText;
+    private Format elementTypeName;
+    private Format contentTypeName;
+    private Elements elements;
 
-    public DtdElementCollector(Name packageName, TypeElement baseInterface, TypeElement baseInterfaceEmpty)
+    public DtdElementCollector(Name packageName, Dtd dtd, Elements elements)
     {
         this(packageName, UnaryOperator.identity());
-        this.baseInterface = baseInterface;
-        this.baseInterfaceEmpty = baseInterfaceEmpty;
+        this.elements = elements;
+        baseInterface = getTypeElement(dtd::baseInterface);
+        baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
+        baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
+        elementTypeName = new MessageFormat(dtd.elementNameFormat());
+        contentTypeName = new MessageFormat(dtd.contentNameFormat());
     }
 
     public DtdElementCollector(Name packageName, UnaryOperator<String> typeNameTransformer)
     {
         this.packageName = packageName;
         this.typeNameTransformer = typeNameTransformer;
+    }
+
+    @Override
+    public Elements elements()
+    {
+        return elements;
     }
 
     public Stream<Configuration> configurations()
@@ -75,9 +96,23 @@ public class DtdElementCollector extends DTDHandlerBase
             throw new IllegalStateException("duplicate content model: " + elementName);
         }
         currentContentModel = elementName;
+    }
+
+    @Override
+    public void endContentModel(String elementName, short contentModelType) throws SAXException
+    {
+        if (currentContentModel == null)
+        {
+            throw new IllegalStateException("unexpected end of content model");
+        }
+
+        // Add element interface:
+        //
         Map<String, Object> parameters = new HashMap<>();
-        String typeName = typeNameTransformer.apply(typeName(elementName));
-        TypeElement superType = contentModelType == CONTENT_MODEL_EMPTY? baseInterfaceEmpty:baseInterface;
+        boolean currentContentModelHasChildren = contentChildren.get(currentContentModel) != null;
+        String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        TypeElement superType = contentModelType == CONTENT_MODEL_EMPTY? baseInterfaceEmpty:
+            currentContentModelHasChildren? baseInterface:baseInterfaceText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
         Name superPackageName = packageName(superType);
@@ -93,34 +128,58 @@ public class DtdElementCollector extends DTDHandlerBase
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
         parameters.put("imports", imports);
+        parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
         parameters.put("InterfaceTemplate", typeName + extend);
         parameters.put("methods", new String[] {});
-        Configuration configuration = new Configuration()
-        {
-            @Override
-            public String fullyQualifiedClassName()
-            {
-                return packageName.toString() + "." + typeName;
-            }
-
-            @Override
-            public Map<String, Object> parameters()
-            {
-                return parameters;
-            }
-        };
+        String fullyQualifiedClassName = packageName.toString() + "." + typeName;
+        Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
         configurations.put(elementName, configuration);
+
+        // Add content interface, if applicable:
+        //
+        if (currentContentModelHasChildren)
+        {
+            parameters = new HashMap<>();
+            typeName = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+            // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
+            parameters.put("package", packageName.toString());
+            parameters.put("imports", new String[] {generated.toString()});
+            parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
+            parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
+            parameters.put("InterfaceTemplate", typeName);
+            parameters.put("methods", new String[] {});
+            fullyQualifiedClassName = packageName.toString() + "." + typeName;
+            configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
+            configurations.put(typeName, configuration);
+        }
+
+        // Reset content model:
+        //
+        currentContentModel = null;
     }
 
     @Override
-    public void endContentModel(String elementName, short contentModelType) throws SAXException
+    public void childElement(String elementName, short occurrence) throws SAXException
     {
-        if (currentContentModel ==  null)
-        {
-            throw new IllegalStateException("unexpected end of content model");
-        }
-        currentContentModel = null;
+        increaseChildCount();
+    }
+
+    @Override
+    public void mixedElement(String elementName) throws SAXException
+    {
+        increaseChildCount();
+    }
+
+    @Override
+    public void startModelGroup() throws SAXException
+    {
+        increaseChildCount();
+    }
+
+    private void increaseChildCount()
+    {
+        contentChildren.merge(currentContentModel, 1, Integer::sum);
     }
 
     public String typeName(String elementName)

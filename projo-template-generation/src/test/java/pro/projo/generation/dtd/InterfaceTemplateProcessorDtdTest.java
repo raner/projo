@@ -90,6 +90,24 @@ public class InterfaceTemplateProcessorDtdTest
             {
                 throw new MirroredTypeException(object);
             }
+
+            @Override
+            public Class<?> baseInterfaceText()
+            {
+                throw new MirroredTypeException(object);
+            }
+
+            @Override
+            public String elementNameFormat()
+            {
+                return "{0}";
+            }
+
+            @Override
+            public String contentNameFormat()
+            {
+                return "{0}Content";
+            }
         };
         Collection<? extends Configuration> configurations = processor.getDtdConfiguration(packageElement, singletonList(dtd));
         Set<String> types = configurations.stream().map(it -> (String)it.parameters().get("InterfaceTemplate")).collect(toSet());
@@ -105,7 +123,23 @@ public class InterfaceTemplateProcessorDtdTest
             "Math", "Svg", "Table", "Caption", "Colgroup", "Col", "Tbody", "Thead", "Tfoot", "Tr",
             "Td", "Th", "Form", "Label", "Input", "Button", "Select", "Datalist", "Optgroup", "Option",
             "Textarea", "Keygen", "Output", "Progress", "Meter", "Fieldset", "Legend", "Script",
-            "Noscript", "Template", "Canvas"
+            "Noscript", "Template", "Canvas",
+            "HtmlContent", "HeadContent", "BodyContent", "ArticleContent", "SectionContent",
+            "NavContent", "AsideContent", "H1Content", "H2Content", "H3Content", "H4Content",
+            "H5Content", "H6Content", "HgroupContent", "HeaderContent", "FooterContent",
+            "AddressContent", "PContent", "PreContent", "BlockquoteContent", "OlContent", "UlContent",
+            "LiContent", "DlContent", "DtContent", "DdContent", "FigureContent", "FigcaptionContent",
+            "DivContent", "MainContent", "AContent", "EmContent", "StrongContent", "SmallContent",
+            "SContent", "CiteContent", "QContent", "DfnContent", "AbbrContent", "DataContent",
+            "TimeContent", "CodeContent", "VarContent", "SampContent", "KbdContent", "SubContent",
+            "SupContent", "IContent", "BContent", "UContent", "MarkContent", "RubyContent",
+            "RbContent", "RtContent", "RtcContent", "RpContent", "BdiContent", "BdoContent",
+            "SpanContent", "InsContent", "DelContent", "PictureContent", "IframeContent",
+            "ObjectContent", "VideoContent", "AudioContent", "MapContent", "TableContent",
+            "CaptionContent", "ColgroupContent", "TbodyContent", "TheadContent", "TfootContent",
+            "TrContent", "TdContent", "ThContent", "FormContent", "LabelContent", "ButtonContent",
+            "SelectContent", "DatalistContent", "OptgroupContent", "OutputContent", "ProgressContent",
+            "MeterContent", "FieldsetContent", "LegendContent", "NoscriptContent", "TemplateContent"
         };
         assertEquals(new HashSet<>(Arrays.asList(expected)), types);
     }
