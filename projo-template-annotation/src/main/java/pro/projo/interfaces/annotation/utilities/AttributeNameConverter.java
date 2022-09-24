@@ -15,18 +15,19 @@
 //                                                                          //
 package pro.projo.interfaces.annotation.utilities;
 
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import static java.lang.Character.toUpperCase;
+
 public class AttributeNameConverter
 {
-    public String convertAttributeName(String name)
+    public String convertAttributeName(final String name)
     {
-        int index;
-        while ((index = name.indexOf('-')) != -1)
-        {
-            name = name.substring(0, index) +
-                (index+1 >= name.length()? "":
-                    (name.substring(index+1, index+2).toUpperCase() +
-                        name.substring(index+2)));
-        }
-        return name;
+        Predicate<Character> hyphen = Character.valueOf('-')::equals;
+        Stream<Character> characters = IntStream.range(0, name.length())
+            .mapToObj(index -> index > 0 && hyphen.test(name.charAt(index-1))? toUpperCase(name.charAt(index)):name.charAt(index));
+        return characters.filter(hyphen.negate()).map(Object::toString).collect(Collectors.joining());
     }
 }
