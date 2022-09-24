@@ -13,20 +13,6 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    baseInterface=Element.class,
-    baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class
-)
 package pro.projo.generation.interfaces.test.html.baseclasses;
 
-import pro.projo.interfaces.annotation.Dtd;
-
-/**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
-*
-* @author Mirko Raner
-**/
+public interface TextElement extends Element {}

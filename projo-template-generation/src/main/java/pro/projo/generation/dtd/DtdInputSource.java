@@ -16,8 +16,8 @@
 package pro.projo.generation.dtd;
 
 import java.io.InputStream;
-import javax.lang.model.element.TypeElement;
 import org.xml.sax.InputSource;
+import pro.projo.interfaces.annotation.Dtd;
 
 /**
 * {@link DtdInputSource} is a SAX {@link InputSource} that carries some additional
@@ -27,23 +27,16 @@ import org.xml.sax.InputSource;
 **/
 public class DtdInputSource extends InputSource
 {
-    private TypeElement baseInterface;
-    private TypeElement baseInterfaceEmpty;
+    private Dtd dtd;
 
-    public DtdInputSource(InputStream input, TypeElement baseInterface, TypeElement baseInterfaceEmpty)
+    public DtdInputSource(InputStream input, Dtd dtd)
     {
         super(input);
-        this.baseInterface = baseInterface;
-        this.baseInterfaceEmpty = baseInterfaceEmpty;
+        this.dtd = dtd;
     }
 
-    public TypeElement getBaseInterface()
+    public Dtd getDtd()
     {
-        return baseInterface;
-    }
-
-    public TypeElement getBaseInterfaceEmpty()
-    {
-        return baseInterfaceEmpty;
+        return dtd;
     }
 }

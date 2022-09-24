@@ -43,9 +43,31 @@ public @interface Dtd
     Class<?> baseInterface() default Object.class;
 
     /**
-     * @return the default base interface to use for empty (or "void") model elements
-     * (must be an interface; {@link Object} indicates that no specific base interface will
-     * be extended)
-     **/
+    * @return the default base interface to use for empty (or "void") model elements
+    * (must be an interface; {@link Object} indicates that no specific base interface will
+    * be extended)
+    **/
     Class<?> baseInterfaceEmpty() default Object.class;
+
+    /**
+    * @return the default base interface to use for mixed content elements that do not
+    * have any permitted child elements, i.e. they can only contain plain text
+    * (must be an interface; {@link Object} indicates that no specific base interface will
+    * be extended)
+    **/
+    Class<?> baseInterfaceText() default Object.class;
+
+    /**
+    * @return the name format for generated element interfaces (by default this is just
+    * the capitalized element name)
+    * @see java.text.MessageFormat
+    **/
+    String elementNameFormat() default "{0}";
+
+    /**
+    * @return the name format for generated content interfaces (by default this is
+    * the capitalized element name followed by the word {@code Content})
+    * @see java.text.MessageFormat
+    **/
+    String contentNameFormat() default "{0}Content";
 }

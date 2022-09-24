@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.junit.Test;
 import pro.projo.generation.interfaces.test.html.baseclasses.Element;
 import pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement;
+import pro.projo.generation.interfaces.test.html.baseclasses.TextElement;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
@@ -63,6 +64,18 @@ public class InterfaceTemplateProcessorTest
     {
         Class.forName("pro.projo.generation.interfaces.test.html.Html");
     }
+    
+    @Test
+    public void testHtmlClassIsGeneratedWithCustomSuffix() throws Exception
+    {
+        Class.forName("pro.projo.generation.interfaces.test.html.nameformats.HtmlElement");
+    }
+    
+    @Test
+    public void testHtmlContentClassIsGeneratedWithCustomSuffix() throws Exception
+    {
+        Class.forName("pro.projo.generation.interfaces.test.html.nameformats.HtmlContents");
+    }
 
     @Test
     public void testHtmlClassHasNoSuperInterfaces() throws Exception
@@ -83,6 +96,13 @@ public class InterfaceTemplateProcessorTest
     {
         Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Img");
         assertArrayEquals(new Class<?>[] {EmptyElement.class}, classImg.getInterfaces());
+    }
+
+    @Test
+    public void testTitleClassHasTextElementSuperInterface() throws Exception
+    {
+        Class<?> classTitle = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Title");
+        assertArrayEquals(new Class<?>[] {TextElement.class}, classTitle.getInterfaces());
     }
 
     @Test

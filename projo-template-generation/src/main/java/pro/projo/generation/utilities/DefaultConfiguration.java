@@ -13,20 +13,37 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    baseInterface=Element.class,
-    baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class
-)
-package pro.projo.generation.interfaces.test.html.baseclasses;
+package pro.projo.generation.utilities;
 
-import pro.projo.interfaces.annotation.Dtd;
+import java.util.Map;
+import pro.projo.template.annotation.Configuration;
 
 /**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
+* {@link DefaultConfiguration} is a simple default implementation of the {@link Configuration}
+* interface that provides a class name and a set of parameters.
 *
 * @author Mirko Raner
 **/
+public class DefaultConfiguration implements Configuration
+{
+    private String fullyQualifiedClassName;
+    private Map<String, Object> parameters;
+
+    public DefaultConfiguration(String fullyQualifiedClassName, Map<String, Object> parameters)
+    {
+        this.fullyQualifiedClassName = fullyQualifiedClassName;
+        this.parameters = parameters;
+    }
+
+    @Override
+    public String fullyQualifiedClassName()
+    {
+        return fullyQualifiedClassName;
+    }
+
+    @Override
+    public Map<String, Object> parameters()
+    {
+        return parameters;
+    }
+}
