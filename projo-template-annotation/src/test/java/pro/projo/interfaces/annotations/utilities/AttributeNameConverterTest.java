@@ -85,4 +85,10 @@ public class AttributeNameConverterTest
     {
         assertEquals("dataWidgetId", converter.convertAttributeName("--data-widget-id-"));
     }
+
+    @Test
+    public void testXmlNameSpaceColon()
+    {
+        assertEquals("xmlBase", converter.convertAttributeName("xml:base"));
+    }
 }

@@ -426,7 +426,7 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
             source ->
             {
                 DTDParser parser = new DTDParser();
-                DtdElementCollector handler = new DtdElementCollector(packageName, source.getDtd(), elements);
+                DtdElementCollector handler = new DtdElementCollector(packageName, source.getDtd(), elements, messager);
                 parser.setDtdHandler(handler);
                 try
                 {

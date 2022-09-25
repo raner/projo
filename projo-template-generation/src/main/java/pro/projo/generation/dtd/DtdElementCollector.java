@@ -15,13 +15,18 @@
 //                                                                          //
 package pro.projo.generation.dtd;
 
+import java.lang.reflect.Constructor;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+import javax.annotation.processing.Messager;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -32,7 +37,9 @@ import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.TypeMirrorUtilities;
 import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
+import static javax.tools.Diagnostic.Kind.WARNING;
 
 /**
 * The {@link DtdElementCollector} is a mutable type that collects information from
@@ -48,6 +55,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private UnaryOperator<String> typeNameTransformer;
+    private AttributeNameConverter attributeNameConverter;
     private String currentContentModel;
     private TypeElement baseInterface;
     private TypeElement baseInterfaceEmpty;
@@ -55,16 +63,27 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
     private Format elementTypeName;
     private Format contentTypeName;
     private Elements elements;
+    private Messager messager;
 
-    public DtdElementCollector(Name packageName, Dtd dtd, Elements elements)
+    public DtdElementCollector(Name packageName, Dtd dtd, Elements elements, Messager messager)
     {
         this(packageName, UnaryOperator.identity());
         this.elements = elements;
+        this.messager = messager;
         baseInterface = getTypeElement(dtd::baseInterface);
         baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
         baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
+        try
+        {
+            Constructor<?> constructor = getType(dtd::attributeNameConverter).getDeclaredConstructor();
+            attributeNameConverter = (AttributeNameConverter)constructor.newInstance();
+        }
+        catch (Exception exception)
+        {
+            throw new Error(exception.toString());
+        }
     }
 
     public DtdElementCollector(Name packageName, UnaryOperator<String> typeNameTransformer)
@@ -158,6 +177,32 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         // Reset content model:
         //
         currentContentModel = null;
+    }
+
+    @Override
+    public void attributeDecl(String elementName, String attributeName, String attributeType,
+        String[] enumeration, short attributeUse, String defaultValue) throws SAXException
+    {
+        Configuration configuration = configurations.get(elementName);
+        if (configuration != null)
+        {
+            // TODO: next line duplicated from above
+            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+            String methodName = attributeNameConverter.convertAttributeName(attributeName);
+            String method = typeName + "<PARENT> " + methodName + "(String " + methodName + ")";
+            String[] methods = (String[])configuration.parameters().get("methods");
+            List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
+            newMethods.add(method);
+            configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
+        }
+        else
+        {
+            messager.printMessage
+            (
+                WARNING,
+                "Encountered attribute '" + attributeName + "' for unknown element '" + elementName + "'"
+            );
+        }
     }
 
     @Override
