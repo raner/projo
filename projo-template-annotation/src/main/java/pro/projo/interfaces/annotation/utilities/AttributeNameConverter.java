@@ -24,10 +24,12 @@ import static java.lang.Character.toUpperCase;
 /**
 * The {@link AttributeNameConverter} is Projo's way of converting XML/SGML attribute names
 * to method names. The basic implementation converts from kebab-case to camel-case (e.g.,
-* {@code data-widget-id} becomes {@code dataWidgetId}). It does not escape Java keywords,
-* which means its implementation may not necessarily be suitable for generating Java APIs.
+* {@code data-widget-id} becomes {@code dataWidgetId}). It also treats XML namespace separators
+* {@code :}) as word delimiters (e.g., {@code xml:base} will be converted to {@code xmlBase}. However,
+* it does not escape Java keywords, which means its implementation may not necessarily be suitable
+* for generating Java APIs as the generated code may contain method names like {@code class}, etc.
 * For that purpose, the {@link DefaultAttributeNameConverter} may be a better choice (and
-* is also the default choice if no other {@link AttributeNameConverter}) is specified.
+* is also the default choice if no other {@link AttributeNameConverter} is specified).
 *
 * @author Mirko Raner
 **/
@@ -42,8 +44,9 @@ public class AttributeNameConverter
     public String convertAttributeName(final String name)
     {
         Predicate<Character> hyphen = Character.valueOf('-')::equals;
+        Predicate<Character> hyphenOrColon = hyphen.or(Character.valueOf(':')::equals);
         Stream<Character> characters = IntStream.range(0, name.length())
-            .mapToObj(index -> index > 0 && hyphen.test(name.charAt(index-1))? toUpperCase(name.charAt(index)):name.charAt(index));
-        return characters.filter(hyphen.negate()).map(Object::toString).collect(Collectors.joining());
+            .mapToObj(index -> index > 0 && hyphenOrColon.test(name.charAt(index-1))? toUpperCase(name.charAt(index)):name.charAt(index));
+        return characters.filter(hyphenOrColon.negate()).map(Object::toString).collect(Collectors.joining());
     }
 }

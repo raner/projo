@@ -18,6 +18,8 @@ package pro.projo.interfaces.annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
+import pro.projo.interfaces.annotation.utilities.DefaultAttributeNameConverter;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -74,4 +76,10 @@ public @interface Dtd
     * @see java.text.MessageFormat
     **/
     String contentNameFormat() default "{0}Content";
+
+    /**
+    * @return the {@link AttributeNameConverter} to be used for converting XML/SGML attribute
+    * names to Java method names
+    **/
+    Class<? extends AttributeNameConverter> attributeNameConverter() default DefaultAttributeNameConverter.class;
 }

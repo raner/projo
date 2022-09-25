@@ -17,6 +17,7 @@ package pro.projo.generation.interfaces;
 
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -141,6 +142,33 @@ public class InterfaceTemplateProcessorTest
         Class<?> classTitle = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Title");
         String parentInterface = classTitle.getGenericInterfaces()[0].toString();
         assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.TextElement<PARENT>", parentInterface);
+    }
+
+    @Test
+    public void testMathClassMethodsHaveCorrectSignature() throws Exception
+    {
+        Class<?> classMath = Class.forName("pro.projo.generation.interfaces.test.html.Math");
+        Method id = classMath.getDeclaredMethod("id", String.class);
+        ParameterizedType type = (ParameterizedType)id.getGenericReturnType();
+        List<String> typeInfo = Arrays.asList(type.getRawType().getTypeName(), type.getActualTypeArguments()[0].toString());
+        List<String> expected = Arrays.asList("pro.projo.generation.interfaces.test.html.Math", "PARENT");
+        assertEquals(expected, typeInfo);
+    }
+
+    @Test
+    public void testMathClassHasAllMethodsFromHtml5Math() throws Exception
+    {
+        Class<?> classMath = Class.forName("pro.projo.generation.interfaces.test.html.Math");
+        Set<String> methods = Stream.of(classMath.getDeclaredMethods()).map(Method::getName).collect(toSet());
+        String[] expectedMethods =
+        {
+            "id", "xref", "class_", "style", "href", "scriptlevel", "displaystyle",
+            "scriptsizemultiplier", "scriptminsize", "infixlinebreakstyle", "decimalpoint", "display",
+            "maxwidth", "overflow", "altimg", "altimgWidth", "altimgHeight", "altimgValign", "alttext",
+            "cdgroup"
+        };
+        Set<String> expected = Stream.of(expectedMethods).collect(toSet());
+        assertEquals(expected, methods);
     }
 
     @Test

@@ -34,6 +34,8 @@ import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.Name;
 import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
+import pro.projo.interfaces.annotation.utilities.DefaultAttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
@@ -107,6 +109,12 @@ public class InterfaceTemplateProcessorDtdTest
             public String contentNameFormat()
             {
                 return "{0}Content";
+            }
+
+            @Override
+            public Class<? extends AttributeNameConverter> attributeNameConverter()
+            {
+                return DefaultAttributeNameConverter.class;
             }
         };
         Collection<? extends Configuration> configurations = processor.getDtdConfiguration(packageElement, singletonList(dtd));
