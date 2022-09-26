@@ -145,6 +145,21 @@ public class InterfaceTemplateProcessorTest
     }
 
     @Test
+    public void testDlContentClassHasCorrectMethods() throws Exception
+    {
+        Class<?> classDlContent = Class.forName("pro.projo.generation.interfaces.test.html.DlContent");
+        Set<String> methods = Stream.of(classDlContent.getDeclaredMethods())
+            .map(method -> method.getGenericReturnType().getTypeName() + " " + method.getName())
+            .collect(toSet());
+        List<String> expected = Arrays.asList
+        (
+            "pro.projo.generation.interfaces.test.html.Dt<pro.projo.generation.interfaces.test.html.DlContent> dt",
+            "pro.projo.generation.interfaces.test.html.Dd<pro.projo.generation.interfaces.test.html.DlContent> dd"
+        );
+        assertEquals(new HashSet<>(expected), methods);
+    }
+
+    @Test
     public void testMathClassMethodsHaveCorrectSignature() throws Exception
     {
         Class<?> classMath = Class.forName("pro.projo.generation.interfaces.test.html.Math");

@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.processing.Messager;
@@ -54,6 +56,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
     private Map<String, Integer> contentChildren = new HashMap<>();
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
+    private Name generated;
     private UnaryOperator<String> typeNameTransformer;
     private AttributeNameConverter attributeNameConverter;
     private String currentContentModel;
@@ -75,6 +78,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
+        generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         try
         {
             Constructor<?> constructor = getType(dtd::attributeNameConverter).getDeclaredConstructor();
@@ -138,7 +142,6 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ">":">");
         Name superPackageName = packageName(superType);
         boolean superTypeSamePackage = superPackageName.equals(packageName);
-        Name generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         Name superTypeName = superType.getQualifiedName();
         Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
         String[] imports = imported
@@ -156,23 +159,6 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
         configurations.put(elementName, configuration);
-
-        // Add content interface, if applicable:
-        //
-        if (currentContentModelHasChildren)
-        {
-            parameters = new HashMap<>();
-            // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
-            parameters.put("package", packageName.toString());
-            parameters.put("imports", new String[] {generated.toString()});
-            parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
-            parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-            parameters.put("InterfaceTemplate", contentType);
-            parameters.put("methods", new String[] {});
-            fullyQualifiedClassName = packageName.toString() + "." + contentType;
-            configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
-            configurations.put(contentType, configuration);
-        }
 
         // Reset content model:
         //
@@ -209,12 +195,32 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
     public void childElement(String elementName, short occurrence) throws SAXException
     {
         increaseChildCount();
+        Configuration configuration = getOrCreateContentType();
+        Map<String, Object> parameters = configuration.parameters();
+        String contentType = (String)parameters.get("InterfaceTemplate");
+        @SuppressWarnings("unchecked")
+        Set<String> methodNames = (Set<String>)parameters.getOrDefault("methodNames", new HashSet<>());
+        // TODO: next line duplicated from above
+        String methodName = elementName;
+        if (!methodNames.contains(methodName))
+        {
+            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+            String method = typeName + "<" + contentType + "> " + methodName + "()";
+            // TODO: next four lines also duplicated
+            String[] methods = (String[])parameters.get("methods");
+            List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
+            newMethods.add(method);
+            parameters.put("methods", newMethods.toArray(new String[] {}));
+            methodNames.add(methodName);
+            parameters.put("methodNames", methodNames);
+        }
     }
 
     @Override
     public void mixedElement(String elementName) throws SAXException
     {
         increaseChildCount();
+        getOrCreateContentType();
     }
 
     @Override
@@ -228,7 +234,28 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         contentChildren.merge(currentContentModel, 1, Integer::sum);
     }
 
-    public String typeName(String elementName)
+    private Configuration getOrCreateContentType()
+    {
+        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(currentContentModel))});
+        Configuration configuration = configurations.get(contentType);
+        if (configuration == null)
+        {
+            Map<String, Object> parameters = new HashMap<>();
+            // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
+            parameters.put("package", packageName.toString());
+            parameters.put("imports", new String[] {generated.toString()});
+            parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
+            parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
+            parameters.put("InterfaceTemplate", contentType);
+            parameters.put("methods", new String[] {});
+            String fullyQualifiedClassName = packageName.toString() + "." + contentType;
+            configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
+            configurations.put(contentType, configuration);
+        }
+        return configuration;
+    }
+
+    private String typeName(String elementName)
     {
         String firstLetter = elementName.substring(0, 1);
         String remainingLetters = elementName.substring(1);
