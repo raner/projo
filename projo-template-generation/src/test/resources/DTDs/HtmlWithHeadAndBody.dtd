@@ -1,0 +1,3 @@
+<!ELEMENT html (head, body)>
+<!ELEMENT head EMPTY>
+<!ELEMENT body EMPTY>
