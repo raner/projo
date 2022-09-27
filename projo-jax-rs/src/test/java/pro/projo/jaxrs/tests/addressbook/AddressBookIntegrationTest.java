@@ -50,6 +50,8 @@ public class AddressBookIntegrationTest
 {
     private static final String SERVLET_NAME = "jersey-container-servlet";
 
+    private static String webPort;
+
     private static Tomcat server;
 
     /**
@@ -70,17 +72,35 @@ public class AddressBookIntegrationTest
     public static void startServer() throws ServletException, LifecycleException, IOException
     {
         Path webAppDirectory = Files.createTempDirectory(null);
-        server = new Tomcat();
-        String webPort = System.getenv("PORT");
+        System.setProperty("org.apache.catalina.startup.EXIT_ON_INIT_FAILURE", String.valueOf(true));
+        webPort = System.getenv("PORT");
         if (webPort == null || webPort.isEmpty())
         {
             webPort = "8080";
         }
-        server.setPort(Integer.valueOf(webPort));
-        Context context = server.addWebapp("", webAppDirectory.toString());
-        Tomcat.addServlet(context, SERVLET_NAME, new ServletContainer(new AddressBookConfiguration()));
-        context.addServletMappingDecoded("/*", SERVLET_NAME);
-        server.start();
+        boolean started = false;
+        while (!started)
+        {
+            server = new Tomcat();
+            server.setPort(Integer.valueOf(webPort));
+            Context context = server.addWebapp("", webAppDirectory.toString());
+            Tomcat.addServlet(context, SERVLET_NAME, new ServletContainer(new AddressBookConfiguration()));
+            context.addServletMappingDecoded("/*", SERVLET_NAME);
+            try
+            {
+                System.err.println("Starting Tomcat server on port " + webPort);
+                server.start();
+                started = true;
+                System.err.println("Server started successfully on port " + webPort);
+            }
+            catch (LifecycleException exception)
+            {
+                System.err.println("Caught LifecycleException - trying a different port...");
+                int port = Integer.parseInt(webPort)+1;
+                webPort = String.valueOf(port);
+                server.setPort(port);
+            }
+        }
     }
 
     @AfterClass
@@ -104,7 +124,7 @@ public class AddressBookIntegrationTest
 
     private Request url(String path)
     {
-        return new ApacheRequest("http://localhost:8080/" + path).header(CONTENT_TYPE, APPLICATION_JSON);
+        return new ApacheRequest("http://localhost:" + webPort + "/" + path).header(CONTENT_TYPE, APPLICATION_JSON);
     }
 
     private Matcher<String> matches(String expected)
