@@ -125,7 +125,16 @@ public class InterfaceTemplateProcessorTest
     {
         Class<?> classHtml = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Html");
         String parentInterface = classHtml.getGenericInterfaces()[0].toString();
-        assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.Element<PARENT, pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent>", parentInterface);
+        assertEquals
+        (
+            "pro.projo.generation.interfaces.test.html.baseclasses.Element" +
+            "<" +
+                "PARENT, " +
+                "pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent, " +
+                "pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent" +
+            ">",
+            parentInterface
+        );
     }
 
     @Test
