@@ -39,10 +39,19 @@ public @interface Dtd
     String path();
 
     /**
-    * @return the default base interface to use for model elements (this must be an interface
-    * with two type parameters: the first parameter for the parent content element type, and
-    * the second for the element's own content type;
-    * {@link Object} indicates that no specific base interface will be extended)
+    * Returns the base interface to be used for non-empty, non-text elements.
+    * This must be an interface with three type parameters: the first parameter for the parent content
+    * element type, the second for the element's own content input type, and the third for the
+    * element's content output type. For unrestricted content, the content input type and content
+    * output type will typically be the same, and the code generator will assign the same type for
+    * both type variables. However, for example for sequences of mandatory content objects, the
+    * code generator will create a type hierarchy of a base content type, and several individual
+    * types for the members of the first, second, third, etc. element of the sequence. The base
+    * interface will be parameterized with the sequences's first element type and the content input
+    * type, and the base content type as the output type.
+    *
+    * @return the default base interface to use for model elements ({@link Object} indicates that no
+    * specific base interface will be extended)
     **/
     Class<?> baseInterface() default Object.class;
 

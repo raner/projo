@@ -17,7 +17,7 @@ package pro.projo.generation.interfaces.test.html.baseclasses;
 
 import java.util.function.Function;
 
-public interface Element<PARENT, CONTENT>
+public interface Element<PARENT, CONTENT_IN, CONTENT_OUT>
 {
-    PARENT $(Function<CONTENT, CONTENT> content);
+    PARENT $(Function<CONTENT_IN, CONTENT_OUT> content);
 }

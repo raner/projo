@@ -139,7 +139,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
         String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
-        String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ">":">");
+        String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + ">":">");
         Name superPackageName = packageName(superType);
         boolean superTypeSamePackage = superPackageName.equals(packageName);
         Name superTypeName = superType.getQualifiedName();
