@@ -1,3 +1,7 @@
 <!ELEMENT html (head | body)>
 <!ELEMENT head EMPTY>
 <!ELEMENT body EMPTY>
+<!ATTLIST html
+ lang ID #REQUIRED
+ sort CDATA #FIXED "true"
+>

@@ -15,14 +15,28 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
-import java.util.stream.Stream;
+import java.util.List;
+import static java.util.Collections.emptyList;
 
-public interface ContentModel extends DtdElement
+public interface Attribute extends DtdElement
 {
-    ContentModelType type();
+    AttributeType type();
 
-    default Stream<Attribute> attributes()
+    AttributeUse use();
+
+    default String defaultValue()
     {
-        return children().stream().filter(Attribute.class::isInstance).map(Attribute.class::cast);
+        return null;
+    }
+
+    default String[] enumerationValues()
+    {
+        return null;
+    }
+
+    @Override
+    default List<DtdElement> children()
+    {
+        return emptyList();
     }
 }
