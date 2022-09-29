@@ -15,14 +15,10 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
-import java.util.stream.Stream;
-
-public interface ContentModel extends DtdElement
+public enum AttributeUse
 {
-    ContentModelType type();
-
-    default Stream<Attribute> attributes()
-    {
-        return children().stream().filter(Attribute.class::isInstance).map(Attribute.class::cast);
-    }
+    NORMAL,
+    IMPLIED,
+    FIXED,
+    REQUIRED;
 }

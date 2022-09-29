@@ -21,6 +21,9 @@ import java.util.Stack;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDHandlerBase;
 import com.sun.xml.dtdparser.InputEntity;
+import pro.projo.generation.dtd.model.Attribute;
+import pro.projo.generation.dtd.model.AttributeType;
+import pro.projo.generation.dtd.model.AttributeUse;
 import pro.projo.generation.dtd.model.ContentModel;
 import pro.projo.generation.dtd.model.ContentModelType;
 import pro.projo.generation.dtd.model.Dtd;
@@ -127,12 +130,6 @@ public class DtdModelBuilder extends DTDHandlerBase
         ModelGroup modelGroup = new ModelGroup()
         {
             @Override
-            public Occurrence occurrence()
-            {
-                return null; // occurrence is not known until the end of the group
-            }
-            
-            @Override
             public List<DtdElement> children()
             {
                 return children;
@@ -202,6 +199,43 @@ public class DtdModelBuilder extends DTDHandlerBase
             {
                 throw new SAXException("mismatched connectors: " + currentType + "/" + newType);
             }
+        }
+    }
+
+    @Override
+    public void attributeDecl(String elementName, String attributeName, String attributeType,
+        String[] enumeration, short attributeUse, String defaultValue) throws SAXException
+    {
+        Dtd dtd = (Dtd)stack.peek();
+        // TODO: make this more efficient than linear search
+        DtdElement element = dtd.children().stream().filter(it -> it.name().equals(elementName)).findAny().orElse(null);
+        if (element instanceof ContentModel)
+        {
+            Attribute attribute = new Attribute()
+            {
+                @Override
+                public String name()
+                {
+                    return attributeName;
+                }
+
+                @Override
+                public AttributeType type()
+                {
+                    return AttributeType.valueOf(attributeType);
+                }
+
+                @Override
+                public AttributeUse use()
+                {
+                    return AttributeUse.values()[attributeUse];
+                }
+            };
+            element.children().add(attribute);
+        }
+        else
+        {
+            throw new SAXException("encoountered attribute '" + attributeName + "' for unknown element '" + elementName + "'");
         }
     }
 }

@@ -19,16 +19,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.xml.sax.InputSource;
 import com.sun.xml.dtdparser.DTDParser;
+import pro.projo.generation.dtd.model.Attribute;
+import pro.projo.generation.dtd.model.AttributeType;
+import pro.projo.generation.dtd.model.AttributeUse;
 import pro.projo.generation.dtd.model.ContentModel;
 import pro.projo.generation.dtd.model.Dtd;
 import pro.projo.generation.dtd.model.DtdElement;
 import pro.projo.generation.dtd.model.ModelGroup;
 import pro.projo.generation.dtd.model.ModelGroupType;
 import pro.projo.generation.dtd.model.Occurrence;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertEquals;
 
 public class DtdBuilderTest
@@ -59,6 +65,20 @@ public class DtdBuilderTest
         ModelGroup html = (ModelGroup)first.children().iterator().next();
         assertEquals(Occurrence.ONCE, html.occurrence());
         assertEquals(ModelGroupType.CHOICE, html.type());
+    }
+    
+    @Test
+    public void testSimpleAttributes() throws Exception
+    {
+        Dtd dtd = parse("/DTDs/HtmlWithHeadOrBody.dtd");
+        ContentModel first = (ContentModel)dtd.children().iterator().next();
+        Map<String, Attribute> attributes = first.attributes().collect(toMap(Attribute::name, identity()));
+        Attribute lang = attributes.get("lang");
+        Attribute sort = attributes.get("sort");
+        assertEquals(AttributeUse.FIXED, sort.use());
+        assertEquals(AttributeType.CDATA, sort.type());
+        assertEquals(AttributeUse.REQUIRED, lang.use());
+        assertEquals(AttributeType.ID, lang.type());
     }
 
     private Dtd parse(String dtdPath) throws Exception
