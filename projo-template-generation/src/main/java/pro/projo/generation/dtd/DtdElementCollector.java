@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.dtd;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -25,15 +26,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import com.sun.xml.dtdparser.DTDHandlerBase;
+import com.sun.xml.dtdparser.DTDParser;
+import pro.projo.generation.dtd.model.Attribute;
+import pro.projo.generation.dtd.model.ChildElement;
+import pro.projo.generation.dtd.model.ContentModel;
+import pro.projo.generation.dtd.model.ContentModelType;
+import pro.projo.generation.dtd.model.DtdElement;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
@@ -50,16 +59,14 @@ import static javax.tools.Diagnostic.Kind.WARNING;
 *
 * @author Mirko Raner
 **/
-public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUtilities
+public class DtdElementCollector implements TypeMirrorUtilities
 {
     private Map<String, Configuration> configurations = new HashMap<>();
-    private Map<String, Integer> contentChildren = new HashMap<>();
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private Name generated;
     private UnaryOperator<String> typeNameTransformer;
     private AttributeNameConverter attributeNameConverter;
-    private String currentContentModel;
     private TypeElement baseInterface;
     private TypeElement baseInterfaceEmpty;
     private TypeElement baseInterfaceText;
@@ -102,39 +109,33 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         return elements;
     }
 
-    public Stream<Configuration> configurations()
+    public Stream<Configuration> configurations(InputSource source) throws IOException, SAXException
     {
-        return configurations.values().stream();
+        DtdModelBuilder builder = new DtdModelBuilder();
+        DTDParser parser = new DTDParser();
+        parser.setDtdHandler(builder);
+        parser.parse(source);
+        Stream<ContentModel> contentModels = builder.getDtd().contentModels();
+        return contentModels.flatMap(this::createElementAndContent);
     }
 
-    @Override
-    public void startContentModel(String elementName, short contentModelType) throws SAXException
+    public Stream<Configuration> createElementAndContent(ContentModel contentModel)
     {
-        if (currentContentModel != null)
-        {
-            throw new IllegalStateException("content models cannot be nested");
-        }
-        if (configurations.containsKey(elementName))
-        {
-            throw new IllegalStateException("duplicate content model: " + elementName);
-        }
-        currentContentModel = elementName;
+        Optional<Configuration> contentConfiguration = getOrCreateContentType(contentModel);
+        return Stream.concat
+        (
+            Stream.of(createElementInterface(contentModel)),
+            contentConfiguration.isPresent()? Stream.of(contentConfiguration.get()):Stream.empty()
+        );
     }
 
-    @Override
-    public void endContentModel(String elementName, short contentModelType) throws SAXException
+    public Configuration createElementInterface(ContentModel contentModel)
     {
-        if (currentContentModel == null)
-        {
-            throw new IllegalStateException("unexpected end of content model");
-        }
-
-        // Add element interface:
-        //
         Map<String, Object> parameters = new HashMap<>();
-        boolean currentContentModelHasChildren = contentChildren.get(currentContentModel) != null;
+        String elementName = contentModel.name();
+        boolean currentContentModelHasChildren = contentModel.nonAttributes().count() > 0;
         String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
-        TypeElement superType = contentModelType == CONTENT_MODEL_EMPTY? baseInterfaceEmpty:
+        TypeElement superType = contentModel.type() == ContentModelType.EMPTY? baseInterfaceEmpty:
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
@@ -158,18 +159,15 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
+        configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
         configurations.put(elementName, configuration);
-
-        // Reset content model:
-        //
-        currentContentModel = null;
+        return configuration;
     }
 
-    @Override
-    public void attributeDecl(String elementName, String attributeName, String attributeType,
-        String[] enumeration, short attributeUse, String defaultValue) throws SAXException
+    public Configuration attributeDecl(Configuration configuration, ContentModel contentModel, Attribute attribute)
     {
-        Configuration configuration = configurations.get(elementName);
+        String attributeName = attribute.name();
+        String elementName = contentModel.name();
         if (configuration != null)
         {
             // TODO: next line duplicated from above
@@ -189,22 +187,20 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
                 "Encountered attribute '" + attributeName + "' for unknown element '" + elementName + "'"
             );
         }
+        return configuration;
     }
 
-    @Override
-    public void childElement(String elementName, short occurrence) throws SAXException
+    public Configuration childElement(Configuration configuration, ChildElement childElement)
     {
-        increaseChildCount();
-        Configuration configuration = getOrCreateContentType();
         Map<String, Object> parameters = configuration.parameters();
         String contentType = (String)parameters.get("InterfaceTemplate");
         @SuppressWarnings("unchecked")
         Set<String> methodNames = (Set<String>)parameters.getOrDefault("methodNames", new HashSet<>());
         // TODO: next line duplicated from above
-        String methodName = elementName;
+        String methodName = childElement.name();
         if (!methodNames.contains(methodName))
         {
-            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(childElement.name()))});
             String method = typeName + "<" + contentType + "> " + methodName + "()";
             // TODO: next four lines also duplicated
             String[] methods = (String[])parameters.get("methods");
@@ -214,31 +210,16 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
             methodNames.add(methodName);
             parameters.put("methodNames", methodNames);
         }
+        return configuration;
     }
 
-    @Override
-    public void mixedElement(String elementName) throws SAXException
+    private Optional<Configuration> getOrCreateContentType(ContentModel contentModel)
     {
-        increaseChildCount();
-        getOrCreateContentType();
-    }
-
-    @Override
-    public void startModelGroup() throws SAXException
-    {
-        increaseChildCount();
-    }
-
-    private void increaseChildCount()
-    {
-        contentChildren.merge(currentContentModel, 1, Integer::sum);
-    }
-
-    private Configuration getOrCreateContentType()
-    {
-        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(currentContentModel))});
+        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(contentModel.name()))});
         Configuration configuration = configurations.get(contentType);
-        if (configuration == null)
+        if (configuration == null
+        && contentModel.type() != ContentModelType.EMPTY
+        && contentModel.nonAttributes().count() > 0)
         {
             Map<String, Object> parameters = new HashMap<>();
             // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
@@ -251,8 +232,14 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
             String fullyQualifiedClassName = packageName.toString() + "." + contentType;
             configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
             configurations.put(contentType, configuration);
+            BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
+                (conf, child) -> childElement(conf, (ChildElement)child);
+            configuration = contentModel.nonAttributes()
+                .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
+                .filter(ChildElement.class::isInstance)
+                .reduce(configuration, reducer, (a, b) -> a);
         }
-        return configuration;
+        return Optional.ofNullable(configuration);
     }
 
     private String typeName(String elementName)
@@ -261,7 +248,7 @@ public class DtdElementCollector extends DTDHandlerBase implements TypeMirrorUti
         String remainingLetters = elementName.substring(1);
         return firstLetter.toUpperCase() + remainingLetters.toLowerCase();
     }
- 
+
     private Name packageName(TypeElement element)
     {
         String name = element.getQualifiedName().toString();

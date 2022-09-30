@@ -25,4 +25,9 @@ public interface ContentModel extends DtdElement
     {
         return children().stream().filter(Attribute.class::isInstance).map(Attribute.class::cast);
     }
+
+    default Stream<DtdElement> nonAttributes()
+    {
+        return children().stream().filter(it -> !(it instanceof Attribute));
+    }
 }

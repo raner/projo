@@ -15,10 +15,15 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface DtdElement
 {
     String name();
-    List<DtdElement> children();
+
+    default List<DtdElement> children()
+    {
+        return Collections.emptyList();
+    };
 }

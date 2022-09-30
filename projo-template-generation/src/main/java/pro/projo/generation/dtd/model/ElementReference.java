@@ -15,7 +15,7 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
-public interface ElementReference
+public interface ElementReference extends DtdElement
 {
     String name();
     ContentModel contentModel();

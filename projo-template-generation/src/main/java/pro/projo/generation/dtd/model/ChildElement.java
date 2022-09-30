@@ -17,4 +17,5 @@ package pro.projo.generation.dtd.model;
 
 public interface ChildElement extends ElementReference
 {
+    Occurrence ocurrence();
 }
