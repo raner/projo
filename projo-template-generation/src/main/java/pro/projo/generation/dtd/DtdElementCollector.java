@@ -26,10 +26,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Name;
@@ -43,6 +43,7 @@ import pro.projo.generation.dtd.model.ChildElement;
 import pro.projo.generation.dtd.model.ContentModel;
 import pro.projo.generation.dtd.model.ContentModelType;
 import pro.projo.generation.dtd.model.DtdElement;
+import pro.projo.generation.dtd.model.ModelGroup;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
@@ -50,7 +51,9 @@ import pro.projo.generation.utilities.TypeMirrorUtilities;
 import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
-import static javax.tools.Diagnostic.Kind.WARNING;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import static javax.tools.Diagnostic.Kind.ERROR;
 
 /**
 * The {@link DtdElementCollector} is a mutable type that collects information from
@@ -61,7 +64,6 @@ import static javax.tools.Diagnostic.Kind.WARNING;
 **/
 public class DtdElementCollector implements TypeMirrorUtilities
 {
-    private Map<String, Configuration> configurations = new HashMap<>();
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private Name generated;
@@ -93,7 +95,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         }
         catch (Exception exception)
         {
-            throw new Error(exception.toString());
+            this.messager.printMessage(ERROR, "Could not instantiate attribute name converter");
         }
     }
 
@@ -121,12 +123,8 @@ public class DtdElementCollector implements TypeMirrorUtilities
 
     public Stream<Configuration> createElementAndContent(ContentModel contentModel)
     {
-        Optional<Configuration> contentConfiguration = getOrCreateContentType(contentModel);
-        return Stream.concat
-        (
-            Stream.of(createElementInterface(contentModel)),
-            contentConfiguration.isPresent()? Stream.of(contentConfiguration.get()):Stream.empty()
-        );
+        Stream<Configuration> contentConfiguration = createContentTypes(contentModel);
+        return Stream.concat(Stream.of(createElementInterface(contentModel)), contentConfiguration);
     }
 
     public Configuration createElementInterface(ContentModel contentModel)
@@ -160,7 +158,6 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
         configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
-        configurations.put(elementName, configuration);
         return configuration;
     }
 
@@ -168,29 +165,18 @@ public class DtdElementCollector implements TypeMirrorUtilities
     {
         String attributeName = attribute.name();
         String elementName = contentModel.name();
-        if (configuration != null)
-        {
-            // TODO: next line duplicated from above
-            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
-            String methodName = attributeNameConverter.convertAttributeName(attributeName);
-            String method = typeName + "<PARENT> " + methodName + "(String " + methodName + ")";
-            String[] methods = (String[])configuration.parameters().get("methods");
-            List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
-            newMethods.add(method);
-            configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
-        }
-        else
-        {
-            messager.printMessage
-            (
-                WARNING,
-                "Encountered attribute '" + attributeName + "' for unknown element '" + elementName + "'"
-            );
-        }
+        // TODO: next line duplicated from above
+        String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        String methodName = attributeNameConverter.convertAttributeName(attributeName);
+        String method = typeName + "<PARENT> " + methodName + "(String " + methodName + ")";
+        String[] methods = (String[])configuration.parameters().get("methods");
+        List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
+        newMethods.add(method);
+        configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
         return configuration;
     }
 
-    public Configuration childElement(Configuration configuration, ChildElement childElement)
+    public Configuration childElement(Configuration configuration, ChildElement childElement, String contentTypeArgument)
     {
         Map<String, Object> parameters = configuration.parameters();
         String contentType = (String)parameters.get("InterfaceTemplate");
@@ -201,7 +187,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         if (!methodNames.contains(methodName))
         {
             String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(childElement.name()))});
-            String method = typeName + "<" + contentType + "> " + methodName + "()";
+            String method = typeName + "<" + (contentTypeArgument != null? contentTypeArgument:contentType) + "> " + methodName + "()";
             // TODO: next four lines also duplicated
             String[] methods = (String[])parameters.get("methods");
             List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
@@ -213,33 +199,65 @@ public class DtdElementCollector implements TypeMirrorUtilities
         return configuration;
     }
 
-    private Optional<Configuration> getOrCreateContentType(ContentModel contentModel)
+    private Stream<Configuration> createContentTypes(ContentModel contentModel)
     {
         String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(contentModel.name()))});
-        Configuration configuration = configurations.get(contentType);
-        if (configuration == null
-        && contentModel.type() != ContentModelType.EMPTY
-        && contentModel.nonAttributes().count() > 0)
+        Stream<ChildElement> children = contentModel.nonAttributes()
+            .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
+            .filter(ChildElement.class::isInstance)
+            .map(ChildElement.class::cast);
+        DtdElement modelGroup;
+        if (contentModel.nonAttributes().count() == 1
+        && (modelGroup = contentModel.nonAttributes().iterator().next()) instanceof ModelGroup
+        && ((ModelGroup)modelGroup).isStrictSequence())
         {
-            Map<String, Object> parameters = new HashMap<>();
-            // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
-            parameters.put("package", packageName.toString());
-            parameters.put("imports", new String[] {generated.toString()});
-            parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
-            parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-            parameters.put("InterfaceTemplate", contentType);
-            parameters.put("methods", new String[] {});
-            String fullyQualifiedClassName = packageName.toString() + "." + contentType;
-            configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
-            configurations.put(contentType, configuration);
-            BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
-                (conf, child) -> childElement(conf, (ChildElement)child);
-            configuration = contentModel.nonAttributes()
-                .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
-                .filter(ChildElement.class::isInstance)
-                .reduce(configuration, reducer, (a, b) -> a);
+            List<ChildElement> childList = children.collect(toList());
+
+            // To implement a strict sequence:
+            //
+            // - generate a content base interface (e.g., HtmlContent) without any methods
+            // - generate a content<n> interface (n=0...) with the nth (0th, 1st, ...) method
+            // - each interface's content method parameter points to the next interface
+            // - the last interface's content method parameter points to the base interface
+            // - the element interface uses content<0> as in type and the base interface as out type
+            //
+            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty()));
+            Stream<Configuration> sequence = IntStream.range(0, childList.size()).mapToObj
+            (
+                index -> createContentType
+                (
+                    contentType + index,
+                    contentType + (index+1 < childList.size()? String.valueOf(index+1):""),
+                    Stream.of(childList.get(index)),
+                    " extends " + contentType
+                )
+            );
+            return Stream.concat(base, sequence);
         }
-        return Optional.ofNullable(configuration);
+        else if (contentModel.type() != ContentModelType.EMPTY
+        && (contentModel.nonAttributes().count() > 0))
+        {
+            return Stream.of(createContentType(contentType, null, children));
+        }
+        return Stream.empty();
+    }
+
+    private Configuration createContentType(String contentType, String contentTypeArgument,
+        Stream<ChildElement> children, String... extend)
+    {
+        Map<String, Object> parameters = new HashMap<>();
+        // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
+        parameters.put("package", packageName.toString());
+        parameters.put("imports", new String[] {generated.toString()});
+        parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
+        parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
+        parameters.put("InterfaceTemplate", contentType + Stream.of(extend).collect(joining()));
+        parameters.put("methods", new String[] {});
+        String fullyQualifiedClassName = packageName.toString() + "." + contentType;
+        Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
+        BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
+            (conf, child) -> childElement(conf, (ChildElement)child, contentTypeArgument);
+        return children.reduce(configuration, reducer, (a, b) -> a);
     }
 
     private String typeName(String elementName)
