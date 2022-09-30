@@ -31,4 +31,14 @@ public interface ModelGroup extends DtdElement
     {
         return "<unnamed group>";
     }
+
+    default boolean isStrictSequence()
+    {
+        return type() == ModelGroupType.SEQUENCE
+            && occurrence() == Occurrence.ONCE
+            && children().stream().allMatch
+            (
+                it -> it instanceof ChildElement && ((ChildElement)it).ocurrence() == Occurrence.ONCE
+            );
+    }
 }
