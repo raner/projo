@@ -15,6 +15,12 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
+import java.util.stream.Stream;
+
 public interface Dtd extends DtdElement
 {
+    default Stream<ContentModel> contentModels()
+    {
+        return children().stream().filter(ContentModel.class::isInstance).map(ContentModel.class::cast);
+    }
 }

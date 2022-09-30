@@ -39,7 +39,7 @@ import pro.projo.interfaces.annotation.utilities.DefaultAttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -151,7 +151,13 @@ public class InterfaceTemplateProcessorDtdTest
             "SelectContent", "DatalistContent", "OptgroupContent", "OutputContent", "ProgressContent",
             "MeterContent", "FieldsetContent", "LegendContent", "NoscriptContent", "TemplateContent"
         };
-        assertEquals(new HashSet<>(Arrays.asList(expected)), types);
+        Set<String> expectedButNotFound = new HashSet<>(Arrays.asList(expected));
+        expectedButNotFound.removeAll(types);
+        Set<String> foundButNotExpected = types;
+        foundButNotExpected.removeAll(Arrays.asList(expected));
+        String message = "Expected but not found: " + expectedButNotFound +
+            ", found but not expected: " + foundButNotExpected;
+        assertTrue(message, expectedButNotFound.isEmpty() && foundButNotExpected.isEmpty());
     }
 
     private TypeElement typeElement(String fullyQualifiedName)

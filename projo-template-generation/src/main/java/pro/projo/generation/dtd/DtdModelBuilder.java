@@ -24,10 +24,12 @@ import com.sun.xml.dtdparser.InputEntity;
 import pro.projo.generation.dtd.model.Attribute;
 import pro.projo.generation.dtd.model.AttributeType;
 import pro.projo.generation.dtd.model.AttributeUse;
+import pro.projo.generation.dtd.model.ChildElement;
 import pro.projo.generation.dtd.model.ContentModel;
 import pro.projo.generation.dtd.model.ContentModelType;
 import pro.projo.generation.dtd.model.Dtd;
 import pro.projo.generation.dtd.model.DtdElement;
+import pro.projo.generation.dtd.model.MixedElement;
 import pro.projo.generation.dtd.model.ModelGroup;
 import pro.projo.generation.dtd.model.ModelGroupType;
 import pro.projo.generation.dtd.model.Occurrence;
@@ -166,6 +168,53 @@ public class DtdModelBuilder extends DTDHandlerBase
             }
         };
         stack.peek().children().add(completedModelGroup);
+    }
+
+    
+    @Override
+    public void childElement(String elementName, short occurence) throws SAXException
+    {
+        ChildElement childElement = new ChildElement()
+        {
+            @Override
+            public String name()
+            {
+                return elementName;
+            }
+
+            @Override
+            public Occurrence ocurrence()
+            {
+                return Occurrence.values()[occurence];
+            }
+
+            @Override
+            public ContentModel contentModel()
+            {
+                return null;
+            }
+        };
+        stack.peek().children().add(childElement);
+    }
+
+    @Override
+    public void mixedElement(String elementName) throws SAXException
+    {
+        MixedElement mixedElement = new MixedElement()
+        {
+            @Override
+            public String name()
+            {
+                return elementName;
+            }
+
+            @Override
+            public ContentModel contentModel()
+            {
+                return null;
+            }
+        };
+        stack.peek().children().add(mixedElement);
     }
 
     @Override

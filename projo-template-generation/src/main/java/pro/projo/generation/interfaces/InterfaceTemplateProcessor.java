@@ -65,7 +65,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import org.xml.sax.SAXException;
-import com.sun.xml.dtdparser.DTDParser;
 import pro.projo.generation.ProjoProcessor;
 import pro.projo.generation.ProjoTemplateFactoryGenerator;
 import pro.projo.generation.dtd.DtdElementCollector;
@@ -425,13 +424,10 @@ public class InterfaceTemplateProcessor extends ProjoProcessor
         (
             source ->
             {
-                DTDParser parser = new DTDParser();
                 DtdElementCollector handler = new DtdElementCollector(packageName, source.getDtd(), elements, messager);
-                parser.setDtdHandler(handler);
                 try
                 {
-                    parser.parse(source);
-                    return handler.configurations();
+                    return handler.configurations(source);
                 }
                 catch (IOException|SAXException exception)
                 {
