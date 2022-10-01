@@ -92,12 +92,11 @@ public class InterfaceTemplateProcessorTest
         assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
     }
 
-    @org.junit.Ignore
     @Test
-    public void testImgClassHasEmptyElementSuperInterface() throws Exception
+    public void testEmptyElementHasEmptyElementSuperInterface() throws Exception
     {
-        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Img");
-        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classImg.getInterfaces());
+        Class<?> classEmpty = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Param");
+        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classEmpty.getInterfaces());
     }
 
     @Test
@@ -114,12 +113,11 @@ public class InterfaceTemplateProcessorTest
         assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
     }
 
-    @org.junit.Ignore
     @Test
-    public void testImgClassHasEmptyElementSuperInterfaceFromOtherPackage() throws Exception
+    public void testEmptyElementHasEmptyElementSuperInterfaceFromOtherPackage() throws Exception
     {
-        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.otherpackage.Img");
-        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classImg.getInterfaces());
+        Class<?> classEmpty = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.otherpackage.Param");
+        assertArrayEquals(new Class<?>[] {EmptyElement.class}, classEmpty.getInterfaces());
     }
 
     @Test
@@ -139,12 +137,11 @@ public class InterfaceTemplateProcessorTest
         );
     }
 
-    @org.junit.Ignore
     @Test
-    public void testImgClassHasParentTypeParameter() throws Exception
+    public void testEmptyElementHasParentTypeParameter() throws Exception
     {
-        Class<?> classImg = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Img");
-        String parentInterface = classImg.getGenericInterfaces()[0].toString();
+        Class<?> classEmpty = Class.forName("pro.projo.generation.interfaces.test.html.baseclasses.Param");
+        String parentInterface = classEmpty.getGenericInterfaces()[0].toString();
         assertEquals("pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement<PARENT>", parentInterface);
     }
 
