@@ -1,0 +1,8 @@
+<!ELEMENT element EMPTY>
+<!ATTLIST element
+  required1 CDATA #REQUIRED
+  required2 CDATA #REQUIRED
+  required3 CDATA #REQUIRED
+  optional1 CDATA #IMPLIED
+  optional2 CDATA #IMPLIED
+> 

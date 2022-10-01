@@ -46,78 +46,13 @@ import static org.mockito.Mockito.when;
 
 public class InterfaceTemplateProcessorDtdTest
 {
+    static interface EmptyElement<PARENT> {}
+
     @Test
     public void testGeneratedClasses() throws Exception
     {
         String dtdPath = "/DTDs/Ashbridge/html5.dtd";
-        InterfaceTemplateProcessor processor = new InterfaceTemplateProcessor();
-        ProcessingEnvironment environment = mock(ProcessingEnvironment.class);
-        TypeMirror object = mock(TypeMirror.class);
-        Elements elements = mock(Elements.class);
-        Filer filer = mock(Filer.class);
-        FileObject dtdFile = mock(FileObject.class);
-        URI dtdUri = getClass().getResource(dtdPath).toURI();
-        PackageElement packageElement = mock(PackageElement.class);
-        when(packageElement.getQualifiedName()).thenReturn(new Name("html.api"));
-        when(dtdFile.toUri()).thenReturn(dtdUri);
-        when(dtdFile.openInputStream()).thenReturn(getClass().getResourceAsStream(dtdPath));
-        when(filer.getResource(any(), any(), any())).thenReturn(dtdFile);
-        when(object.toString()).thenReturn(Object.class.getName());
-        when(elements.getTypeElement(any())).thenAnswer(call -> typeElement(call.getArgument(0, String.class)));
-        when(environment.getFiler()).thenReturn(filer);
-        when(environment.getElementUtils()).thenReturn(elements);
-        processor.init(environment);
-        Dtd dtd = new Dtd()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-                return Dtd.class;
-            }
-
-            @Override
-            public String path()
-            {
-                return "DTDs/Ashbridge/html5.dtd";
-            }
-
-            @Override
-            public Class<?> baseInterface()
-            {
-                throw new MirroredTypeException(object);
-            }
-
-            @Override
-            public Class<?> baseInterfaceEmpty()
-            {
-                throw new MirroredTypeException(object);
-            }
-
-            @Override
-            public Class<?> baseInterfaceText()
-            {
-                throw new MirroredTypeException(object);
-            }
-
-            @Override
-            public String elementNameFormat()
-            {
-                return "{0}";
-            }
-
-            @Override
-            public String contentNameFormat()
-            {
-                return "{0}Content";
-            }
-
-            @Override
-            public Class<? extends AttributeNameConverter> attributeNameConverter()
-            {
-                return DefaultAttributeNameConverter.class;
-            }
-        };
-        Collection<? extends Configuration> configurations = processor.getDtdConfiguration(packageElement, singletonList(dtd));
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, Object.class);
         Set<String> types = configurations.stream().map(it -> (String)it.parameters().get("InterfaceTemplate"))
             .map(it -> {int index = it.indexOf("<"); return index == -1? it:it.substring(0, index);})
             .collect(toSet());
@@ -150,7 +85,14 @@ public class InterfaceTemplateProcessorDtdTest
             "CaptionContent", "ColgroupContent", "TbodyContent", "TheadContent", "TfootContent",
             "TrContent", "TdContent", "ThContent", "FormContent", "LabelContent", "ButtonContent",
             "SelectContent", "DatalistContent", "OptgroupContent", "OutputContent", "ProgressContent",
-            "MeterContent", "FieldsetContent", "LegendContent", "NoscriptContent", "TemplateContent"
+            "MeterContent", "FieldsetContent", "LegendContent", "NoscriptContent", "TemplateContent",
+            "BaseHref",
+            "ImgAlt",
+            "ImgSrc",
+            "ImgAltSrc",
+            "AreaAlt",
+            "StyleType",
+            "OptgroupLabel"
         };
         Set<String> expectedButNotFound = new HashSet<>(Arrays.asList(expected));
         expectedButNotFound.removeAll(types);
@@ -159,6 +101,107 @@ public class InterfaceTemplateProcessorDtdTest
         String message = "Expected but not found: " + expectedButNotFound +
             ", found but not expected: " + foundButNotExpected;
         assertTrue(message, expectedButNotFound.isEmpty() && foundButNotExpected.isEmpty());
+    }
+
+    @Test
+    public void testGeneratedClassesForRequiredAttributes() throws Exception
+    {
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Set<String> types = configurations.stream().map(it -> (String)it.parameters().get("InterfaceTemplate"))
+            .collect(toSet());
+        String[] expected =
+        {
+            "Element<PARENT>",
+            "ElementRequired1<PARENT>",
+            "ElementRequired2<PARENT>",
+            "ElementRequired3<PARENT>",
+            "ElementRequired1Required2<PARENT>",
+            "ElementRequired1Required3<PARENT>",
+            "ElementRequired2Required3<PARENT>",
+            "ElementRequired1Required2Required3<PARENT> extends EmptyElement<PARENT>"
+        };
+        Set<String> expectedButNotFound = new HashSet<>(Arrays.asList(expected));
+        expectedButNotFound.removeAll(types);
+        Set<String> foundButNotExpected = types;
+        foundButNotExpected.removeAll(Arrays.asList(expected));
+        String message = "Expected but not found: " + expectedButNotFound +
+            ", found but not expected: " + foundButNotExpected;
+        assertTrue(message, expectedButNotFound.isEmpty() && foundButNotExpected.isEmpty());
+    }
+
+    private Collection<? extends Configuration> getConfigurations(String dtdPath, Class<?> emptyBase) throws Exception
+    {
+        InterfaceTemplateProcessor processor = new InterfaceTemplateProcessor();
+        ProcessingEnvironment environment = mock(ProcessingEnvironment.class);
+        TypeMirror object = mock(TypeMirror.class);
+        TypeMirror objectEmpty = mock(TypeMirror.class);
+        Elements elements = mock(Elements.class);
+        Filer filer = mock(Filer.class);
+        FileObject dtdFile = mock(FileObject.class);
+        URI dtdUri = getClass().getResource(dtdPath).toURI();
+        PackageElement packageElement = mock(PackageElement.class);
+        when(packageElement.getQualifiedName()).thenReturn(new Name("html.api"));
+        when(dtdFile.toUri()).thenReturn(dtdUri);
+        when(dtdFile.openInputStream()).thenReturn(getClass().getResourceAsStream(dtdPath));
+        when(filer.getResource(any(), any(), any())).thenReturn(dtdFile);
+        when(object.toString()).thenReturn(Object.class.getName());
+        when(objectEmpty.toString()).thenReturn(emptyBase.getName());
+        when(elements.getTypeElement(any())).thenAnswer(call -> typeElement(call.getArgument(0, String.class)));
+        when(environment.getFiler()).thenReturn(filer);
+        when(environment.getElementUtils()).thenReturn(elements);
+        processor.init(environment);
+        Dtd dtd = new Dtd()
+        {
+            @Override
+            public Class<? extends Annotation> annotationType()
+            {
+                return Dtd.class;
+            }
+
+            @Override
+            public String path()
+            {
+                return dtdPath.substring(1);
+            }
+
+            @Override
+            public Class<?> baseInterface()
+            {
+                throw new MirroredTypeException(object);
+            }
+
+            @Override
+            public Class<?> baseInterfaceEmpty()
+            {
+                throw new MirroredTypeException(objectEmpty);
+            }
+
+            @Override
+            public Class<?> baseInterfaceText()
+            {
+                throw new MirroredTypeException(object);
+            }
+
+            @Override
+            public String elementNameFormat()
+            {
+                return "{0}";
+            }
+
+            @Override
+            public String contentNameFormat()
+            {
+                return "{0}Content";
+            }
+
+            @Override
+            public Class<? extends AttributeNameConverter> attributeNameConverter()
+            {
+                return DefaultAttributeNameConverter.class;
+            }
+        };
+        return processor.getDtdConfiguration(packageElement, singletonList(dtd));
     }
 
     private TypeElement typeElement(String fullyQualifiedName)

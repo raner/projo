@@ -39,6 +39,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import com.sun.xml.dtdparser.DTDParser;
 import pro.projo.generation.dtd.model.Attribute;
+import pro.projo.generation.dtd.model.AttributeUse;
 import pro.projo.generation.dtd.model.ChildElement;
 import pro.projo.generation.dtd.model.ContentModel;
 import pro.projo.generation.dtd.model.ContentModelType;
@@ -51,6 +52,7 @@ import pro.projo.generation.utilities.TypeMirrorUtilities;
 import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
+import static java.util.stream.IntStream.range;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static javax.tools.Diagnostic.Kind.ERROR;
@@ -124,15 +126,17 @@ public class DtdElementCollector implements TypeMirrorUtilities
     public Stream<Configuration> createElementAndContent(ContentModel contentModel)
     {
         Stream<Configuration> contentConfiguration = createContentTypes(contentModel);
-        return Stream.concat(Stream.of(createElementInterface(contentModel)), contentConfiguration);
+        return Stream.concat(createElementInterface(contentModel), contentConfiguration);
     }
 
-    public Configuration createElementInterface(ContentModel contentModel)
+    public Stream<Configuration> createElementInterface(ContentModel contentModel)
     {
-        Map<String, Object> parameters = new HashMap<>();
         String elementName = contentModel.name();
-        boolean currentContentModelHasChildren = contentModel.nonAttributes().count() > 0;
+        List<Attribute> requiredAttributes = contentModel.attributes()
+            .filter(attribute -> attribute.use() == AttributeUse.REQUIRED)
+            .collect(toList());
         String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        boolean currentContentModelHasChildren = contentModel.nonAttributes().count() > 0;
         TypeElement superType = contentModel.type() == ContentModelType.EMPTY? baseInterfaceEmpty:
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
@@ -143,22 +147,46 @@ public class DtdElementCollector implements TypeMirrorUtilities
         boolean superTypeSamePackage = superPackageName.equals(packageName);
         Name superTypeName = superType.getQualifiedName();
         Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
+        if (requiredAttributes.isEmpty())
+        {
+            Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
+            configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
+            return Stream.of(configuration);
+        }
+        else
+        {
+            // For required attributes, multiple element interfaces need to be created
+            // (specifically, 2^n interfaces, where n is the number of required attributes)
+            //
+            List<Name> imports = imported.collect(toList());
+            Stream<List<Attribute>> combinations = powerList(requiredAttributes);
+            return combinations.map(attributes ->
+            {
+                Stream<String> presentAttributes = attributes.stream().map(Attribute::name).map(this::typeName);
+                String name = typeName + presentAttributes.collect(joining());
+                String extension = attributes.size() == requiredAttributes.size()? extend + (isObject? "":typeParameters):"";
+                return elementConfiguration(name, imports.stream(), extension);
+            });
+        }
+    }
+
+    public Configuration elementConfiguration(String typeName, Stream<Name> imported, String extendSpec)
+    {
         String[] imports = imported
             .sorted(importOrder)
             .map(Name::toString)
             .filter(name -> !name.startsWith("java.lang."))
             .toArray(String[]::new);
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("package", packageName.toString());
         parameters.put("imports", imports);
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-        parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extend + (isObject? "":typeParameters));
+        parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extendSpec);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
-        Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
-        configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
-        return configuration;
+        return new DefaultConfiguration(fullyQualifiedClassName, parameters);
     }
 
     public Configuration attributeDecl(Configuration configuration, ContentModel contentModel, Attribute attribute)
@@ -258,6 +286,16 @@ public class DtdElementCollector implements TypeMirrorUtilities
         BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
             (conf, child) -> childElement(conf, (ChildElement)child, contentTypeArgument);
         return children.reduce(configuration, reducer, (a, b) -> a);
+    }
+
+    /**
+    * This method produces a power set, but uses lists to preserve the order.
+    **/
+    private <TYPE> Stream<List<TYPE>> powerList(List<TYPE> list)
+    {
+        return range(0, 1 << list.size())
+            .mapToObj(pattern -> range(0, list.size()).filter(bit -> (pattern & (1 << bit)) != 0).toArray())
+            .map(indexArray -> IntStream.of(indexArray).mapToObj(list::get).collect(toList()));
     }
 
     private String typeName(String elementName)

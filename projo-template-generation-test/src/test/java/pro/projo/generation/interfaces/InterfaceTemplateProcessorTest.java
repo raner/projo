@@ -92,6 +92,7 @@ public class InterfaceTemplateProcessorTest
         assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
     }
 
+    @org.junit.Ignore
     @Test
     public void testImgClassHasEmptyElementSuperInterface() throws Exception
     {
@@ -113,6 +114,7 @@ public class InterfaceTemplateProcessorTest
         assertArrayEquals(new Class<?>[] {Element.class}, classHtml.getInterfaces());
     }
 
+    @org.junit.Ignore
     @Test
     public void testImgClassHasEmptyElementSuperInterfaceFromOtherPackage() throws Exception
     {
@@ -137,6 +139,7 @@ public class InterfaceTemplateProcessorTest
         );
     }
 
+    @org.junit.Ignore
     @Test
     public void testImgClassHasParentTypeParameter() throws Exception
     {
