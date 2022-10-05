@@ -135,7 +135,6 @@ public class DtdElementCollector implements TypeMirrorUtilities
         List<Attribute> requiredAttributes = contentModel.attributes()
             .filter(attribute -> attribute.use() == AttributeUse.REQUIRED)
             .collect(toList());
-        String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
         boolean currentContentModelHasChildren = contentModel.nonAttributes().count() > 0;
         TypeElement superType = contentModel.type() == ContentModelType.EMPTY? baseInterfaceEmpty:
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
@@ -149,6 +148,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
         if (requiredAttributes.isEmpty())
         {
+            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
             Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
             configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
             return Stream.of(configuration);
@@ -160,12 +160,30 @@ public class DtdElementCollector implements TypeMirrorUtilities
             //
             List<Name> imports = imported.collect(toList());
             Stream<List<Attribute>> combinations = powerList(requiredAttributes);
+            List<Attribute> optionalAttributes = contentModel.attributes()
+                .filter(attribute -> attribute.use() != AttributeUse.REQUIRED)
+                .collect(toList());
             return combinations.map(attributes ->
             {
-                Stream<String> presentAttributes = attributes.stream().map(Attribute::name).map(this::typeName);
-                String name = typeName + presentAttributes.collect(joining());
+                String presentAttributes = attributes.stream().map(Attribute::name).map(this::typeName).collect(joining());
+                String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName)) + presentAttributes});
                 String extension = attributes.size() == requiredAttributes.size()? extend + (isObject? "":typeParameters):"";
-                return elementConfiguration(name, imports.stream(), extension);
+                Configuration configuration = elementConfiguration(typeName, imports.stream(), extension);
+                ContentModel returnTypeContentModel = new ContentModel()
+                {
+                    @Override
+                    public String name()
+                    {
+                        return typeNameTransformer.apply(typeName(elementName)) + presentAttributes;
+                    }
+
+                    @Override
+                    public ContentModelType type()
+                    {
+                        return null;
+                    }
+                };
+                return optionalAttributes.stream().reduce(configuration, (conf, attr) -> attributeDecl(conf, returnTypeContentModel, attr), (a, b) -> a);
             });
         }
     }
@@ -302,7 +320,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     {
         String firstLetter = elementName.substring(0, 1);
         String remainingLetters = elementName.substring(1);
-        return firstLetter.toUpperCase() + remainingLetters.toLowerCase();
+        return firstLetter.toUpperCase() + remainingLetters;
     }
 
     private Name packageName(TypeElement element)

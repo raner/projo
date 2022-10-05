@@ -15,36 +15,16 @@
 //                                                                          //
 package pro.projo.generation.dtd;
 
-import java.lang.annotation.Annotation;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.tools.FileObject;
 import org.junit.Test;
-import net.florianschoppmann.java.reflect.ReflectionTypes;
-import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
-import pro.projo.generation.utilities.Name;
-import pro.projo.interfaces.annotation.Dtd;
-import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
-import pro.projo.interfaces.annotation.utilities.DefaultAttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class InterfaceTemplateProcessorDtdTest
+public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
 {
     static interface EmptyElement<PARENT> {}
 
@@ -128,92 +108,5 @@ public class InterfaceTemplateProcessorDtdTest
         String message = "Expected but not found: " + expectedButNotFound +
             ", found but not expected: " + foundButNotExpected;
         assertTrue(message, expectedButNotFound.isEmpty() && foundButNotExpected.isEmpty());
-    }
-
-    private Collection<? extends Configuration> getConfigurations(String dtdPath, Class<?> emptyBase) throws Exception
-    {
-        InterfaceTemplateProcessor processor = new InterfaceTemplateProcessor();
-        ProcessingEnvironment environment = mock(ProcessingEnvironment.class);
-        TypeMirror object = mock(TypeMirror.class);
-        TypeMirror objectEmpty = mock(TypeMirror.class);
-        Elements elements = mock(Elements.class);
-        Filer filer = mock(Filer.class);
-        FileObject dtdFile = mock(FileObject.class);
-        URI dtdUri = getClass().getResource(dtdPath).toURI();
-        PackageElement packageElement = mock(PackageElement.class);
-        when(packageElement.getQualifiedName()).thenReturn(new Name("html.api"));
-        when(dtdFile.toUri()).thenReturn(dtdUri);
-        when(dtdFile.openInputStream()).thenReturn(getClass().getResourceAsStream(dtdPath));
-        when(filer.getResource(any(), any(), any())).thenReturn(dtdFile);
-        when(object.toString()).thenReturn(Object.class.getName());
-        when(objectEmpty.toString()).thenReturn(emptyBase.getName());
-        when(elements.getTypeElement(any())).thenAnswer(call -> typeElement(call.getArgument(0, String.class)));
-        when(environment.getFiler()).thenReturn(filer);
-        when(environment.getElementUtils()).thenReturn(elements);
-        processor.init(environment);
-        Dtd dtd = new Dtd()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-                return Dtd.class;
-            }
-
-            @Override
-            public String path()
-            {
-                return dtdPath.substring(1);
-            }
-
-            @Override
-            public Class<?> baseInterface()
-            {
-                throw new MirroredTypeException(object);
-            }
-
-            @Override
-            public Class<?> baseInterfaceEmpty()
-            {
-                throw new MirroredTypeException(objectEmpty);
-            }
-
-            @Override
-            public Class<?> baseInterfaceText()
-            {
-                throw new MirroredTypeException(object);
-            }
-
-            @Override
-            public String elementNameFormat()
-            {
-                return "{0}";
-            }
-
-            @Override
-            public String contentNameFormat()
-            {
-                return "{0}Content";
-            }
-
-            @Override
-            public Class<? extends AttributeNameConverter> attributeNameConverter()
-            {
-                return DefaultAttributeNameConverter.class;
-            }
-        };
-        return processor.getDtdConfiguration(packageElement, singletonList(dtd));
-    }
-
-    private TypeElement typeElement(String fullyQualifiedName)
-    {
-        try
-        {
-            Class<?> type = Class.forName(fullyQualifiedName);
-            return ReflectionTypes.getInstance().typeElement(type);
-        }
-        catch (ClassNotFoundException exception)
-        {
-            throw new NoClassDefFoundError(exception.getMessage());
-        }
     }
 }
