@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.processing.Messager;
@@ -69,7 +68,6 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private Comparator<Name> importOrder = new DefaultNameComparator();
     private Name packageName;
     private Name generated;
-    private UnaryOperator<String> typeNameTransformer;
     private AttributeNameConverter attributeNameConverter;
     private TypeElement baseInterface;
     private TypeElement baseInterfaceEmpty;
@@ -81,7 +79,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
 
     public DtdElementCollector(Name packageName, Dtd dtd, Elements elements, Messager messager)
     {
-        this(packageName, UnaryOperator.identity());
+        this.packageName = packageName;
         this.elements = elements;
         this.messager = messager;
         baseInterface = getTypeElement(dtd::baseInterface);
@@ -99,12 +97,6 @@ public class DtdElementCollector implements TypeMirrorUtilities
         {
             this.messager.printMessage(ERROR, "Could not instantiate attribute name converter");
         }
-    }
-
-    public DtdElementCollector(Name packageName, UnaryOperator<String> typeNameTransformer)
-    {
-        this.packageName = packageName;
-        this.typeNameTransformer = typeNameTransformer;
     }
 
     @Override
@@ -140,7 +132,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
-        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        String contentType = contentTypeName.format(new Object[] {typeName(elementName)});
         String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + ">":">");
         Name superPackageName = packageName(superType);
         boolean superTypeSamePackage = superPackageName.equals(packageName);
@@ -148,7 +140,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
         if (requiredAttributes.isEmpty())
         {
-            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+            String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
             Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
             configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
             return Stream.of(configuration);
@@ -166,7 +158,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             return combinations.map(attributes ->
             {
                 String presentAttributes = attributes.stream().map(Attribute::name).map(this::typeName).collect(joining());
-                String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName)) + presentAttributes});
+                String typeName = elementTypeName.format(new Object[] {typeName(elementName) + presentAttributes});
                 String extension = attributes.size() == requiredAttributes.size()? extend + (isObject? "":typeParameters):"";
                 Configuration configuration = elementConfiguration(typeName, imports.stream(), extension);
                 ContentModel returnTypeContentModel = new ContentModel()
@@ -174,7 +166,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     @Override
                     public String name()
                     {
-                        return typeNameTransformer.apply(typeName(elementName)) + presentAttributes;
+                        return typeName(elementName) + presentAttributes;
                     }
 
                     @Override
@@ -212,7 +204,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String attributeName = attribute.name();
         String elementName = contentModel.name();
         // TODO: next line duplicated from above
-        String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(elementName))});
+        String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
         String methodName = attributeNameConverter.convertAttributeName(attributeName);
         String method = typeName + "<PARENT> " + methodName + "(String " + methodName + ")";
         String[] methods = (String[])configuration.parameters().get("methods");
@@ -232,7 +224,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String methodName = childElement.name();
         if (!methodNames.contains(methodName))
         {
-            String typeName = elementTypeName.format(new Object[] {typeNameTransformer.apply(typeName(childElement.name()))});
+            String typeName = elementTypeName.format(new Object[] {typeName(childElement.name())});
             String method = typeName + "<" + (contentTypeArgument != null? contentTypeArgument:contentType) + "> " + methodName + "()";
             // TODO: next four lines also duplicated
             String[] methods = (String[])parameters.get("methods");
@@ -247,7 +239,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
 
     private Stream<Configuration> createContentTypes(ContentModel contentModel)
     {
-        String contentType = contentTypeName.format(new Object[] {typeNameTransformer.apply(typeName(contentModel.name()))});
+        String contentType = contentTypeName.format(new Object[] {typeName(contentModel.name())});
         Stream<ChildElement> children = contentModel.nonAttributes()
             .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
             .filter(ChildElement.class::isInstance)
