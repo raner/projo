@@ -22,6 +22,7 @@ import java.util.Set;
 import org.junit.Test;
 import pro.projo.template.annotation.Configuration;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
@@ -108,5 +109,93 @@ public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
         String message = "Expected but not found: " + expectedButNotFound +
             ", found but not expected: " + foundButNotExpected;
         assertTrue(message, expectedButNotFound.isEmpty() && foundButNotExpected.isEmpty());
+    }
+
+    @Test
+    public void testAttributesWhenNoMandatoryAttributesAreBoundYet() throws Exception
+    {
+        // Expected: there should be a method for each attribute, the return type indicating
+        //           the presence of just that attribute
+        //
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Configuration configuration = configurations.stream()
+            .filter(it -> it.parameters().get("InterfaceTemplate").equals("Element<PARENT>"))
+            .findFirst()
+            .get();
+        Set<String> methods = new HashSet<>(Arrays.asList((String[])configuration.parameters().get("methods")));
+        assertTrue(methods.contains("ElementRequired1<PARENT> required1(String required1)"));
+        assertTrue(methods.contains("ElementRequired2<PARENT> required2(String required2)"));
+        assertTrue(methods.contains("ElementRequired3<PARENT> required3(String required3)"));
+    }
+
+    @Test
+    public void testAttributesWhenOnlyFirstMandatoryAttributeIsBound() throws Exception
+    {
+        // Expected: there should be two methods; one for each combination of the bound attribute
+        //           with one of the unbound attributes
+        //
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Configuration configuration = configurations.stream()
+            .filter(it -> it.parameters().get("InterfaceTemplate").equals("ElementRequired1<PARENT>"))
+            .findFirst()
+            .get();
+        Set<String> methods = new HashSet<>(Arrays.asList((String[])configuration.parameters().get("methods")));
+        assertTrue(methods.contains("ElementRequired1Required2<PARENT> required2(String required2)"));
+        assertTrue(methods.contains("ElementRequired1Required3<PARENT> required3(String required3)"));
+    }
+
+    @Test
+    public void testAttributesWhenOnlySecondMandatoryAttributeIsBound() throws Exception
+    {
+        // Expected: there should be two methods; one for each combination of the bound attribute
+        //           with one of the unbound attributes
+        //
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Configuration configuration = configurations.stream()
+            .filter(it -> it.parameters().get("InterfaceTemplate").equals("ElementRequired2<PARENT>"))
+            .findFirst()
+            .get();
+        Set<String> methods = new HashSet<>(Arrays.asList((String[])configuration.parameters().get("methods")));
+        assertTrue(methods.contains("ElementRequired1Required2<PARENT> required1(String required1)"));
+        assertTrue(methods.contains("ElementRequired2Required3<PARENT> required3(String required3)"));
+    }
+
+    @Test
+    public void testAttributesWhenFirstAndSecondMandatoryAttributesAreBound() throws Exception
+    {
+        // Expected: there should be one method that provides the missing attribute
+        //
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Configuration configuration = configurations.stream()
+            .filter(it -> it.parameters().get("InterfaceTemplate").equals("ElementRequired1Required2<PARENT>"))
+            .findFirst()
+            .get();
+        Set<String> methods = new HashSet<>(Arrays.asList((String[])configuration.parameters().get("methods")));
+        assertTrue(methods.contains("ElementRequired1Required2Required3<PARENT> required3(String required3)"));
+    }
+
+    @Test
+    public void testAttributesWhenAllMandatoryAttributesAreBound() throws Exception
+    {
+        // Expected: only optional attributes are present
+        //
+        String dtdPath = "/DTDs/ElementWithRequiredAndOptionalAttributes.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, EmptyElement.class);
+        Configuration configuration = configurations.stream()
+            .filter(it -> it.parameters().get("InterfaceTemplate").equals("ElementRequired1Required2Required3<PARENT> extends EmptyElement<PARENT>"))
+            .findFirst()
+            .get();
+        Set<String> methods = new HashSet<>(Arrays.asList((String[])configuration.parameters().get("methods")));
+        String[] expectedMethods =
+        {
+            "ElementRequired1Required2Required3<PARENT> optional1(String optional1)",
+            "ElementRequired1Required2Required3<PARENT> optional2(String optional2)",
+        };
+        Set<String> expected = new HashSet<>(Arrays.asList(expectedMethods));
+        assertEquals(expected, methods);
     }
 }
