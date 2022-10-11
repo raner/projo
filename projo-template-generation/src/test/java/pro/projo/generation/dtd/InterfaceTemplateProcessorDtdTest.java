@@ -29,6 +29,8 @@ public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
 {
     static interface EmptyElement<PARENT> {}
 
+    static interface MixedContent<PARENT> {}
+
     @Test
     public void testGeneratedClasses() throws Exception
     {
@@ -197,5 +199,18 @@ public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
         };
         Set<String> expected = new HashSet<>(Arrays.asList(expectedMethods));
         assertEquals(expected, methods);
+    }
+
+    @Test
+    public void testMixedContentBaseInterface() throws Exception
+    {
+        String dtdPath = "/DTDs/Ashbridge/html5.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, Object.class, MixedContent.class, "{0}");
+        Configuration bodyContent = configurations.stream()
+            .filter(it -> ((String)it.parameters().get("InterfaceTemplate")).startsWith("BodyContent"))
+            .findFirst()
+            .get();
+        Object type = bodyContent.parameters().get("InterfaceTemplate");
+        assertEquals("BodyContent extends MixedContent<BodyContent>", type);
     }
 }

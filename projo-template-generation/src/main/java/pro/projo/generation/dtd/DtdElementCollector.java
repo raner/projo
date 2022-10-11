@@ -72,6 +72,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private TypeElement baseInterface;
     private TypeElement baseInterfaceEmpty;
     private TypeElement baseInterfaceText;
+    private TypeElement mixedContentInterface;
     private Format elementTypeName;
     private Format contentTypeName;
     private Elements elements;
@@ -85,6 +86,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         baseInterface = getTypeElement(dtd::baseInterface);
         baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
         baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
+        mixedContentInterface = getTypeElement(dtd::mixedContentInterface);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
@@ -297,7 +299,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             // - the last interface's content method parameter points to the base interface
             // - the element interface uses content<0> as in type and the base interface as out type
             //
-            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty()));
+            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty(), ""));
             Stream<Configuration> sequence = IntStream.range(0, childList.size()).mapToObj
             (
                 index -> createContentType
@@ -313,21 +315,37 @@ public class DtdElementCollector implements TypeMirrorUtilities
         else if (contentModel.type() != ContentModelType.EMPTY
         && (contentModel.nonAttributes().count() > 0))
         {
-            return Stream.of(createContentType(contentType, null, children));
+            String extend = "";
+            String[] imports = {};
+            if (contentModel.type() == ContentModelType.MIXED
+            && !mixedContentInterface.getQualifiedName().toString().equals(Object.class.getName()))
+            {
+                extend = " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + ">";
+                String mixedContentTypeName = mixedContentInterface.getQualifiedName().toString();
+                String mixedContentPackage = mixedContentTypeName.substring(0, mixedContentTypeName.lastIndexOf('.'));
+                if (!mixedContentPackage.equals(packageName.toString()))
+                {
+                    imports = new String[] {mixedContentTypeName};
+                }
+            }
+            return Stream.of(createContentType(contentType, null, children, extend, imports));
         }
         return Stream.empty();
     }
 
     private Configuration createContentType(String contentType, String contentTypeArgument,
-        Stream<ChildElement> children, String... extend)
+        Stream<ChildElement> children, String extend, String... imports)
     {
+        List<String> importStatements = new ArrayList<>();
+        importStatements.add(generated.toString());
+        importStatements.addAll(Arrays.asList(imports));
         Map<String, Object> parameters = new HashMap<>();
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
-        parameters.put("imports", new String[] {generated.toString()});
+        parameters.put("imports", importStatements.toArray(new String[] {}));
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
-        parameters.put("InterfaceTemplate", contentType + Stream.of(extend).collect(joining()));
+        parameters.put("InterfaceTemplate", contentType + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);

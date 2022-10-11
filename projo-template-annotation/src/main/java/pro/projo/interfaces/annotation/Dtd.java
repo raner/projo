@@ -73,6 +73,16 @@ public @interface Dtd
     Class<?> baseInterfaceText() default Object.class;
 
     /**
+    * @return the default base interface to use for mixed content types - unlike the other
+    * interfaces this interface serves as the base for content types not for element types
+    * and will typically contain generic methods for interspersing plain text content with
+    * nested elements; this interface must have one type parameter, which designates the
+    * parent content element type; the default value of {@link Object} indicates that no
+    * specific base interface will be extended
+    **/
+    Class<?> mixedContentInterface() default Object.class;
+
+    /**
     * @return the name format for generated element interfaces (by default this is just
     * the capitalized element name)
     * @see java.text.MessageFormat
