@@ -213,6 +213,12 @@ public class DtdModelBuilder extends DTDHandlerBase
             {
                 return null;
             }
+
+            @Override
+            public Occurrence ocurrence()
+            {
+                return Occurrence.ZERO_OR_MORE;
+            }
         };
         stack.peek().children().add(mixedElement);
     }

@@ -22,6 +22,7 @@ import java.util.Set;
 import org.junit.Test;
 import pro.projo.template.annotation.Configuration;
 import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -212,5 +213,101 @@ public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
             .get();
         Object type = bodyContent.parameters().get("InterfaceTemplate");
         assertEquals("BodyContent extends MixedContent<BodyContent>", type);
+    }
+
+    @Test
+    public void testMixedContentChildElements() throws Exception
+    {
+        String dtdPath = "/DTDs/Ashbridge/html5.dtd";
+        Collection<? extends Configuration> configurations = getConfigurations(dtdPath, Object.class, MixedContent.class, "{0}");
+        Configuration bodyContent = configurations.stream()
+            .filter(it -> ((String)it.parameters().get("InterfaceTemplate")).startsWith("BodyContent"))
+            .findFirst()
+            .get();
+        String[] methods = (String[])bodyContent.parameters().get("methods");
+        String[] expected =
+        {
+            "Main<BodyContent> main()",
+            "Header<BodyContent> header()",
+            "Footer<BodyContent> footer()",
+            "Form<BodyContent> form()",
+            "Address<BodyContent> address()",
+            "Table<BodyContent> table()",
+            "Hgroup<BodyContent> hgroup()",
+            "A<BodyContent> a()",
+            "Abbr<BodyContent> abbr()",
+            "Area<BodyContent> area()",
+            "Audio<BodyContent> audio()",
+            "B<BodyContent> b()",
+            "Bdi<BodyContent> bdi()",
+            "Bdo<BodyContent> bdo()",
+            "Blockquote<BodyContent> blockquote()",
+            "Br<BodyContent> br()",
+            "Canvas<BodyContent> canvas()",
+            "Cite<BodyContent> cite()",
+            "Code<BodyContent> code()",
+            "Data<BodyContent> data()",
+            "Datalist<BodyContent> datalist()",
+            "Del<BodyContent> del()",
+            "Dfn<BodyContent> dfn()",
+            "Div<BodyContent> div()",
+            "Dl<BodyContent> dl()",
+            "Em<BodyContent> em()",
+            "Embed<BodyContent> embed()",
+            "Fieldset<BodyContent> fieldset()",
+            "Figure<BodyContent> figure()",
+            "Hr<BodyContent> hr()",
+            "I<BodyContent> i()",
+            "Iframe<BodyContent> iframe()",
+            "Img<BodyContent> img()",
+            "Ins<BodyContent> ins()",
+            "Kbd<BodyContent> kbd()",
+            "Label<BodyContent> label()",
+            "Map<BodyContent> map()",
+            "Mark<BodyContent> mark()",
+            "Math<BodyContent> math()",
+            "Noscript<BodyContent> noscript()",
+            "Object<BodyContent> object()",
+            "Ol<BodyContent> ol()",
+            "P<BodyContent> p()",
+            "Pre<BodyContent> pre()",
+            "Q<BodyContent> q()",
+            "Ruby<BodyContent> ruby()",
+            "S<BodyContent> s()",
+            "Samp<BodyContent> samp()",
+            "Script<BodyContent> script()",
+            "Small<BodyContent> small()",
+            "Span<BodyContent> span()",
+            "Strong<BodyContent> strong()",
+            "Sub<BodyContent> sub()",
+            "Sup<BodyContent> sup()",
+            "Svg<BodyContent> svg()",
+            "Template<BodyContent> template()",
+            "Time<BodyContent> time()",
+            "U<BodyContent> u()",
+            "Ul<BodyContent> ul()",
+            "Var<BodyContent> var()",
+            "Video<BodyContent> video()",
+            "Wbr<BodyContent> wbr()",
+            "H1<BodyContent> h1()",
+            "H2<BodyContent> h2()",
+            "H3<BodyContent> h3()",
+            "H4<BodyContent> h4()",
+            "H5<BodyContent> h5()",
+            "H6<BodyContent> h6()",
+            "Article<BodyContent> article()",
+            "Aside<BodyContent> aside()",
+            "Nav<BodyContent> nav()",
+            "Section<BodyContent> section()",
+            "Button<BodyContent> button()",
+            "Input<BodyContent> input()",
+            "Keygen<BodyContent> keygen()",
+            "Meter<BodyContent> meter()",
+            "Output<BodyContent> output()",
+            "Progress<BodyContent> progress()",
+            "Select<BodyContent> select()",
+            "Textarea<BodyContent> textarea()"
+        };
+        assertArrayEquals(expected, methods);
     }
 }

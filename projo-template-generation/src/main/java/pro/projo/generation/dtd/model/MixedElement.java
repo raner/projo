@@ -15,6 +15,6 @@
 //                                                                          //
 package pro.projo.generation.dtd.model;
 
-public interface MixedElement extends ElementReference
+public interface MixedElement extends ChildElement
 {
 }

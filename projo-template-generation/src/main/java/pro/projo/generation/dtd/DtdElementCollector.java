@@ -284,13 +284,12 @@ public class DtdElementCollector implements TypeMirrorUtilities
             .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
             .filter(ChildElement.class::isInstance)
             .map(ChildElement.class::cast);
+        List<ChildElement> childList = children.collect(toList());
         DtdElement modelGroup;
         if (contentModel.nonAttributes().count() == 1
         && (modelGroup = contentModel.nonAttributes().iterator().next()) instanceof ModelGroup
         && ((ModelGroup)modelGroup).isStrictSequence())
         {
-            List<ChildElement> childList = children.collect(toList());
-
             // To implement a strict sequence:
             //
             // - generate a content base interface (e.g., HtmlContent) without any methods
@@ -328,7 +327,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     imports = new String[] {mixedContentTypeName};
                 }
             }
-            return Stream.of(createContentType(contentType, null, children, extend, imports));
+            return Stream.of(createContentType(contentType, null, childList.stream(), extend, imports));
         }
         return Stream.empty();
     }
@@ -350,7 +349,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
         BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
-            (conf, child) -> childElement(conf, (ChildElement)child, contentTypeArgument);
+            (conf, child) -> childElement(conf, (ChildElement)child, contentType);//Argument);
         return children.reduce(configuration, reducer, (a, b) -> a);
     }
 
