@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.util.Collection;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -53,10 +54,17 @@ public class DtdTestBase
 
     protected Collection<? extends Configuration> getConfigurations(String dtdPath, Class<?> emptyBase, String elementNameFormat) throws Exception
     {
+        return getConfigurations(dtdPath, emptyBase, Object.class, elementNameFormat);
+    }
+
+    protected Collection<? extends Configuration> getConfigurations(String dtdPath, Class<?> emptyBase, Class<?> mixedContent, String elementNameFormat) throws Exception
+    {
         InterfaceTemplateProcessor processor = new InterfaceTemplateProcessor();
         ProcessingEnvironment environment = mock(ProcessingEnvironment.class);
         TypeMirror object = mock(TypeMirror.class);
         TypeMirror objectEmpty = mock(TypeMirror.class);
+        TypeMirror mixedContentType = mock(TypeMirror.class);
+        Messager messager = mock(Messager.class);
         Elements elements = mock(Elements.class);
         Filer filer = mock(Filer.class);
         FileObject dtdFile = mock(FileObject.class);
@@ -68,8 +76,10 @@ public class DtdTestBase
         when(filer.getResource(any(), any(), any())).thenReturn(dtdFile);
         when(object.toString()).thenReturn(Object.class.getName());
         when(objectEmpty.toString()).thenReturn(emptyBase.getName());
+        when(mixedContentType.toString()).thenReturn(mixedContent.getName());
         when(elements.getTypeElement(any())).thenAnswer(call -> typeElement(call.getArgument(0, String.class)));
         when(environment.getFiler()).thenReturn(filer);
+        when(environment.getMessager()).thenReturn(messager);
         when(environment.getElementUtils()).thenReturn(elements);
         processor.init(environment);
         Dtd dtd = new Dtd()
@@ -102,6 +112,12 @@ public class DtdTestBase
             public Class<?> baseInterfaceText()
             {
                 throw new MirroredTypeException(object);
+            }
+
+            @Override
+            public Class<?> mixedContentInterface()
+            {
+                throw new MirroredTypeException(mixedContentType);
             }
 
             @Override
