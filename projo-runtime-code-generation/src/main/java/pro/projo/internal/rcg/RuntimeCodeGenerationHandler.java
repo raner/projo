@@ -15,6 +15,9 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -43,6 +46,7 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
+import net.bytebuddy.dynamic.DynamicType.Loaded;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
@@ -166,10 +170,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        return getMethods(type, getter, setter, cached, overrides, returns, expects)
+        return debug(getMethods(type, getter, setter, cached, overrides, returns, expects)
             .reduce(builder, this::add, sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods))
-            .make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
+            .make().load(classLoader(type, defaultPackage), INJECTION)).getLoaded();
     }
 
     @SuppressWarnings("unchecked")
@@ -218,7 +222,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
         // Build and return the proxy class:
         //
-        return builder.make().load(classLoader(type, defaultPackage)).getLoaded();
+        return debug(builder.make().load(classLoader(type, defaultPackage))).getLoaded();
     }
 
     private Stream<Method> additionalAttributes(Class<?> type, boolean override)
@@ -514,5 +518,26 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             Type[] argumentTypes = arguments.map(Projo::forName).toArray(Type[]::new);
             return Generic.Builder.parameterizedType(Projo.forName(baseType), argumentTypes).build();
         }
+    }
+
+    private <_Any_> Loaded<_Any_> debug(Loaded<_Any_> loadedType)
+    {
+        String debugPath = System.getProperty("pro.projo.debug.path");
+        if (debugPath != null)
+        {
+            String packageName = loadedType.getTypeDescription().getPackage().getName();
+            String typeName = loadedType.getTypeDescription().getSimpleName();
+            try
+            {
+                File dumpDirectory = new File(debugPath);
+                System.err.println("Saving " + packageName + "." + typeName + " in " + dumpDirectory);
+                loadedType.saveIn(dumpDirectory);
+            }
+            catch (IOException exception)
+            {
+                throw new IOError(exception);
+            }
+        }
+        return loadedType;
     }
 }
