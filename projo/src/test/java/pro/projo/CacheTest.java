@@ -20,6 +20,8 @@ import org.junit.Test;
 import pro.projo.annotations.Cached;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 public class CacheTest
 {
@@ -44,6 +46,38 @@ public class CacheTest
         {
             return value.incrementAndGet() + plus;
         }
+    }
+
+    public static interface Person
+    {
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    static interface PackagePerson
+    {
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    static interface Id {}
+
+    static interface Something
+    {
+        @Cached
+        default Id id()
+        {
+            return new Id() {};
+        }
+    }
+
+    static interface Value extends Something
+    {
+        String string();
     }
 
     @Test
@@ -84,5 +118,15 @@ public class CacheTest
         assertEquals(value2, cached.valuePlus(2)); // Second result should be cached as well
         int value3 = cached.valuePlus(3);
         assertNotEquals(value3, cached.valuePlus(3)); // Third result is not cached; cache is full
+    }
+
+    @Test
+    public void testInheritedCachedMethod()
+    {
+        Value value = Projo.create(Value.class);
+        Id id1 = value.id();
+        Id id2 = value.id();
+        assertSame(id1, id2);
+        assertNotNull(id2);
     }
 }
