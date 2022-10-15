@@ -152,7 +152,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
         builder = Projo.getMethods(type, getter, setter, cached, overrides).reduce(builder, this::add, sequentialOnly());
-        builder = builder.defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods));
+        builder = builder.defineConstructor(PUBLIC).intercept(constructor(type, currentType, cachedMethods));
         return builder.make().load(classLoader(type, defaultPackage), INJECTION).getLoaded();
     }
 
@@ -290,7 +290,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return FieldAccessor.ofField(property);
     }
 
-    private Implementation constructor(TypeDescription currentType, Stream<Method> cachedMethods)
+    private Implementation constructor(Class<?> originalType, TypeDescription currentType, Stream<Method> cachedMethods)
     {
         Method cacheCreator;
         try
@@ -309,7 +309,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             Cached annotation = method.getAnnotation(Cached.class);
             String fieldName = matcher.propertyName(method.getName());
             FieldDescription cacheField = new FieldDescription.Latent(currentType, fieldName, Modifier.PRIVATE, cacheType, emptyList());
-            JavaConstant.MethodHandle originalMethod = JavaConstant.MethodHandle.ofSpecial(method, method.getDeclaringClass());
+            JavaConstant.MethodHandle originalMethod = JavaConstant.MethodHandle.ofSpecial(method, originalType);
             return MethodCall
                 .invoke(cacheCreator)
                 .with(annotation.cacheSize())
