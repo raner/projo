@@ -20,6 +20,9 @@ import org.junit.Test;
 import pro.projo.annotations.Cached;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 public class CacheTest
 {
@@ -43,6 +46,47 @@ public class CacheTest
         default int valuePlus(int plus)
         {
             return value.incrementAndGet() + plus;
+        }
+    }
+
+    public static interface Person
+    {
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    static interface PackagePerson
+    {
+        String getFirstName();
+        void setFirstName(String name);
+        String getLastName();
+        void setLastName(String name);
+    }
+
+    static interface Id {}
+
+    static interface Something
+    {
+        @Cached
+        default Id id()
+        {
+            return new Id() {};
+        }
+    }
+
+    static interface Value extends Something
+    {
+        String string();
+    }
+
+    static interface Identity extends Something
+    {
+        @Override
+        default Id id()
+        {
+            return new Id() {};
         }
     }
 
@@ -84,5 +128,26 @@ public class CacheTest
         assertEquals(value2, cached.valuePlus(2)); // Second result should be cached as well
         int value3 = cached.valuePlus(3);
         assertNotEquals(value3, cached.valuePlus(3)); // Third result is not cached; cache is full
+    }
+
+    @Test
+    public void testInheritedCachedMethod()
+    {
+        Value value = Projo.create(Value.class);
+        Id id1 = value.id();
+        Id id2 = value.id();
+        assertSame(id1, id2);
+        assertNotNull(id2);
+    }
+
+    @Test
+    public void testOverriddenCachedMethod()
+    {
+        Identity identity = Projo.create(Identity.class);
+        Id id1 = identity.id();
+        Id id2 = identity.id();
+        assertNotNull(id1);
+        assertNotNull(id2);
+        assertNotSame(id1, id2);
     }
 }
