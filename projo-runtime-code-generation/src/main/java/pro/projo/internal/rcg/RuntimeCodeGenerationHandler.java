@@ -170,7 +170,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
         Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-System.err.println("generateImplementation(" + type + ")");
         return debug(getMethods(type, getter, setter, cached, overrides, returns, expects)
             .reduce(builder, this::add, sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(currentType, cachedMethods))
