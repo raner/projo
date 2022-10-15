@@ -21,6 +21,7 @@ import pro.projo.annotations.Cached;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
 public class CacheTest
@@ -80,6 +81,15 @@ public class CacheTest
         String string();
     }
 
+    static interface Identity extends Something
+    {
+        @Override
+        default Id id()
+        {
+            return new Id() {};
+        }
+    }
+
     @Test
     public void testCachedZeroArgumentMethodIsOnlyEvaluatedOnce()
     {
@@ -128,5 +138,16 @@ public class CacheTest
         Id id2 = value.id();
         assertSame(id1, id2);
         assertNotNull(id2);
+    }
+
+    @Test
+    public void testOverriddenCachedMethod()
+    {
+        Identity identity = Projo.create(Identity.class);
+        Id id1 = identity.id();
+        Id id2 = identity.id();
+        assertNotNull(id1);
+        assertNotNull(id2);
+        assertNotSame(id1, id2);
     }
 }
