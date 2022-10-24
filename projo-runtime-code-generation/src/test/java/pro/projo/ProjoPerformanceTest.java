@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 Mirko Raner                                               //
+// Copyright 2017 - 2022 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -116,7 +116,7 @@ public class ProjoPerformanceTest
         color = new byte[] {result.value.red(), result.value.green(), result.value.blue()};
         assertArrayEquals(expected, color);
         long ratio = result.duration.toMillis()/baseline.duration.toMillis();
-        assertTrue("Projo is " + ratio + " times slower", ratio <= 2);
+        assertTrue("Projo is " + ratio + " times slower", ratio <= 3);
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ProjoPerformanceTest
         color = new byte[] {result.value.red(), result.value.green(), result.value.blue()};
         assertArrayEquals(expected, color);
         long ratio = result.duration.toMillis()/baseline.duration.toMillis();
-        assertTrue("Projo is " + ratio + " times slower", ratio <= 2);
+        assertTrue("Projo is " + ratio + " times slower", ratio <= 3);
     }
 
     static class TimedResult<_Any_>
