@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -117,7 +118,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * singleton (because its enclosing class, {@code RuntimeCodeGenerationProjo}, is also a singleton).
     * Also, if it were static the {@code _Artifact_} type parameter would not be accessible.
     **/
-    private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache = new HashMap<>();
+    private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache =
+        new ConcurrentHashMap<>();
 
     private String injected = "javax.inject.Inject";
 
