@@ -41,6 +41,7 @@ import pro.projo.internal.ProjoHandler;
 import pro.projo.internal.ProjoObject;
 import pro.projo.utilities.MethodFunctionConverter;
 import static java.lang.reflect.Modifier.isStatic;
+import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
@@ -517,7 +518,23 @@ public abstract class Projo
     @SafeVarargs
     public static Stream<Method> getMethods(Class<?> type, Predicate<Method>... predicates)
     {
-        return Stream.of(type.getMethods()).filter(Stream.of(predicates).reduce(always -> false, Predicate::or));
+        return getMethods(type, emptyList(), predicates);
+    }
+
+    /**
+    * Returns methods of a class that match at least one of a list of predicates.
+    *
+    * @param type the {@link Class}
+    * @param additionalImplements additionally implemented interfaces, by way of {@link Implements} annotations
+    * @param predicates the predicates (if no predicate is supplied the method will return no methods)
+    * @return all methods of the class that match at least one of the given predicates
+    **/
+    @SafeVarargs
+    public static Stream<Method> getMethods(Class<?> type, List<String> additionalImplements, Predicate<Method>... predicates)
+    {
+        Stream<Class<?>> additional = additionalImplements.stream().map(Projo::forName);
+        Stream<Method> methods = Stream.concat(Stream.of(type.getMethods()), additional.flatMap(it -> Stream.of(it.getMethods())));
+        return methods.filter(Stream.of(predicates).reduce(always -> false, Predicate::or));
     }
 
     /**
@@ -553,13 +570,15 @@ public abstract class Projo
     **/
     public static Class<?> forName(String typeName)
     {
+        int index = typeName.indexOf('<');
+        String className = index == -1? typeName:typeName.substring(0, index);
         try
         {
-            return Class.forName(typeName);
+            return Class.forName(className);
         }
-        catch (Exception exception)
+        catch (ClassNotFoundException classNotFound)
         {
-            throw new RuntimeException(exception);
+            throw new NoClassDefFoundError(classNotFound.getMessage());
         }
     }
 
