@@ -16,7 +16,14 @@
 package pro.projo;
 
 import org.junit.Test;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
+import pro.projo.test.interfaces.Literals;
 import pro.projo.test.interfaces.Natural;
+import pro.projo.test.interfaces.Naturals;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.TEN;
 import static org.junit.Assert.assertEquals;
@@ -55,5 +62,43 @@ public class ProjoNaturalTest
         Natural<?> two = (Natural<?>)factory.create(ONE).successor();
         Natural<?> ten = (Natural<?>)factory.create(TEN);
         assertEquals("20", two.times(ten).toString());
+    }
+
+    @Test
+    public void allNaturalsMethodsImplemented()
+    {
+        Literals literals = new Literals() {};
+        Injector injector = Guice.createInjector(module(literals));
+        Naturals<?> naturals = injector.getInstance(Naturals.class);
+        Literals result = naturals.literals();
+        assertEquals(literals, result);
+    }
+
+    @org.junit.Ignore
+    @Test
+    public void parseMethodInheritsDefaultImplementationFromImplemented()
+    {
+        Injector injector = Guice.createInjector(module(new Literals() {}));
+        Naturals<?> naturals = injector.getInstance(Naturals.class);
+        Natural<?> result = (Natural<?>)naturals.parse("1");
+        Natural<?> expected = (Natural<?>)factory.create(ONE);
+        assertEquals(expected, result);
+    }
+
+    private Module module(Literals literals)
+    {
+        return new AbstractModule()
+        {
+            @SuppressWarnings("unchecked")
+            protected void configure()
+            {
+                Class<?> classNaturals = (Class<?>)Naturals.class;
+                TypeLiteral<Object> interfaceNaturals = TypeLiteral.get((Class<Object>)classNaturals);
+                Class<?> implementationNaturals = Projo.getImplementationClass(pro.projo.test.implementations.Naturals.class);
+                TypeLiteral<Object> implementation = TypeLiteral.get((Class<Object>)implementationNaturals);
+                bind(interfaceNaturals).to(implementation).asEagerSingleton();
+                bind(Literals.class).toInstance(literals);
+            }
+        };
     }
 }

@@ -49,6 +49,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.dynamic.DynamicType.Loaded;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
+import net.bytebuddy.implementation.DefaultMethodCall;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.Implementation.Composable;
@@ -170,10 +171,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type, boolean defaultPackage)
     {
         Stream<Method> cachedMethods = Projo.getMethods(type, cached);
-        Builder<_Artifact_> builder = create(type).name(implementationName(type, defaultPackage));
+        List<String> additionalImplements = getImplements(type);
+        Builder<_Artifact_> builder = create(type, additionalImplements).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
         return debug(getMethods(type, getter, setter, cached, overrides, returns, expects)
-            .reduce(builder, this::add, sequentialOnly())
+            .reduce(builder, (accumulator, method) -> add(accumulator, method, additionalImplements), sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(type, currentType, cachedMethods))
             .make().load(classLoader(type, defaultPackage), INJECTION)).getLoaded();
     }
@@ -195,7 +197,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 .name(implementationName(type, defaultPackage))
                 .defineField("delegate", delegateType);
             builder = additionalAttributes(type, override)
-                .reduce(builder, this::add, sequentialOnly())
+                .reduce(builder, (accumulator, method) -> add(accumulator, method, emptyList()), sequentialOnly())
                 .defineConstructor(Modifier.PUBLIC)
                 .withParameter(delegateType)
                 .intercept(MethodCall.invoke(Object.class.getDeclaredConstructor())
@@ -277,9 +279,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     *
     * @param builder the existing {@link Builder} to build upon
     * @param method a getter, setter, delegate or cached method
+    * @param additionalImplements additional interfaces implemented by means of {@link Implements} annotations
     * @return a new {@link Builder} with an additional method (and possibly an additional field)
     **/
-    private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method)
+    private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method, List<String> additionalImplements)
     {
         AnnotationList annotations = new AnnotationList(method);
         boolean isGetter = getter.test(method) || annotations.contains(Delegate.class) || annotations.contains(Cached.class);
@@ -290,7 +293,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         Class<?> returnType = method.getReturnType();
         TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
-        Implementation implementation = getAccessor(method, annotations, returnType, propertyName);
+        Implementation implementation = getAccessor(method, annotations, returnType, propertyName, additionalImplements);
         Optional<Returns> returns = annotations.get(Returns.class);
         List<Optional<Expects>> expects = Stream.of(method.getParameters())
             .map(it -> Optional.ofNullable(it.getAnnotation(Expects.class)))
@@ -318,7 +321,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
     }
 
-    Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property)
+    Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property, List<String> additionalImplements)
     {
         if (annotations.contains(injected))
         {
@@ -337,6 +340,18 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             MethodDescription description = new MethodDescription.ForLoadedMethod(method);
             MethodDescription unchecked = delegateOverride(description, UncheckedMethodDescription.class);
             return MethodCall.invoke(unchecked).onSuper().withAllArguments().withAssigner(DEFAULT, DYNAMIC);
+        }
+        Stream<Method> methods = additionalImplements.stream()
+            .map(this::getClass)
+            .flatMap(type -> Stream.of(type.getDeclaredMethods()));
+        Predicate<Method> sameSignature = match ->
+            method.getName().equals(match.getName()) &&
+            method.getReturnType().equals(match.getReturnType()) &&
+            asList(method.getParameterTypes()).equals(asList(match.getParameterTypes()));
+        List<Method> matchingMethod = methods.filter(sameSignature).collect(toList());
+        if (matchingMethod.size() == 1)
+        {
+            return DefaultMethodCall.prioritize(matchingMethod.get(0).getDeclaringClass());
         }
         return FieldAccessor.ofField(property);
     }
@@ -445,9 +460,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Class<?> getClass(String name)
     {
+        int index = name.indexOf('<');
+        String className = index == -1? name:name.substring(0, index);
         try
         {
-            return Class.forName(name);
+            return Class.forName(className);
         }
         catch (ClassNotFoundException classNotFound)
         {
@@ -488,15 +505,20 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return baseClasses.get(features);
     }
 
-    private Builder<_Artifact_> create(Class<_Artifact_> type)
+    private Builder<_Artifact_> create(Class<_Artifact_> type, List<String> additionalImplements)
     {
-        Implements annotation = type.getAnnotation(Implements.class);
-        Stream<String> implemented = annotation != null? Stream.of(annotation.value()):Stream.empty();
-        Stream<TypeDefinition> additionalInterfaces = implemented.map(this::type);
-        TypeDefinition[] interfaces = Stream.concat(Stream.of(type(type), type(ProjoObject.class)), additionalInterfaces).toArray(TypeDefinition[]::new);
+        Stream<TypeDefinition> baseTypes = Stream.of(type(type), type(ProjoObject.class));
+        TypeDefinition[] interfaces = Stream.concat(baseTypes, additionalImplements.stream().map(this::type)).toArray(TypeDefinition[]::new);
         @SuppressWarnings("unchecked")
         Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(interfaces);
         return builder;
+    }
+
+    private List<String> getImplements(Class<_Artifact_> type)
+    {
+        Implements annotation = type.getAnnotation(Implements.class);
+        Stream<String> implement = annotation != null? Stream.of(annotation.value()):Stream.empty();
+        return implement.collect(toList());
     }
 
     private TypeDefinition type(Class<?> type)
