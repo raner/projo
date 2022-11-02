@@ -29,6 +29,7 @@ import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.TEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static pro.projo.test.implementations.Natural.factory;
 
 /**
@@ -76,7 +77,6 @@ public class ProjoNaturalTest
         assertEquals(literals, result);
     }
 
-    @org.junit.Ignore
     @Test
     public void methodsFromImplementedAnnotationAreActuallyImplemented()
     {
@@ -87,7 +87,6 @@ public class ProjoNaturalTest
         assertNotNull(result);
     }
 
-    @org.junit.Ignore
     @Test
     public void parseMethodInheritsDefaultImplementationFromImplemented()
     {
@@ -95,7 +94,7 @@ public class ProjoNaturalTest
         Naturals<?> naturals = injector.getInstance(Naturals.class);
         Natural<?> result = (Natural<?>)naturals.parse("1");
         Natural<?> expected = (Natural<?>)factory.create(ONE);
-        assertEquals(expected, result);
+        assertTrue(expected.equals(result));
     }
 
     private Module module(Literals literals)

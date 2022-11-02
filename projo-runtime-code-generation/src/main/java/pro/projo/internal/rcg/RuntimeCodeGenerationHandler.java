@@ -174,7 +174,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         List<String> additionalImplements = getImplements(type);
         Builder<_Artifact_> builder = create(type, additionalImplements).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        return debug(getMethods(type, getter, setter, cached, overrides, returns, expects)
+        return debug(getMethods(type, additionalImplements, getter, setter, cached, overrides, returns, expects)
             .reduce(builder, (accumulator, method) -> add(accumulator, method, additionalImplements), sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(type, currentType, cachedMethods))
             .make().load(classLoader(type, defaultPackage), INJECTION)).getLoaded();

@@ -22,4 +22,6 @@ public interface Natural<$ extends Natural<$>>
     Natural<?> plus(Natural<?> other);
 
     Natural<?> times(Natural<?> other);
+
+    boolean equals(Natural<?> other);
 }
