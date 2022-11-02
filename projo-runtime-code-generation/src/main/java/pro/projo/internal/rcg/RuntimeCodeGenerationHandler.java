@@ -174,7 +174,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         List<String> additionalImplements = getImplements(type);
         Builder<_Artifact_> builder = create(type, additionalImplements).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        return debug(getMethods(type, getter, setter, cached, overrides, returns, expects)
+        return debug(getMethods(type, additionalImplements, getter, setter, cached, overrides, returns, expects)
             .reduce(builder, (accumulator, method) -> add(accumulator, method, additionalImplements), sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(type, currentType, cachedMethods))
             .make().load(classLoader(type, defaultPackage), INJECTION)).getLoaded();
@@ -342,7 +342,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             return MethodCall.invoke(unchecked).onSuper().withAllArguments().withAssigner(DEFAULT, DYNAMIC);
         }
         Stream<Method> methods = additionalImplements.stream()
-            .map(this::getClass)
+            .map(Projo::forName)
             .flatMap(type -> Stream.of(type.getDeclaredMethods()));
         Predicate<Method> sameSignature = match ->
             method.getName().equals(match.getName()) &&
@@ -408,7 +408,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Implementation get(String field, Type type)
     {
-        Class<?> provider = getClass("javax.inject.Provider");
+        Class<?> provider = Projo.forName("javax.inject.Provider");
         Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
         MethodDescription get = latent(genericProvider.asErasure(), OBJECT.asGenericType(), "get");
         return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
@@ -446,7 +446,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
         else
         {
-            Class<?> container = annotations.contains(injected)? getClass("javax.inject.Provider"):Cache.class;
+            Class<?> container = annotations.contains(injected)? Projo.forName("javax.inject.Provider"):Cache.class;
             Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
             return Generic.Builder.parameterizedType(container, wrappedType).build();
         }
@@ -456,20 +456,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     Builder<_Artifact_> annotate(Optional<Annotation> annotation, _ValuableBuilder_ builder)
     {
         return annotation.isPresent()? builder.annotateField(annotation.get()):builder;
-    }
-
-    private Class<?> getClass(String name)
-    {
-        int index = name.indexOf('<');
-        String className = index == -1? name:name.substring(0, index);
-        try
-        {
-            return Class.forName(className);
-        }
-        catch (ClassNotFoundException classNotFound)
-        {
-            throw new NoClassDefFoundError(classNotFound.getMessage());
-        }
     }
 
     private <_Any_> BinaryOperator<_Any_> sequentialOnly()

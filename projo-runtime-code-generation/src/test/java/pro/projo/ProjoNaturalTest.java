@@ -21,12 +21,15 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
+import pro.projo.test.implementations.Utilities;
 import pro.projo.test.interfaces.Literals;
 import pro.projo.test.interfaces.Natural;
 import pro.projo.test.interfaces.Naturals;
 import static java.math.BigInteger.ONE;
 import static java.math.BigInteger.TEN;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static pro.projo.test.implementations.Natural.factory;
 
 /**
@@ -74,7 +77,16 @@ public class ProjoNaturalTest
         assertEquals(literals, result);
     }
 
-    @org.junit.Ignore
+    @Test
+    public void methodsFromImplementedAnnotationAreActuallyImplemented()
+    {
+        Literals literals = new Literals() {};
+        Injector injector = Guice.createInjector(module(literals));
+        Naturals<?> naturals = injector.getInstance(Naturals.class);
+        Utilities result = naturals.utilities();
+        assertNotNull(result);
+    }
+
     @Test
     public void parseMethodInheritsDefaultImplementationFromImplemented()
     {
@@ -82,7 +94,7 @@ public class ProjoNaturalTest
         Naturals<?> naturals = injector.getInstance(Naturals.class);
         Natural<?> result = (Natural<?>)naturals.parse("1");
         Natural<?> expected = (Natural<?>)factory.create(ONE);
-        assertEquals(expected, result);
+        assertTrue(expected.equals(result));
     }
 
     private Module module(Literals literals)

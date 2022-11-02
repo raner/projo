@@ -49,6 +49,11 @@ public interface Natural
         return factory.create(value().multiply(other.value()));
     }
 
+    default boolean equals(@Expects("pro.projo.test.interfaces.Natural") Natural other)
+    {
+        return value().equals(other.value());
+    }
+
     @Overrides(toString)
     default String toNativeString()
     {
