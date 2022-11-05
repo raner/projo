@@ -122,7 +122,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache =
         new ConcurrentHashMap<>();
 
-    private String injected = "javax.inject.Inject";
+    private final String injected = "javax.inject.Inject";
 
     private final static String SUFFIX = "$Projo";
 
@@ -136,6 +136,27 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         baseClasses.put(asList(valueObject=true, toString=false), ValueObject.class);
         baseClasses.put(asList(valueObject=false, toString=true), ToStringObject.class);
         baseClasses.put(asList(valueObject=true, toString=true), ToStringValueObject.class);
+    }
+
+    /**
+    * Pre-loads the implementation for {@link UncheckedMethodDescription} into the cache.
+    * Without this, an {@code IllegalStateException: Recursive update} might be thrown when
+    * {@link RuntimeCodeGenerationHandler} uses its own code generation for creating a modified
+    * version of Byte Buddy's {@link MethodDescription} class.
+    **/
+    public void postInitialize()
+    {
+        try
+        {
+            // Just pick an arbitrary method:
+            Method method = getClass().getDeclaredMethod("getInterfaceName", Class.class);
+            MethodDescription description = new MethodDescription.ForLoadedMethod(method);
+            delegateOverride(description, UncheckedMethodDescription.class);
+        }
+        catch (NoSuchMethodException noSuchMethod)
+        {
+            throw new NoSuchMethodError(noSuchMethod.getMessage());
+        }
     }
 
     /**

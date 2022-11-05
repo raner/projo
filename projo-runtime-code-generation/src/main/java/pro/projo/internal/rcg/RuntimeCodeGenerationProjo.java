@@ -44,6 +44,13 @@ public class RuntimeCodeGenerationProjo extends Projo
     private RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
 
     @Override
+    protected Projo postInitialize()
+    {
+        handler.postInitialize();
+        return super.postInitialize();
+    }
+
+    @Override
     protected int precedence()
     {
         return 0;
