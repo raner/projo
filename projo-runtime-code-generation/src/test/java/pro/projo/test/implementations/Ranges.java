@@ -13,26 +13,8 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.test.interfaces;
+package pro.projo.test.implementations;
 
-import javax.inject.Inject;
-import pro.projo.annotations.Property;
-import pro.projo.test.implementations.Ranges;
-
-public interface Natural<$ extends Natural<$>>
+public class Ranges
 {
-    Natural<?> successor();
-
-    Natural<?> plus(Natural<?> other);
-
-    Natural<?> times(Natural<?> other);
-
-    boolean equals(Natural<?> other);
-
-    @Inject
-    @Property
-    default Ranges ranges()
-    {
-        throw new NoSuchMethodError("ranges() should have been implemented");
-    }
 }

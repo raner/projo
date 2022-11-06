@@ -21,6 +21,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
+import pro.projo.test.implementations.Ranges;
 import pro.projo.test.implementations.Utilities;
 import pro.projo.test.interfaces.Literals;
 import pro.projo.test.interfaces.Natural;
@@ -97,6 +98,16 @@ public class ProjoNaturalTest
         assertTrue(expected.equals(result));
     }
 
+    @Test
+    public void rangesMethodIsImplementedAndInjected()
+    {
+        Injector injector = Guice.createInjector(module(new Literals() {}));
+        Naturals<?> naturals = injector.getInstance(Naturals.class);
+        Natural<?> natural = (Natural<?>)naturals.parse("1");
+        injector.injectMembers(natural);
+        assertNotNull(natural.ranges());
+    }
+
     private Module module(Literals literals)
     {
         return new AbstractModule()
@@ -110,6 +121,7 @@ public class ProjoNaturalTest
                 TypeLiteral<Object> implementation = TypeLiteral.get((Class<Object>)implementationNaturals);
                 bind(interfaceNaturals).to(implementation).asEagerSingleton();
                 bind(Literals.class).toInstance(literals);
+                bind(Ranges.class).toInstance(new Ranges() {});
             }
         };
     }

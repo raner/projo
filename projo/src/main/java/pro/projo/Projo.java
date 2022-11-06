@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import pro.projo.annotations.Property;
 import pro.projo.annotations.ValueObject;
 import pro.projo.internal.FactoryBuilder;
 import pro.projo.internal.Predicates;
@@ -555,7 +556,8 @@ public abstract class Projo
     {
         Stream<Class<?>> additional = additionalImplements.stream().map(Projo::forName);
         List<Method> interfaceMethods = Arrays.asList(type.getMethods());
-        Stream<Method> additionalMethods = additional.flatMap(it -> Stream.of(it.getMethods()).filter(method -> isAbstract(method.getModifiers())));
+        Predicate<Method> filter = method -> isAbstract(method.getModifiers()) || method.isAnnotationPresent(Property.class);
+        Stream<Method> additionalMethods = additional.flatMap(it -> Stream.of(it.getMethods()).filter(filter));
         Set<MethodInfo> modifiedMethods = interfaceMethods.stream()
             .filter(returns.or(expects))
             .map(MethodInfo::new)
