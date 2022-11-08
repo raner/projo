@@ -42,11 +42,13 @@ import java.util.stream.Stream;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.field.FieldDescription;
 import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.ParameterDescription;
 import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
+import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ImplementationDefinition;
 import net.bytebuddy.dynamic.DynamicType.Loaded;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.DefaultMethodCall;
@@ -60,6 +62,7 @@ import pro.projo.annotations.Cached;
 import pro.projo.annotations.Delegate;
 import pro.projo.annotations.Expects;
 import pro.projo.annotations.Implements;
+import pro.projo.annotations.Inherits;
 import pro.projo.annotations.Overrides;
 import pro.projo.annotations.Returns;
 import pro.projo.internal.Predicates;
@@ -73,6 +76,7 @@ import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
 import pro.projo.internal.rcg.utilities.UncheckedMethodDescription;
 import pro.projo.utilities.AnnotationList;
+import pro.projo.utilities.MethodInfo;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -316,10 +320,12 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
         Implementation implementation = getAccessor(method, annotations, returnType, propertyName, additionalImplements);
         Optional<Returns> returns = annotations.get(Returns.class);
+        Optional<Inherits> inherits = annotations.get(Inherits.class);
         List<Optional<Expects>> expects = Stream.of(method.getParameters())
             .map(it -> Optional.ofNullable(it.getAnnotation(Expects.class)))
             .collect(toList());
-        if (returns.isPresent() || expects.stream().anyMatch(Optional::isPresent))
+        if (!inherits.isPresent()
+        && (returns.isPresent() || expects.stream().anyMatch(Optional::isPresent)))
         {
             Class<?> returnsType = returns
                 .map(Returns::value)
@@ -339,7 +345,20 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 .withParameters(parameterTypes.toArray(new Type[] {}))
                 .intercept(implementation);
         }
-        return addFieldForGetter.apply(builder).method(named(methodName)).intercept(implementation);
+        Function<Builder<_Artifact_>, ImplementationDefinition<_Artifact_>> createMethod = methodBuilder ->
+        {
+            if (inherits.isPresent())
+            {
+                return methodBuilder
+                    .defineMethod(methodName, method.getReturnType(), PUBLIC)
+                    .withParameters(method.getParameterTypes());
+            }
+            else
+            {
+                return methodBuilder.method(named(methodName));
+            }
+        };
+        return createMethod.apply(addFieldForGetter.apply(builder)).intercept(implementation);
     }
 
     Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property, List<String> additionalImplements)
@@ -355,6 +374,17 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         if (annotations.contains(Overrides.class))
         {
             return MethodCall.invoke(method).withAllArguments().withAssigner(DEFAULT, DYNAMIC);
+        }
+        if (annotations.contains(Inherits.class))
+        {
+            MethodInfo methodInfo = new MethodInfo(method);
+            TypeDescription declaring = new TypeDescription.ForLoadedType(Projo.forName(additionalImplements.get(0)));
+            Generic returns = new TypeDescription.ForLoadedType(methodInfo.returnType()).asGenericType();
+            TypeDescription[] parameters = methodInfo.parameterTypes().stream()
+                .map(TypeDescription.ForLoadedType::new)
+                .toArray(TypeDescription[]::new);
+            MethodDescription inherited = latent(declaring, returns, method.getName(), parameters);
+            return MethodCall.invoke(inherited).withAllArguments().withAssigner(DEFAULT, DYNAMIC);
         }
         if (annotations.contains(Returns.class) || expects.test(method))
         {
@@ -437,7 +467,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private MethodDescription.Latent latent(TypeDescription declaringType, Generic returnType, String name, TypeDescription... parameterTypes)
     {
-        return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), returnType, emptyList(), emptyList(), emptyList(), null, null);
+        List<? extends ParameterDescription.Token> parameterTokens = Stream.of(parameterTypes)
+            .map(TypeDescription::asGenericType)
+            .map(ParameterDescription.Token::new)
+            .collect(toList());
+        return new MethodDescription.Latent(declaringType, name, PUBLIC, emptyList(), returnType, parameterTokens, emptyList(), emptyList(), null, null);
     }
 
     private ByteBuddy codeGenerator()
