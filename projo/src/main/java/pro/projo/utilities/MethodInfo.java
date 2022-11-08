@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import pro.projo.Projo;
@@ -44,6 +45,22 @@ public class MethodInfo extends ArrayList<Object>
     public MethodInfo(Class<?> returnType, String methodName, Class<?>[] parameterTypes)
     {
         super(Arrays.asList(returnType, methodName, Arrays.asList(parameterTypes)));
+    }
+
+    public String methodName()
+    {
+        return (String)get(1);
+    }
+
+    public Class<?> returnType()
+    {
+        return (Class<?>)get(0);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Class<?>> parameterTypes()
+    {
+        return (List<Class<?>>)get(2);
     }
 
     public static Class<?>[] expects(Method method)
