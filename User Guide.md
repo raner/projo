@@ -131,3 +131,20 @@ only exists in memory. This is significantly different from what Lombok (and sim
 necessarily better or worse, just different. While Projo's approach certainly addresses some of Lombok's weaker points
 (e.g., necessity for specific IDE support), it has it's own set of strengths and weaknesses. So, as they say: Your
 mileage may vary.
+
+A minimal version of the previous `Person` example could look like this using Projo:
+```java
+import pro.projo.doubles.Factory;
+
+interface Person
+{
+  Factory<Person, String, String> factory = Projo.creates(Person.class).with(Person::firstName, Person::lastName);
+
+  String firstName();
+  String lastName();
+}
+```
+If you also need setters (i.e., you require mutable objects) you just need to declare the appropriate setter methods
+(e.g., `void setFirstName(String firstName)`) as well. All methods are just regular interface methods, in other words,
+they are mere declarations without an implementation. The actual implementation will not get generated until some
+code calls the interface's factory to create the first object of type `Person`.
