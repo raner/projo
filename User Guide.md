@@ -5,7 +5,21 @@ out as a simple solution for implementing POJOs and DTOs at runtime, but has sin
 scenarios that involve boilerplate code. Many of the solutions are applied at runtime, but Projo also offers
 some mechanisms that work at compile time.
 
-## Introduction: Dealing with Boilerplate Code
+## Introduction
+
+For a long time, Projo's documentation has been lagging behind its feature development, and some useful features
+were added without any documentation at all. As a result, a lot of Projo's helpful functionality was difficult
+to use (and difficult to discover in the first place). This user guide attempts to remedy the current lack of
+documentation and will hopefully make Projo easier to understand and use.
+
+If Projo's feature list seems somewhat random to you, well, it's probably because it is. The initial idea behind
+Projo was to provide an alternative to [Lombok](https://projectlombok.org/) and similar frameworks, but much of
+the development since has been driven by downstream projects, some of which are not yet open-source. All of Projo's
+features are used by some downstream project and were created for a reason (i.e., they solve a real-world problem,
+and were not just added because they seemed cool at the time). Whereas most features have pretty wide applicability
+over a whole range of projects, Projo also addresses a few very specific problems that are a little more obscure.
+
+### Dealing with Boilerplate Code
 
 [Boilerplate code](https://en.wikipedia.org/wiki/Boilerplate_code) is repetitive code that usually follows a very
 simple pattern. The classic example are getter and setter methods for the attributes of a
@@ -37,21 +51,21 @@ public class Person
     }
 }
 ```
-Each attribute requires its own getter and setter method that follow a very simply pattern. If there are a lot of
+Each attribute requires its own getter and setter method that follow a very simple pattern. If there are a lot of
 attributes you might have to write a lot of similar code, which is not only tedious and boring, but (like all
 activities performed by humans) also very error-prone. Did you notice the subtle bug in the `setLastName` method
 in the code above?
 
-### Writing Boilerplate Code by Hand
+#### Writing Boilerplate Code by Hand
 
 Boilerplate code can always be written by hand, and if your project only contains a small amount of it, this may
 be a simple and pragmatic solution. After all, this is how boilerplate code has been handled for decades.
 As you have seen above, this approach is susceptible to errors introduced by repeated copy-and-paste, but if your
 project has decent test coverage you can easily make sure that all boilerplate code works as designed. However,
 this approach tends to break down if you use design methodologies like [DDD](https://en.wikipedia.org/wiki/Domain-driven_design)
-that tend to require a lot of boilerplate code.
+that tend to produce a lot of boilerplate code in languages like Java.
 
-### Having Your IDE Generate the Boilerplate Code for You
+#### Having Your IDE Generate the Boilerplate Code for You
 
 The next step up in the handling of boilerplate code is to have your IDE do some of the heavy lifting. Most IDEs
 nowadays have support to generate getters/setters, equals/hash code, delegate methods and variety of other types
@@ -71,7 +85,7 @@ lines of code that need to be added to the repository the easier it will be to m
 IDE-generated boilerplate code is definitely preferable to hand-written code, but since that code becomes a
 regular part of the code base, it still negatively affects maintainability.
 
-### Having the Compiler Create the Boilerplate Code
+#### Having the Compiler Create the Boilerplate Code
 
 What if you could just write your class attributes and provide some sort of hint to the compiler that it needs to
 add the appropriate getter and setter methods (and maybe an `equals` and `hashCode` method as well)? In other
@@ -115,7 +129,7 @@ provided by the [Xtend](https://www.eclipse.org/xtend/) "dialect" of Java. These
 somewhat more standard way, but effectively you will be using a new programming language that is then translated
 into Java source code.
 
-### Creating Boilerplate Code at Runtime
+#### Creating Boilerplate Code at Runtime
 
 Solutions like Lombok spend a lot of effort on making the developer's experience seamless. Even though there is no
 `setFirstName` method in the source code, as a developer, you want to be able to call that method without having your
