@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo;
 
+import java.awt.Point;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import javax.inject.Inject;
@@ -23,9 +24,15 @@ import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.TypeLiteral;
 import pro.projo.annotations.Property;
+import pro.projo.test.implementations.IntegerProcessor;
+import pro.projo.test.implementations.PointProcessor;
+import pro.projo.test.interfaces.Processor;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 public class ProjoInjectionSupportTest
@@ -113,5 +120,29 @@ public class ProjoInjectionSupportTest
         Booleans booleans = injector.getInstance(Booleans.class);
         Pass pass = injector.getInstance(Pass.class);
         assertSame(booleans._true(), pass.evaluate());
+    }
+
+    @Test
+    public void testThatReturnsAnnotationWorksInConjunctionWithInject() throws Exception
+    {
+        @SuppressWarnings("rawtypes")
+        TypeLiteral pointProcessor = new TypeLiteral<Processor<Point>>() {};
+
+        @SuppressWarnings("rawtypes")
+        TypeLiteral integerProcessor = new TypeLiteral<Processor<Integer>>() {};
+
+        Module module = new AbstractModule()
+        {
+            @SuppressWarnings("unchecked")
+            protected void configure()
+            {
+                bind((TypeLiteral<Object>)pointProcessor).to(Projo.getImplementationClass(PointProcessor.class));
+                bind((TypeLiteral<Object>)integerProcessor).to(Projo.getImplementationClass(IntegerProcessor.class));
+            }
+        };
+        Injector injector = Guice.createInjector(module);
+        Processor<Point> processor = injector.getInstance(Key.get(new TypeLiteral<Processor<Point>>() {}));
+        Object result = processor.process(new Point(3, 14159265));
+        assertEquals("3, 14159265", result);
     }
 }

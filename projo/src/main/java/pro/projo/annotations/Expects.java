@@ -26,6 +26,31 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 * methods that have parameter types that are not on the compile-time classpath (but would be
 * available on the runtime classpath).
 *
+* NOTE: When implementing a method that uses a type parameter for a parameter type in its original
+* declaration, the {@code &#64;Expects} annotation needs to use the original type parameter's erasure
+* for the method to be correctly implemented. For example:
+* <pre>
+*   package api;
+*   interface Processor&lt;TYPE&gt;
+*   {
+*     void process(TYPE object);
+*   }
+* </pre>
+* To implement this interface for the type {@code Integer}, one would use:
+* <pre>
+*   &#64;Implements("api.Processor&lt;java.lang.Integer&gt;")
+*   interface IntegerProcessor
+*   {
+*     void process(&#64;Expects("java.lang.Object") Integer value) // !!!
+*     {
+*       // ...
+*     }
+*   }
+* </pre>
+* If the original type parameter was declared as a bounded parameter, e.g.,
+* {@code interface Processor<TYPE extends Number>}, then the bounding type has to be used
+* (e.g., {@code &#64;Expects("java.lang.Number")}).
+*
 * This annotation is only honored when using Projo's runtime code generation feature. It will have
 * no effect (or may even cause errors) when used with proxy-based implementations.
 *
