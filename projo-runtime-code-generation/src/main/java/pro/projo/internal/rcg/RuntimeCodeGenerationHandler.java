@@ -503,7 +503,29 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         {
             Class<?> container = annotations.contains(injected)? Projo.forName("javax.inject.Provider"):Cache.class;
             Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
-            return Generic.Builder.parameterizedType(container, wrappedType).build();
+            Optional<Returns> returns = annotations.get(Returns.class);
+            if (returns.isPresent())
+            {
+                String returnType = returns.get().value();
+                int index = returnType.indexOf('<');
+                if (index == -1)
+                {
+                    return Generic.Builder.rawType(Projo.forName(returnType)).build();
+                }
+                else
+                {
+                    Class<?> rawType = Projo.forName(returnType.substring(0, index));
+                    String[] parameters = returnType.substring(index+1, returnType.length()-1).split("[, ]");
+                    Stream<Class<?>> typeParameters = Stream.of(parameters).map(Projo::forName);
+                    Generic parameterizedType = Generic.Builder.parameterizedType(rawType, typeParameters.toArray(Type[]::new)).build();
+                    TypeDescription containerType = Generic.Builder.rawType(container).build().asErasure();
+                    return Generic.Builder.parameterizedType(containerType, parameterizedType).build();
+                }
+            }
+            else
+            {
+                return Generic.Builder.parameterizedType(container, wrappedType).build();
+            }
         }
     }
 
