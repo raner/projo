@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.5.0</version>
  </parent>
 
  <artifactId>projo-jackson</artifactId>
@@ -34,7 +34,7 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.5.0-SNAPSHOT</version>
+   <version>1.5.0</version>
   </dependency>
   <dependency>
    <groupId>com.fasterxml.jackson.core</groupId>
@@ -44,7 +44,7 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.5.0-SNAPSHOT</version>
+   <version>1.5.0</version>
    <type>test-jar</type>
    <scope>test</scope>
   </dependency>
