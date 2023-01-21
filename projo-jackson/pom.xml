@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2019 - 2022 Mirko Raner                                        -->
+<!-- Copyright 2019 - 2023 Mirko Raner                                        -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.5.0</version>
+  <version>1.5.1-SNAPSHOT</version>
  </parent>
 
  <artifactId>projo-jackson</artifactId>
@@ -34,7 +34,7 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.5.0</version>
+   <version>${project.version}</version>
   </dependency>
   <dependency>
    <groupId>com.fasterxml.jackson.core</groupId>
@@ -44,7 +44,7 @@
   <dependency>
    <groupId>pro.projo</groupId>
    <artifactId>projo</artifactId>
-   <version>1.5.0</version>
+   <version>${project.version}</version>
    <type>test-jar</type>
    <scope>test</scope>
   </dependency>
