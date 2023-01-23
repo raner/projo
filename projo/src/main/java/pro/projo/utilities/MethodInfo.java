@@ -37,9 +37,14 @@ public class MethodInfo extends ArrayList<Object>
 {
     private final static long serialVersionUID = 740034975850247166L;
 
-    public MethodInfo(Method method)
+//    public MethodInfo(Method method)
+//    {
+//        this(method, null);
+//    }
+
+    public MethodInfo(Method method, ClassLoader classLoader)
     {
-        this(returns(method), method.getName(), expects(method));
+        this(returns(method, classLoader), method.getName(), expects(method, classLoader));
     }
 
     public MethodInfo(Class<?> returnType, String methodName, Class<?>[] parameterTypes)
@@ -63,20 +68,24 @@ public class MethodInfo extends ArrayList<Object>
         return (List<Class<?>>)get(2);
     }
 
-    public static Class<?>[] expects(Method method)
+    public static Class<?>[] expects(Method method, ClassLoader classLoader)
     {
         Stream<Parameter> parameters = Stream.of(method.getParameters());
         Function<Parameter, Class<?>> parameterType = parameter ->
         {
+System.err.println("******* Projo CL: " + Projo.class.getClassLoader());
+System.err.println("******* Method CL: " + method.getDeclaringClass().getClassLoader());
             Expects expects = parameter.getAnnotation(Expects.class);
-            return expects == null? parameter.getType():Projo.forName(expects.value());
+            return expects == null? parameter.getType():Projo.forName(expects.value(), classLoader);
         };
         return parameters.map(parameterType).toArray(Class[]::new);
     }
 
-    public static Class<?> returns(Method method)
+    public static Class<?> returns(Method method, ClassLoader classLoader)
     {
+System.err.println("******* Projo CL: " + Projo.class.getClassLoader());
+System.err.println("******* Method CL: " + method.getDeclaringClass().getClassLoader());
         Returns returns = method.getAnnotation(Returns.class);
-        return returns == null? method.getReturnType():Projo.forName(returns.value());
+        return returns == null? method.getReturnType():Projo.forName(returns.value(), classLoader);
     }
 }

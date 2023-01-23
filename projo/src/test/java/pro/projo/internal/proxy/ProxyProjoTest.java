@@ -38,7 +38,7 @@ public class ProxyProjoTest
     public void testProxyProjoImplementationClass()
     {
         Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type, false);
+        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type, false, null);
         assertTrue(Proxy.isProxyClass(implementation));
     }
 }

@@ -105,7 +105,7 @@ import static pro.projo.internal.Predicates.setter;
 * dynamically at runtime (using the {@link ByteBuddy} library). For each, object property the generated class
 * will contain a field of the appropriate type, and the corresponding generated getter and setter will access
 * that field directly, without using reflection. Generated implementation classes can be obtained by calling
-* the {@link #getImplementationOf(Class, boolean)} method.
+* the {@link #getImplementationOf(Class, boolean, ClassLoader)} method.
 *
 * @param <_Artifact_> the type of object being generated
 *
@@ -171,9 +171,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @return the generated implementation class
     **/
     @Override
-    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage)
+    public Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage, ClassLoader classLoader)
     {
-        return implementationClassCache.computeIfAbsent(type, it -> generateImplementation(it, defaultPackage));
+        return implementationClassCache.computeIfAbsent(type, it -> generateImplementation(it, defaultPackage, classLoader));
     }
 
     public Class<? extends _Artifact_> getProxyImplementationOf(Class<_Artifact_> type, boolean override, boolean defaultPackage, Class<?>... additionalTypes)
@@ -193,16 +193,17 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return name.endsWith(SUFFIX)? name.substring(0, name.length()-SUFFIX.length()):name;
     }
 
-    private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type, boolean defaultPackage)
+    private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type, boolean defaultPackage, ClassLoader classLoader)
     {
-        Stream<Method> cachedMethods = Projo.getMethods(type, cached);
+System.err.println("****** Projo generating implementation for " + type + " cl3=" + classLoader);
+        Stream<Method> cachedMethods = Projo.getMethods(type, classLoader, cached);
         List<String> additionalImplements = getImplements(type);
-        Builder<_Artifact_> builder = create(type, additionalImplements).name(implementationName(type, defaultPackage));
+        Builder<_Artifact_> builder = create(type, additionalImplements, classLoader).name(implementationName(type, defaultPackage));
         TypeDescription currentType = builder.make().getTypeDescription();
-        return debug(getMethods(type, additionalImplements, getter, setter, cached, overrides, returns, expects)
-            .reduce(builder, (accumulator, method) -> add(accumulator, method, additionalImplements), sequentialOnly())
+        return debug(getMethods(type, classLoader, additionalImplements, getter, setter, cached, overrides, returns, expects)
+            .reduce(builder, (accumulator, method) -> add(accumulator, method, additionalImplements, classLoader), sequentialOnly())
             .defineConstructor(PUBLIC).intercept(constructor(type, currentType, cachedMethods))
-            .make().load(classLoader(type, defaultPackage), INJECTION)).getLoaded();
+            .make().load(classLoader(type, defaultPackage, classLoader), INJECTION)).getLoaded();
     }
 
     @SuppressWarnings("unchecked")
@@ -222,7 +223,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 .name(implementationName(type, defaultPackage))
                 .defineField("delegate", delegateType);
             builder = additionalAttributes(type, override)
-                .reduce(builder, (accumulator, method) -> add(accumulator, method, emptyList()), sequentialOnly())
+                .reduce(builder, (accumulator, method) -> add(accumulator, method, emptyList(), null), sequentialOnly())
                 .defineConstructor(Modifier.PUBLIC)
                 .withParameter(delegateType)
                 .intercept(MethodCall.invoke(Object.class.getDeclaredConstructor())
@@ -251,7 +252,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
         // Build and return the proxy class:
         //
-        return debug(builder.make().load(classLoader(type, defaultPackage))).getLoaded();
+        return debug(builder.make().load(classLoader(type, defaultPackage, null))).getLoaded();
     }
 
     private Stream<Method> additionalAttributes(Class<?> type, boolean override)
@@ -307,7 +308,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @param additionalImplements additional interfaces implemented by means of {@link Implements} annotations
     * @return a new {@link Builder} with an additional method (and possibly an additional field)
     **/
-    private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method, List<String> additionalImplements)
+    private Builder<_Artifact_> add(Builder<_Artifact_> builder, Method method, List<String> additionalImplements, ClassLoader classLoader)
     {
         AnnotationList annotations = new AnnotationList(method);
         boolean isGetter = getter.test(method) || annotations.contains(Delegate.class) || annotations.contains(Cached.class);
@@ -316,9 +317,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
         Optional<Annotation> inject = annotations.get(injected);
         Class<?> returnType = method.getReturnType();
-        TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType):VOID.asGenericType();
+        TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType, classLoader):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
-        Implementation implementation = getAccessor(method, annotations, returnType, propertyName, additionalImplements);
+        Implementation implementation = getAccessor(method, annotations, returnType, propertyName, additionalImplements, classLoader);
         Optional<Returns> returns = annotations.get(Returns.class);
         Optional<Inherits> inherits = annotations.get(Inherits.class);
         List<Optional<Expects>> expects = Stream.of(method.getParameters())
@@ -329,14 +330,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         {
             Class<?> returnsType = returns
                 .map(Returns::value)
-                .map(Projo::forName)
+                .map(it -> Projo.forName(it, classLoader))
                 .map(Class.class::cast)
                 .orElse(returnType);
             @SuppressWarnings("rawtypes")
             List<Class> parameterTypes = IntStream.range(0, expects.size())
                 .mapToObj(index -> expects.get(index)
                     .map(Expects::value)
-                    .map(Projo::forName)
+                    .map(it -> Projo.forName(it, classLoader))
                     .map(Class.class::cast)
                     .orElse(method.getParameterTypes()[index]))
                     .collect(toList());
@@ -361,11 +362,11 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return createMethod.apply(addFieldForGetter.apply(builder)).intercept(implementation);
     }
 
-    Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property, List<String> additionalImplements)
+    Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property, List<String> additionalImplements, ClassLoader classLoader)
     {
         if (annotations.contains(injected))
         {
-            return get(property, returnType);
+            return get(property, returnType, classLoader);
         }
         if (annotations.contains(Cached.class))
         {
@@ -377,8 +378,8 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
         if (annotations.contains(Inherits.class))
         {
-            MethodInfo methodInfo = new MethodInfo(method);
-            TypeDescription declaring = new TypeDescription.ForLoadedType(Projo.forName(additionalImplements.get(0)));
+            MethodInfo methodInfo = new MethodInfo(method, classLoader);
+            TypeDescription declaring = new TypeDescription.ForLoadedType(Projo.forName(additionalImplements.get(0), classLoader));
             Generic returns = new TypeDescription.ForLoadedType(methodInfo.returnType()).asGenericType();
             TypeDescription[] parameters = methodInfo.parameterTypes().stream()
                 .map(TypeDescription.ForLoadedType::new)
@@ -393,7 +394,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
             return MethodCall.invoke(unchecked).onSuper().withAllArguments().withAssigner(DEFAULT, DYNAMIC);
         }
         Stream<Method> methods = additionalImplements.stream()
-            .map(Projo::forName)
+            .map(it -> Projo.forName(it, classLoader))
             .flatMap(type -> Stream.of(type.getDeclaredMethods()));
         Predicate<Method> sameSignature = match ->
             method.getName().equals(match.getName()) &&
@@ -457,9 +458,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
     }
 
-    private Implementation get(String field, Type type)
+    private Implementation get(String field, Type type, ClassLoader classLoader)
     {
-        Class<?> provider = Projo.forName("javax.inject.Provider");
+        Class<?> provider = Projo.forName("javax.inject.Provider", classLoader);
         Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
         MethodDescription get = latent(genericProvider.asErasure(), OBJECT.asGenericType(), "get");
         return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
@@ -493,7 +494,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     * @param originalReturnType the return type of the method
     * @return the appropriate field type for the method
     **/
-    Generic getFieldType(AnnotationList annotations, Class<?> originalReturnType)
+    Generic getFieldType(AnnotationList annotations, Class<?> originalReturnType, ClassLoader classLoader)
     {
         if (!annotations.contains(injected) && !annotations.contains(Cached.class))
         {
@@ -501,7 +502,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
         else
         {
-            Class<?> container = annotations.contains(injected)? Projo.forName("javax.inject.Provider"):Cache.class;
+            Class<?> container = annotations.contains(injected)? Projo.forName("javax.inject.Provider", classLoader):Cache.class;
             Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
             Optional<Returns> returns = annotations.get(Returns.class);
             if (returns.isPresent())
@@ -510,13 +511,13 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 int index = returnType.indexOf('<');
                 if (index == -1)
                 {
-                    return Generic.Builder.rawType(Projo.forName(returnType)).build();
+                    return Generic.Builder.rawType(Projo.forName(returnType, classLoader)).build();
                 }
                 else
                 {
-                    Class<?> rawType = Projo.forName(returnType.substring(0, index));
+                    Class<?> rawType = Projo.forName(returnType.substring(0, index), classLoader);
                     String[] parameters = returnType.substring(index+1, returnType.length()-1).split("[, ]");
-                    Stream<Class<?>> typeParameters = Stream.of(parameters).map(Projo::forName);
+                    Stream<Class<?>> typeParameters = Stream.of(parameters).map(it -> Projo.forName(it, classLoader));
                     Generic parameterizedType = Generic.Builder.parameterizedType(rawType, typeParameters.toArray(Type[]::new)).build();
                     TypeDescription containerType = Generic.Builder.rawType(container).build().asErasure();
                     return Generic.Builder.parameterizedType(containerType, parameterizedType).build();
@@ -557,8 +558,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return typeName + SUFFIX;
     }
 
-    private ClassLoader classLoader(Class<?> type, boolean defaultPackage)
+    private ClassLoader classLoader(Class<?> type, boolean defaultPackage, ClassLoader classLoader)
     {
+        if (classLoader != null)
+        {
+System.err.println("       classLoader=" + classLoader);
+            return classLoader;
+        }
+System.err.println("       returning default CL dp=" + defaultPackage);
         return defaultPackage? Thread.currentThread().getContextClassLoader():type.getClassLoader();
     }
 
@@ -568,10 +575,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return baseClasses.get(features);
     }
 
-    private Builder<_Artifact_> create(Class<_Artifact_> type, List<String> additionalImplements)
+    private Builder<_Artifact_> create(Class<_Artifact_> type, List<String> additionalImplements, ClassLoader classLoader)
     {
         Stream<TypeDefinition> baseTypes = Stream.of(type(type), type(ProjoObject.class));
-        TypeDefinition[] interfaces = Stream.concat(baseTypes, additionalImplements.stream().map(this::type)).toArray(TypeDefinition[]::new);
+        TypeDefinition[] interfaces = Stream.concat(baseTypes, additionalImplements.stream().map(it -> type(it, classLoader))).toArray(TypeDefinition[]::new);
         @SuppressWarnings("unchecked")
         Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(interfaces);
         return builder;
@@ -589,7 +596,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         return new TypeDescription.ForLoadedType(type);
     }
 
-    private TypeDefinition type(String typeName)
+    private TypeDefinition type(String typeName, ClassLoader classLoader)
     {
         Matcher matcher = typeNamePattern.matcher(typeName);
         matcher.matches();
@@ -597,13 +604,13 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String typeArguments = matcher.group("arguments");
         if (typeArguments == null)
         {
-            return type(Projo.forName(baseType));
+            return type(Projo.forName(baseType, classLoader));
         }
         else
         {
             Stream<String> arguments = Stream.of(typeArguments.split("[, ]+"));
-            Type[] argumentTypes = arguments.map(Projo::forName).toArray(Type[]::new);
-            return Generic.Builder.parameterizedType(Projo.forName(baseType), argumentTypes).build();
+            Type[] argumentTypes = arguments.map(it -> Projo.forName(it, classLoader)).toArray(Type[]::new);
+            return Generic.Builder.parameterizedType(Projo.forName(baseType, classLoader), argumentTypes).build();
         }
     }
 

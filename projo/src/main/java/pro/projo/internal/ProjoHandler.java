@@ -103,7 +103,7 @@ public abstract class ProjoHandler<_Artifact_>
     * @param defaultPackage {@code true} if generated code should be placed in the default package, {@code false} otherwise
     * @return the concrete implementation class
     **/
-    public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage);
+    public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage, ClassLoader classLoader);
 
     protected Optional<Method> getDelegateMethod(Method[] declaredMethods)
     {

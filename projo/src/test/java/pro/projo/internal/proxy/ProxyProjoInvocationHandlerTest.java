@@ -30,6 +30,6 @@ public class ProxyProjoInvocationHandlerTest
     public void getImplementationOfReturnsAProjoClass()
     {
         ProxyProjoInvocationHandler<TestClass> handler = new ProxyProjoInvocationHandler<>(TestClass.class);
-        assertTrue(Projo.isProjoClass(handler.getImplementationOf(TestClass.class, false)));
+        assertTrue(Projo.isProjoClass(handler.getImplementationOf(TestClass.class, false, null)));
     }
 }
