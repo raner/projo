@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2023 Mirko Raner                                        //
+// Copyright 2023 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,32 +13,21 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.internal.proxy;
+package pro.projo.test.implementations;
 
-import java.lang.reflect.Proxy;
-import org.junit.Test;
-import pro.projo.Projo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import pro.projo.ProjoImplementationClassTest;
+import pro.projo.annotations.Returns;
 
-public class ProxyProjoTest
+/**
+* The {@link Injection} interface is a test interface used by
+* {@link ProjoImplementationClassTest}.
+*
+* @author Mirko Raner
+**/
+public interface Injection
 {
-    static interface Interface
+    @Returns("org.codehaus.mojo.versions.api.change.VersionChange") default Object object()
     {
-        int value();
-    }
-
-    @Test
-    public void testProxyProjoImplementation()
-    {
-        assertEquals(ProxyProjo.class, Projo.getImplementation().getClass());
-    }
-
-    @Test
-    public void testProxyProjoImplementationClass()
-    {
-        Class<Interface> type = Interface.class;
-        Class<? extends Interface> implementation = Projo.getImplementation().getHandler(type).getImplementationOf(type, false, null);
-        assertTrue(Proxy.isProxyClass(implementation));
+        return null;
     }
 }

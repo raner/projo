@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2022 Mirko Raner                                        //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,9 +15,9 @@
 //                                                                          //
 package pro.projo.internal.proxy;
 
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import pro.projo.Projo;
+import static org.junit.Assert.assertTrue;
 
 public class ProxyProjoInvocationHandlerTest
 {
@@ -30,6 +30,6 @@ public class ProxyProjoInvocationHandlerTest
     public void getImplementationOfReturnsAProjoClass()
     {
         ProxyProjoInvocationHandler<TestClass> handler = new ProxyProjoInvocationHandler<>(TestClass.class);
-        assertTrue(Projo.isProjoClass(handler.getImplementationOf(TestClass.class, false)));
+        assertTrue(Projo.isProjoClass(handler.getImplementationOf(TestClass.class, false, null)));
     }
 }

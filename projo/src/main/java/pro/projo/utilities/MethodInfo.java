@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -37,9 +37,29 @@ public class MethodInfo extends ArrayList<Object>
 {
     private final static long serialVersionUID = 740034975850247166L;
 
+    /**
+    * Creates a {@link MethodInfo} from a {@link Method} handle, applying possible
+    * {@link Expects @Expects} and {@link Returns @Returns} annotations.
+    *
+    * @param method the {@link Method} handle
+    **/
     public MethodInfo(Method method)
     {
-        this(returns(method), method.getName(), expects(method));
+        this(returns(method, null), method.getName(), expects(method, null));
+    }
+
+    /**
+    * Creates a {@link MethodInfo} from a {@link Method} handle, applying possible
+    * {@link Expects @Expects} and {@link Returns @Returns} annotations.
+    *
+    * @param method the {@link Method} handle
+    * @param classLoader the {@link ClassLoader} to be used for loading additional types
+    * specified in {@link Expects @Expects} and {@link Returns @Returns} annotations;
+    * {@code null} indicates using the default class loader used by {@link Class#forName(String)}
+    **/
+    public MethodInfo(Method method, ClassLoader classLoader)
+    {
+        this(returns(method, classLoader), method.getName(), expects(method, classLoader));
     }
 
     public MethodInfo(Class<?> returnType, String methodName, Class<?>[] parameterTypes)
@@ -63,20 +83,20 @@ public class MethodInfo extends ArrayList<Object>
         return (List<Class<?>>)get(2);
     }
 
-    public static Class<?>[] expects(Method method)
+    public static Class<?>[] expects(Method method, ClassLoader classLoader)
     {
         Stream<Parameter> parameters = Stream.of(method.getParameters());
         Function<Parameter, Class<?>> parameterType = parameter ->
         {
             Expects expects = parameter.getAnnotation(Expects.class);
-            return expects == null? parameter.getType():Projo.forName(expects.value());
+            return expects == null? parameter.getType():Projo.forName(expects.value(), classLoader);
         };
         return parameters.map(parameterType).toArray(Class[]::new);
     }
 
-    public static Class<?> returns(Method method)
+    public static Class<?> returns(Method method, ClassLoader classLoader)
     {
         Returns returns = method.getAnnotation(Returns.class);
-        return returns == null? method.getReturnType():Projo.forName(returns.value());
+        return returns == null? method.getReturnType():Projo.forName(returns.value(), classLoader);
     }
 }

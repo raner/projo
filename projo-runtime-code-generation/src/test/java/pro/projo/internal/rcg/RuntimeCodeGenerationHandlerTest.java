@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2022 Mirko Raner                                        //
+// Copyright 2017 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -26,6 +26,8 @@ import static org.junit.Assert.assertFalse;
 
 public class RuntimeCodeGenerationHandlerTest
 {
+    private ClassLoader classLoader = getClass().getClassLoader();
+
     public static interface Person
     {
         String getFirstName();
@@ -46,7 +48,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testHandlerReturnsNonProxyClass()
     {
         RuntimeCodeGenerationHandler<Person> handler = new RuntimeCodeGenerationHandler<>();
-        Class<? extends Person> result = handler.getImplementationOf(Person.class, false);
+        Class<? extends Person> result = handler.getImplementationOf(Person.class, false, classLoader);
         assertFalse(isProxyClass(result));
     }
 
@@ -54,7 +56,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testHandlerCanImplementNonPublicClass()
     {
         RuntimeCodeGenerationHandler<PackagePerson> handler = new RuntimeCodeGenerationHandler<>();
-        Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class, false);
+        Class<? extends PackagePerson> result = handler.getImplementationOf(PackagePerson.class, false, classLoader);
         assertFalse(isProxyClass(result));
     }
 
@@ -62,7 +64,7 @@ public class RuntimeCodeGenerationHandlerTest
     public void testFieldTypeForRegularMethod()
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
-        Generic fieldType = handler.getFieldType(new AnnotationList(), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(), String.class, classLoader);
         assertEquals("class java.lang.String", fieldType.toString());
     }
 
@@ -72,7 +74,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Inject inject = getClass().getDeclaredMethod("testFieldTypeForInjectedMethod").getAnnotation(Inject.class);
-        Generic fieldType = handler.getFieldType(new AnnotationList(inject), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(inject), String.class, classLoader);
         assertEquals("javax.inject.Provider<java.lang.String>", fieldType.toString());
     }
 
@@ -82,7 +84,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
-        Generic fieldType = handler.getFieldType(new AnnotationList(cached), String.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(cached), String.class, classLoader);
         assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.String>", fieldType.toString());
     }
 
@@ -92,7 +94,7 @@ public class RuntimeCodeGenerationHandlerTest
     {
         RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
         Cached cached = getClass().getDeclaredMethod("testFieldTypeForCachedMethod").getAnnotation(Cached.class);
-        Generic fieldType = handler.getFieldType(new AnnotationList(cached), int.class);
+        Generic fieldType = handler.getFieldType(new AnnotationList(cached), int.class, classLoader);
         assertEquals("pro.projo.internal.rcg.runtime.Cache<java.lang.Integer>", fieldType.toString());
     }
 }

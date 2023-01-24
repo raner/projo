@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2022 Mirko Raner                                        //
+// Copyright 2017 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -34,6 +34,9 @@ import pro.projo.internal.PropertyMatcher;
 
 /**
 * {@link RuntimeCodeGenerationProjo} is a Projo implementation based on runtime code generation.
+* This implementation will not pass a {@link ClassLoader}, as it is not passed on the calling API.
+* To generate implementation classes that are loaded with a specific {@link ClassLoader} use the
+* {@link Projo#getImplementationClass(Class, ClassLoader)} API method.
 *
 * The {@link RuntimeCodeGenerationProjo} has a {@link #precedence() precedence} of 0.
 *
@@ -84,7 +87,7 @@ public class RuntimeCodeGenerationProjo extends Projo
                         {
                             Class<?> implementation = isProxiedInterface(type)?
                                 projoHandler.getProxyImplementationOf(type, true, defaultPackage):
-                                projoHandler.getImplementationOf(type, defaultPackage);
+                                projoHandler.getImplementationOf(type, defaultPackage, null);
                             @SuppressWarnings("unchecked")
                             _Artifact_ instance = (_Artifact_)implementation.getConstructor().newInstance();
                             return instance;
