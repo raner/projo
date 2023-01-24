@@ -516,7 +516,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 int index = returnType.indexOf('<');
                 if (index == -1)
                 {
-                    return Generic.Builder.rawType(Projo.forName(returnType, classLoader)).build();
+                    return Generic.Builder.parameterizedType(container, Projo.forName(returnType, classLoader)).build();
                 }
                 else
                 {
