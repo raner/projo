@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2022 Mirko Raner                                        //
+// Copyright 2017 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -166,8 +166,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     /**
     * Provides a class that implements the given type. All requests for the same type will return the same
     * implementation class.
+    * <p>
+    * <b>NOTE:</b> a {@link ClassLoader} will be passed only when this method is invoked from
+    * {@link Projo#getImplementationClass(Class, ClassLoader)}; {@link RuntimeCodeGenerationProjo}
+    * will always pass a {@code null} reference
     *
     * @param type the type (i.e., Projo interface)
+    * @param defaultPackage flag indicating whether the generated class should be placed in the default package
+    * @param classLoader the {@link ClassLoader} to be used
     * @return the generated implementation class
     **/
     @Override
@@ -195,7 +201,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private Class<? extends _Artifact_> generateImplementation(Class<_Artifact_> type, boolean defaultPackage, ClassLoader classLoader)
     {
-System.err.println("****** Projo generating implementation for " + type + " cl3=" + classLoader);
         Stream<Method> cachedMethods = Projo.getMethods(type, classLoader, cached);
         List<String> additionalImplements = getImplements(type);
         Builder<_Artifact_> builder = create(type, additionalImplements, classLoader).name(implementationName(type, defaultPackage));
@@ -562,10 +567,8 @@ System.err.println("****** Projo generating implementation for " + type + " cl3=
     {
         if (classLoader != null)
         {
-System.err.println("       classLoader=" + classLoader);
             return classLoader;
         }
-System.err.println("       returning default CL dp=" + defaultPackage);
         return defaultPackage? Thread.currentThread().getContextClassLoader():type.getClassLoader();
     }
 

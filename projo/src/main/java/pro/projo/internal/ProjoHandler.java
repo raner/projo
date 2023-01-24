@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2022 Mirko Raner                                        //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -28,6 +28,10 @@ import pro.projo.annotations.Delegate;
 * Currently, the {@link ProjoHandler}'s only function is to carry the type parameter and serve as an enclosure for the
 * {@link ProjoHandler.ProjoInitializer ProjoInitializer} and {@link ProjoHandler.ProjoInitializer.ProjoMembers ProjoMembers}
 * classes.
+*
+* Starting with version 1.5.1, {@link #getImplementationOf(Class, boolean, ClassLoader)} requires a {@link ClassLoader}
+* object to be passed, and will therefore not be compatible with external Projo implementations for
+* previous versions.
 *
 * @param <_Artifact_> the artifact type
 *
@@ -101,6 +105,7 @@ public abstract class ProjoHandler<_Artifact_>
     *
     * @param type the interface or abstract type to be implemented
     * @param defaultPackage {@code true} if generated code should be placed in the default package, {@code false} otherwise
+    * @param classLoader the {@link ClassLoader} to be used
     * @return the concrete implementation class
     **/
     public abstract Class<? extends _Artifact_> getImplementationOf(Class<_Artifact_> type, boolean defaultPackage, ClassLoader classLoader);
