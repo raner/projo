@@ -575,6 +575,9 @@ public abstract class Projo
     * Returns methods of a class that match at least one of a list of predicates.
     *
     * @param type the {@link Class}
+    * @param classLoader the {@link ClassLoader} to be used for loading additional types
+    * (e.g. from {@link pro.projo.annotations.Expects @Expects} or
+    * {@link pro.projo.annotations.Returns @Returns} annotations)
     * @param predicates the predicates (if no predicate is supplied the method will return no methods)
     * @return all methods of the class that match at least one of the given predicates
     **/
