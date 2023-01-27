@@ -21,11 +21,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import org.junit.Test;
 import pro.projo.test.implementations.Provider;
+import pro.projo.test.implementations.Strings;
 import static org.junit.Assert.assertEquals;
 
 public class ProjoProviderTest
 {
     Class<?> provider = Projo.getImplementationClass(Provider.class);
+    Class<?> strings = Projo.getImplementationClass(Strings.class);
 
     @Test
     public void testLiteralsFieldType() throws Exception
@@ -50,5 +52,22 @@ public class ProjoProviderTest
         Field literals = provider.getDeclaredField("comparator");
         ParameterizedType literalsType = (ParameterizedType)literals.getGenericType();
         assertEquals("javax.inject.Provider<java.util.Comparator<pro.projo.test.interfaces.Literals>>", literalsType.getTypeName());
+    }
+
+    @Test
+    public void testInheritedLiteralsFieldType() throws Exception
+    {
+        Field literals = strings.getDeclaredField("literals");
+        ParameterizedType literalsType = (ParameterizedType)literals.getGenericType();
+        assertEquals("javax.inject.Provider", literalsType.getRawType().getTypeName());
+        assertEquals("pro.projo.test.interfaces.Literals", literalsType.getActualTypeArguments()[0].getTypeName());
+    }
+
+    @Test
+    public void testInheritedLiteralsReturnType() throws Exception
+    {
+        Method literals = strings.getDeclaredMethod("literals");
+        Type literalsType = literals.getGenericReturnType();
+        assertEquals("pro.projo.test.interfaces.Literals", literalsType.getTypeName());
     }
 }
