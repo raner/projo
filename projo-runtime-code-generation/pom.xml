@@ -48,6 +48,25 @@
    <scope>test</scope>
   </dependency>
   <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-jackson</artifactId>
+   <version>${project.version}</version>
+   <scope>test</scope>
+  </dependency>
+  <dependency>
+   <groupId>pro.projo</groupId>
+   <artifactId>projo-jackson</artifactId>
+   <version>${project.version}</version>
+   <type>test-jar</type>
+   <scope>test</scope>
+  </dependency>
+  <dependency>
+   <groupId>com.fasterxml.jackson.dataformat</groupId>
+   <artifactId>jackson-dataformat-yaml</artifactId>
+   <version>2.14.2</version>
+   <scope>test</scope>
+  </dependency>
+  <dependency>
    <groupId>javax.inject</groupId>
    <artifactId>javax.inject</artifactId>
    <version>1</version>

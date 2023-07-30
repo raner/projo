@@ -17,6 +17,8 @@ package pro.projo.jackson;
 
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,6 +32,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+
 import pro.projo.Projo;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static org.junit.Assert.assertArrayEquals;
@@ -226,6 +230,20 @@ public class JacksonTest
         mapper.disable(WRITE_DATES_AS_TIMESTAMPS);
         TimeSeries timeSeries = mapper.readValue("{\"data\":{\"seriesA\":42.42}}", TimeSeries.class);
         assertEquals(Double.valueOf(42.42), timeSeries.data().get("seriesA"));
+    }
+
+    @Test
+    public void testDeserializeYamlCollections() throws Exception
+    {
+      mapper = new YAMLMapper();
+      mapper.findAndRegisterModules();
+      URL url = getClass().getClassLoader().getResource("manuscript.yml");
+      Manuscript manuscript = mapper.readValue(url, Manuscript.class);
+      assertEquals(2, manuscript.chapters().size());
+      assertEquals(2, manuscript.appendix().size());
+      Appendix appendixA = manuscript.appendix().get(0);
+      assertEquals("Final Guidance Documents", appendixA.title());
+      
     }
 
     private JsonNode json(String string) throws Exception

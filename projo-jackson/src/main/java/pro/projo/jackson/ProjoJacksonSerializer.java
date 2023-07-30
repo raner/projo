@@ -76,6 +76,7 @@ public class ProjoJacksonSerializer extends BeanSerializer
             }
         };
         Annotations contextAnnotations = null; // TODO: handle context annotations
+System.err.println("====== Property: " + method.getReturnType() + " " + propertyName);
         JavaType propertyType = typeFactory.constructType(method.getReturnType());
         return new AttributePropertyWriter(propertyName, propDef, contextAnnotations, propertyType, empty())
         {

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2023 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,26 +15,11 @@
 //                                                                          //
 package pro.projo.jackson;
 
-import com.fasterxml.jackson.databind.AbstractTypeResolver;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.type.SimpleType;
-import pro.projo.Projo;
-
-public class ProjoJacksonTypeResolver extends AbstractTypeResolver
+public interface Chapter
 {
-    @Override
-    public JavaType findTypeMapping(DeserializationConfig config, JavaType type)
-    {
-System.err.println("****** findTypeMapping(" + type + ")");
-        JavaType typeMapping = super.findTypeMapping(config, type);
-        if (typeMapping == null && type.isInterface() && !type.isContainerType())
-        {
-            Class<?> rawClass = type.getRawClass();
-            Class<?> implementation = Projo.getImplementationClass(rawClass);
-            typeMapping = SimpleType.constructUnsafe(implementation);
-        }
-System.err.println("       typeMapping=" + typeMapping);
-        return typeMapping;
-    }
+    String file();
+    String url();
+    String title();
+    String md5();
+    String sha256();
 }

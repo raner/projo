@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2022 Mirko Raner                                        //
+// Copyright 2017 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -18,6 +18,7 @@ package pro.projo;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import pro.projo.jackson.JacksonTest;
 
 /**
 * The {@link ProjoSuiteTest} suite brings in various JUnit tests from the main Projo project and runs them again in the
@@ -47,7 +48,9 @@ import org.junit.runners.Suite.SuiteClasses;
     MutableProjoSinglesTest.class,
     MutableProjoDoublesTest.class,
     MutableProjoTriplesTest.class,
-    TransitiveValueObjectsTest.class
+    TransitiveValueObjectsTest.class,
+    ProjoRuntimeCodeGenerationTest.class,
+    JacksonTest.class
 })
 public class ProjoSuiteTest
 {
