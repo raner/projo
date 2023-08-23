@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 - 2021 Mirko Raner                                        //
+// Copyright 2020 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,21 +15,14 @@
 //                                                                          //
 package pro.projo.generation.utilities;
 
-import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.util.function.UnaryOperator;
-import javax.tools.StandardLocation;
 import org.junit.Test;
 import pro.projo.generation.utilities.Source.InterfaceSource;
 import pro.projo.interfaces.annotation.Interface;
 import pro.projo.interfaces.annotation.Map;
 import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.Ternary;
 import pro.projo.interfaces.annotation.Unmapped;
-import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static pro.projo.template.annotation.Configuration.defaults;
 
 /**
 * The {@link TypeConverterSkipTest} contains test cases specific to verifying the
@@ -92,83 +85,5 @@ public class TypeConverterSkipTest extends AbstractTypeConverterTest
         Options options = createOptions(unmapped);
         Interface primary = createInterface(null, null, null, new Map[] {}, options);
         return new InterfaceSource(primary);
-    }
-
-    protected Options createOptions(Unmapped unmapped)
-    {
-        return new Options()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-                return Options.class;
-            }
-
-            @Override
-            public String fileExtension()
-            {
-                return defaults().fileExtension();
-            }
-
-            @Override
-            public StandardLocation outputLocation()
-            {
-                return defaults().outputLocation();
-            }
-
-            @Override
-            public Unmapped skip()
-            {
-                return unmapped;
-            }
-
-            @Override
-            public Ternary addAnnotations()
-            {
-                return Ternary.EITHER;
-            }
-
-            @Override
-            public Class<? extends UnaryOperator<Writer>> postProcessor()
-            {
-                return IdentityPostProcessor.class;
-            }
-
-            @Override
-            public Class<? extends UnaryOperator<Writer>> typeVariableTransformer()
-            {
-                return IdentityPostProcessor.class;
-            }
-        };
-    }
-
-    private Unmapped unmapped(boolean value, boolean includingPrimitives)
-    {
-        return new Unmapped()
-        {
-            @Override
-            public Class<? extends Annotation> annotationType()
-            {
-                return Unmapped.class;
-            }
-
-            @Override
-            public boolean value()
-            {
-                return value;
-            }
-
-            @Override
-            public boolean includingPrimitives()
-            {
-                return includingPrimitives;
-            }
-
-            @Override
-            public boolean includingArrays()
-            {
-                return false;
-            }
-        };
     }
 }

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -101,4 +101,9 @@ public @interface Dtd
     * names to Java method names
     **/
     Class<? extends AttributeNameConverter> attributeNameConverter() default DefaultAttributeNameConverter.class;
+
+    /**
+    * @return additional code generation options for this {@link Dtd}
+    **/
+    Options options() default @Options;
 }
