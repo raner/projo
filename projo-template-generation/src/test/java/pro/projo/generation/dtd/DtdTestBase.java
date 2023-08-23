@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -29,8 +29,10 @@ import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
 import net.florianschoppmann.java.reflect.ReflectionTypes;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
+import pro.projo.generation.utilities.AbstractTypeConverterTest;
 import pro.projo.generation.utilities.Name;
 import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.interfaces.annotation.utilities.DefaultAttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
@@ -45,7 +47,7 @@ import static org.mockito.Mockito.when;
 *
 * @author Mirko Raner
 **/
-public class DtdTestBase
+public class DtdTestBase extends AbstractTypeConverterTest
 {
     protected Collection<? extends Configuration> getConfigurations(String dtdPath, Class<?> emptyBase) throws Exception
     {
@@ -136,6 +138,12 @@ public class DtdTestBase
             public Class<? extends AttributeNameConverter> attributeNameConverter()
             {
                 return DefaultAttributeNameConverter.class;
+            }
+            
+            @Override
+            public Options options()
+            {
+                return DtdTestBase.this.createOptions(DtdTestBase.this.unmapped(true, true));
             }
         };
         return processor.getDtdConfiguration(packageElement, singletonList(dtd));

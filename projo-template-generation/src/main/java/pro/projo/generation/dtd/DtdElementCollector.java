@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -49,6 +49,7 @@ import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
 import pro.projo.generation.utilities.TypeMirrorUtilities;
 import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
 import static java.util.stream.IntStream.range;
@@ -73,6 +74,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private TypeElement baseInterfaceEmpty;
     private TypeElement baseInterfaceText;
     private TypeElement mixedContentInterface;
+    private Options options;
     private Format elementTypeName;
     private Format contentTypeName;
     private Elements elements;
@@ -89,6 +91,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         mixedContentInterface = getTypeElement(dtd::mixedContentInterface);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
+        options = dtd.options();
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         try
         {
@@ -236,7 +239,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extendSpec);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
-        return new DefaultConfiguration(fullyQualifiedClassName, parameters);
+        return new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
     }
 
     public Configuration attributeDecl(Configuration configuration, ContentModel contentModel, Attribute attribute)
@@ -347,7 +350,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("InterfaceTemplate", contentType + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
-        Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters);
+        Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
         BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
             (conf, child) -> childElement(conf, (ChildElement)child, contentType);//Argument);
         return children.reduce(configuration, reducer, (a, b) -> a);

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2022 Mirko Raner                                        //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -76,6 +76,14 @@ public class InterfaceTemplateProcessorTest
     public void testHtmlContentClassIsGeneratedWithCustomSuffix() throws Exception
     {
         Class.forName("pro.projo.generation.interfaces.test.html.nameformats.HtmlContents");
+    }
+
+    @Test
+    public void testHtmlContentClassIsGeneratedWithCustomFileExtension() throws Exception
+    {
+      ClassLoader classLoader = getClass().getClassLoader();
+      InputStream file = classLoader.getResourceAsStream("pro/projo/generation/interfaces/test/html/options/H1.kava");
+      assertNotNull(file);
     }
 
     @Test

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,6 +16,7 @@
 package pro.projo.generation.utilities;
 
 import java.util.Map;
+import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
 
 /**
@@ -28,11 +29,18 @@ public class DefaultConfiguration implements Configuration
 {
     private String fullyQualifiedClassName;
     private Map<String, Object> parameters;
+    private Options options;
 
     public DefaultConfiguration(String fullyQualifiedClassName, Map<String, Object> parameters)
     {
-        this.fullyQualifiedClassName = fullyQualifiedClassName;
-        this.parameters = parameters;
+        this(fullyQualifiedClassName, parameters, null);
+    }
+
+    public DefaultConfiguration(String fullyQualifiedClassName, Map<String, Object> parameters, Options options)
+    {
+      this.fullyQualifiedClassName = fullyQualifiedClassName;
+      this.parameters = parameters;
+      this.options = options;
     }
 
     @Override
@@ -45,5 +53,11 @@ public class DefaultConfiguration implements Configuration
     public Map<String, Object> parameters()
     {
         return parameters;
+    }
+
+    @Override
+    public Options options()
+    {
+        return options == null? Configuration.super.options():options;
     }
 }
