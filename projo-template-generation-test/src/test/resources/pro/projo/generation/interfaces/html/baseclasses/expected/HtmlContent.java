@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2023 Mirko Raner                                        //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,21 +13,20 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    mixedContentInterface=MixedContent.class,
-    baseInterface=Element.class,
-    baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class
-)
 package pro.projo.generation.interfaces.test.html.baseclasses;
-
-import pro.projo.interfaces.annotation.Dtd;
-
+/* */
+import javax.annotation.Generated;
+/* */
 /**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
 *
-* @author Mirko Raner
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
 **/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface HtmlContent
+{
+/* */
+/* */
+}

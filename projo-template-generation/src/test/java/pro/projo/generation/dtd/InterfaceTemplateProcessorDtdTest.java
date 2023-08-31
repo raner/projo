@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -53,7 +53,7 @@ public class InterfaceTemplateProcessorDtdTest extends DtdTestBase
             "Td", "Th", "Form", "Label", "Input", "Button", "Select", "Datalist", "Optgroup", "Option",
             "Textarea", "Keygen", "Output", "Progress", "Meter", "Fieldset", "Legend", "Script",
             "Noscript", "Template", "Canvas",
-            "HtmlContent", "HtmlContent0 extends HtmlContent", "HtmlContent1 extends HtmlContent",
+            "HtmlContent", "HtmlContentHead extends HtmlContent", "HtmlContentBody extends HtmlContent",
             "HeadContent", "BodyContent", "ArticleContent", "SectionContent",
             "NavContent", "AsideContent", "H1Content", "H2Content", "H3Content", "H4Content",
             "H5Content", "H6Content", "HgroupContent", "HeaderContent", "FooterContent",

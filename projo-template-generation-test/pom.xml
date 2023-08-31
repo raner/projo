@@ -101,6 +101,26 @@
     </executions>
    </plugin>
    <plugin>
+    <!-- This module contains only tests; no need to build a source JAR either -->
+    <artifactId>maven-source-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>attach-sources</id>
+      <phase>none</phase>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
+    <!-- This module contains only tests; we also don't need javadocs -->
+    <artifactId>maven-javadoc-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>attach-javadocs</id>
+      <phase>none</phase>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
     <!-- As no jar is generated there is nothing to install either -->
     <artifactId>maven-install-plugin</artifactId>
     <version>2.5.2</version>
