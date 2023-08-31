@@ -58,7 +58,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.tools.Diagnostic.Kind.ERROR;
 
 /**
-* The {@link DtdElementCollector} is a mutable type that collects information from
+* The {@link DtdElementCollector} is a type that collects information from
 * DTD parsing events and builds template {@link Configuration}s based on the
 * collected data.
 *
@@ -66,19 +66,19 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 **/
 public class DtdElementCollector implements TypeMirrorUtilities
 {
-    private Comparator<Name> importOrder = new DefaultNameComparator();
-    private Name packageName;
-    private Name generated;
-    private AttributeNameConverter attributeNameConverter;
-    private TypeElement baseInterface;
-    private TypeElement baseInterfaceEmpty;
-    private TypeElement baseInterfaceText;
-    private TypeElement mixedContentInterface;
-    private Options options;
-    private Format elementTypeName;
-    private Format contentTypeName;
-    private Elements elements;
-    private Messager messager;
+    private final Comparator<Name> importOrder = new DefaultNameComparator();
+    private final Name packageName;
+    private final Name generated;
+    private final AttributeNameConverter attributeNameConverter;
+    private final TypeElement baseInterface;
+    private final TypeElement baseInterfaceEmpty;
+    private final TypeElement baseInterfaceText;
+    private final TypeElement mixedContentInterface;
+    private final Options options;
+    private final Format elementTypeName;
+    private final Format contentTypeName;
+    private final Elements elements;
+    private final Messager messager;
 
     public DtdElementCollector(Name packageName, Dtd dtd, Elements elements, Messager messager)
     {
@@ -93,6 +93,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         options = dtd.options();
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
+        AttributeNameConverter attributeNameConverter = null;
         try
         {
             Constructor<?> constructor = getType(dtd::attributeNameConverter).getDeclaredConstructor();
@@ -102,6 +103,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         {
             this.messager.printMessage(ERROR, "Could not instantiate attribute name converter");
         }
+        this.attributeNameConverter = attributeNameConverter;
     }
 
     @Override
@@ -306,8 +308,8 @@ public class DtdElementCollector implements TypeMirrorUtilities
             (
                 index -> createContentType
                 (
-                    contentType + index,
-                    contentType + (index+1 < childList.size()? String.valueOf(index+1):""),
+                    contentType + typeName(childList.get(index).name()),
+                    contentType + (index+1 < childList.size()? typeName(childList.get(index+1).name()):""),
                     Stream.of(childList.get(index)),
                     " extends " + contentType
                 )
@@ -352,7 +354,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
         BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
-            (conf, child) -> childElement(conf, (ChildElement)child, contentType);//Argument);
+            (conf, child) -> childElement(conf, (ChildElement)child, contentTypeArgument != null? contentTypeArgument:contentType);
         return children.reduce(configuration, reducer, (a, b) -> a);
     }
 

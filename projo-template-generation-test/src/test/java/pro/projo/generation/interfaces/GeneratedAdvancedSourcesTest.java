@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2020 Mirko Raner                                               //
+// Copyright 2020 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.toList;
 **/
 public class GeneratedAdvancedSourcesTest extends AbstractGeneratedSourcesTest
 {
-    static Format generated = new MessageFormat("target/generated-test-sources/test-annotations/pro/projo/generation/interfaces/test/advanced/{0}");
+    static Format generated = new MessageFormat("target/generated-sources/annotations/pro/projo/generation/interfaces/test/advanced/{0}");
     static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/advanced/expected/{0}");
 
     public GeneratedAdvancedSourcesTest()

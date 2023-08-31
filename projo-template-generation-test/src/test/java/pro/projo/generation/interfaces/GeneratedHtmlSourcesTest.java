@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2021 - 2023 Mirko Raner                                        //
+// Copyright 2023 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -24,18 +24,18 @@ import org.junit.runners.Parameterized.Parameters;
 import static java.util.stream.Collectors.toList;
 
 /**
-* {@link GeneratedPostProcessorPackageLevelSourcesTest} is a parameterized test that checks that all files
-* in {@code src/test/resources/pro/projo/generation/interfaces/options/packagelevel/expected} match their
+* {@link GeneratedHtmlSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/html/baseclasses/expected} match their
 * corresponding generated files.
 *
 * @author Mirko Raner
 **/
-public class GeneratedPostProcessorPackageLevelSourcesTest extends AbstractGeneratedSourcesTest
+public class GeneratedHtmlSourcesTest extends AbstractGeneratedSourcesTest
 {
-    static Format generated = new MessageFormat("target/generated-sources/annotations/pro/projo/generation/interfaces/test/options/packagelevel/{0}");
-    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/options/packagelevel/expected/{0}");
+    static Format generated = new MessageFormat("target/generated-sources/annotations/pro/projo/generation/interfaces/test/html/baseclasses/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/html/baseclasses/expected/{0}");
 
-    public GeneratedPostProcessorPackageLevelSourcesTest()
+    public GeneratedHtmlSourcesTest()
     {
         super(comparison, generated);
     }
