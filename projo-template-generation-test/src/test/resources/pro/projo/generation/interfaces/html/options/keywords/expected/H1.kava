@@ -1,0 +1,134 @@
+//                                                                          //
+// Copyright 2019 - 2023 Mirko Raner                                        //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
+package pro.projo.generation.interfaces.test.html.options.keywords;
+/* */
+import javax.annotation.Generated;
+/* */
+/**
+*
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
+**/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface H1<PARENT>
+{
+/* */
+    H1<PARENT> accesskey(String accesskey);
+    H1<PARENT> class(String class);
+    H1<PARENT> contenteditable(String contenteditable);
+    H1<PARENT> dir(String dir);
+    H1<PARENT> hidden(String hidden);
+    H1<PARENT> id(String id);
+    H1<PARENT> lang(String lang);
+    H1<PARENT> spellcheck(String spellcheck);
+    H1<PARENT> style(String style);
+    H1<PARENT> tabindex(String tabindex);
+    H1<PARENT> title(String title);
+    H1<PARENT> translate(String translate);
+    H1<PARENT> onabort(String onabort);
+    H1<PARENT> onblur(String onblur);
+    H1<PARENT> oncancel(String oncancel);
+    H1<PARENT> oncanplay(String oncanplay);
+    H1<PARENT> oncanplaythrough(String oncanplaythrough);
+    H1<PARENT> onchange(String onchange);
+    H1<PARENT> onclick(String onclick);
+    H1<PARENT> oncuechange(String oncuechange);
+    H1<PARENT> ondblclick(String ondblclick);
+    H1<PARENT> ondurationchange(String ondurationchange);
+    H1<PARENT> onemptied(String onemptied);
+    H1<PARENT> onended(String onended);
+    H1<PARENT> onerror(String onerror);
+    H1<PARENT> onfocus(String onfocus);
+    H1<PARENT> oninput(String oninput);
+    H1<PARENT> oninvalid(String oninvalid);
+    H1<PARENT> onkeypress(String onkeypress);
+    H1<PARENT> onkeydown(String onkeydown);
+    H1<PARENT> onkeyup(String onkeyup);
+    H1<PARENT> onload(String onload);
+    H1<PARENT> onloadeddata(String onloadeddata);
+    H1<PARENT> onloadedmetadata(String onloadedmetadata);
+    H1<PARENT> onloadstart(String onloadstart);
+    H1<PARENT> onmouseenter(String onmouseenter);
+    H1<PARENT> onmouseleave(String onmouseleave);
+    H1<PARENT> onmousedown(String onmousedown);
+    H1<PARENT> onmouseup(String onmouseup);
+    H1<PARENT> onmouseover(String onmouseover);
+    H1<PARENT> onmousemove(String onmousemove);
+    H1<PARENT> onmouseout(String onmouseout);
+    H1<PARENT> onmousewheel(String onmousewheel);
+    H1<PARENT> onpause(String onpause);
+    H1<PARENT> onplay(String onplay);
+    H1<PARENT> onplaying(String onplaying);
+    H1<PARENT> onprogress(String onprogress);
+    H1<PARENT> onratechange(String onratechange);
+    H1<PARENT> onreset(String onreset);
+    H1<PARENT> onresize(String onresize);
+    H1<PARENT> onscroll(String onscroll);
+    H1<PARENT> onseeked(String onseeked);
+    H1<PARENT> onseeking(String onseeking);
+    H1<PARENT> onselect(String onselect);
+    H1<PARENT> onshow(String onshow);
+    H1<PARENT> onstalled(String onstalled);
+    H1<PARENT> onsubmit(String onsubmit);
+    H1<PARENT> onsuspend(String onsuspend);
+    H1<PARENT> ontimeupdate(String ontimeupdate);
+    H1<PARENT> ontoggle(String ontoggle);
+    H1<PARENT> onvolumechange(String onvolumechange);
+    H1<PARENT> onwaiting(String onwaiting);
+    H1<PARENT> ariaAtomic(String ariaAtomic);
+    H1<PARENT> ariaBusy(String ariaBusy);
+    H1<PARENT> ariaControls(String ariaControls);
+    H1<PARENT> ariaDescribedby(String ariaDescribedby);
+    H1<PARENT> ariaDisabled(String ariaDisabled);
+    H1<PARENT> ariaDropeffect(String ariaDropeffect);
+    H1<PARENT> ariaFlowto(String ariaFlowto);
+    H1<PARENT> ariaGrabbed(String ariaGrabbed);
+    H1<PARENT> ariaHaspopup(String ariaHaspopup);
+    H1<PARENT> ariaHidden(String ariaHidden);
+    H1<PARENT> ariaInvalid(String ariaInvalid);
+    H1<PARENT> ariaLabel(String ariaLabel);
+    H1<PARENT> ariaLabelledby(String ariaLabelledby);
+    H1<PARENT> ariaLive(String ariaLive);
+    H1<PARENT> ariaOwns(String ariaOwns);
+    H1<PARENT> ariaRelevant(String ariaRelevant);
+    H1<PARENT> dataAction(String dataAction);
+    H1<PARENT> dataCount(String dataCount);
+    H1<PARENT> dataChrome(String dataChrome);
+    H1<PARENT> dataHref(String dataHref);
+    H1<PARENT> dataLayout(String dataLayout);
+    H1<PARENT> dataLinkColor(String dataLinkColor);
+    H1<PARENT> dataParent(String dataParent);
+    H1<PARENT> dataShowCount(String dataShowCount);
+    H1<PARENT> dataShowFaces(String dataShowFaces);
+    H1<PARENT> dataShare(String dataShare);
+    H1<PARENT> dataSitekey(String dataSitekey);
+    H1<PARENT> dataTarget(String dataTarget);
+    H1<PARENT> dataToggle(String dataToggle);
+    H1<PARENT> dataText(String dataText);
+    H1<PARENT> dataUrl(String dataUrl);
+    H1<PARENT> dataVia(String dataVia);
+    H1<PARENT> dataWidgetId(String dataWidgetId);
+    H1<PARENT> itemscope(String itemscope);
+    H1<PARENT> itemtype(String itemtype);
+    H1<PARENT> itemprop(String itemprop);
+    H1<PARENT> role(String role);
+    H1<PARENT> ariaExpanded(String ariaExpanded);
+    H1<PARENT> ariaSelected(String ariaSelected);
+    H1<PARENT> ariaLevel(String ariaLevel);
+/* */
+}
