@@ -106,4 +106,9 @@ public @interface Dtd
     * @return additional code generation options for this {@link Dtd}
     **/
     Options options() default @Options;
+
+    /**
+    * @return aliases for elements (if any)
+    **/
+    Alias[] aliases() default {};
 }
