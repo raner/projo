@@ -13,34 +13,25 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    attributeNameConverter=AttributeNameConverter.class,
-    aliases=
-    {
-        @Alias({"head", "metadata"}),
-        @Alias({"body", "content"}),
-        @Alias({"div", "vbox"}),
-        @Alias({"span", "hbox"})
-    },
-    options=@Options
-    (
-        fileExtension=".kava",
-        outputLocation=SOURCE_OUTPUT
-    )
-)
-package pro.projo.generation.interfaces.test.html.options.keywords;
+package pro.projo.interfaces.annotation;
 
-import pro.projo.interfaces.annotation.Alias;
-import pro.projo.interfaces.annotation.Dtd;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
-import static javax.tools.StandardLocation.SOURCE_OUTPUT;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import static java.lang.annotation.ElementType.PACKAGE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
+* The {@link Alias} annotation maps a primary element to one or more aliases.
 *
 * @author Mirko Raner
 **/
+@Target(PACKAGE)
+@Retention(RUNTIME)
+public @interface Alias
+{
+    /**
+    * @return a list of element names with the first one being the name of the
+    * already existing element, and all subsequent names being aliases
+    **/
+    String[] value();
+}

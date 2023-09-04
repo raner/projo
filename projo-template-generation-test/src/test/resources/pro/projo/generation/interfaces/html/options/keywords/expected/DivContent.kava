@@ -1,0 +1,114 @@
+//                                                                          //
+// Copyright 2019 - 2023 Mirko Raner                                        //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
+package pro.projo.generation.interfaces.test.html.options.keywords;
+/* */
+import javax.annotation.Generated;
+/* */
+/**
+*
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
+**/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface DivContent
+{
+/* */
+    Main<DivContent> main();
+    Header<DivContent> header();
+    Footer<DivContent> footer();
+    Form<DivContent> form();
+    Address<DivContent> address();
+    Table<DivContent> table();
+    Hgroup<DivContent> hgroup();
+    A<DivContent> a();
+    Abbr<DivContent> abbr();
+    Area<DivContent> area();
+    Audio<DivContent> audio();
+    B<DivContent> b();
+    Bdi<DivContent> bdi();
+    Bdo<DivContent> bdo();
+    Blockquote<DivContent> blockquote();
+    Br<DivContent> br();
+    Canvas<DivContent> canvas();
+    Cite<DivContent> cite();
+    Code<DivContent> code();
+    Data<DivContent> data();
+    Datalist<DivContent> datalist();
+    Del<DivContent> del();
+    Dfn<DivContent> dfn();
+    Div<DivContent> div();
+    Div<DivContent> vbox();
+    Dl<DivContent> dl();
+    Em<DivContent> em();
+    Embed<DivContent> embed();
+    Fieldset<DivContent> fieldset();
+    Figure<DivContent> figure();
+    Hr<DivContent> hr();
+    I<DivContent> i();
+    Iframe<DivContent> iframe();
+    Img<DivContent> img();
+    Ins<DivContent> ins();
+    Kbd<DivContent> kbd();
+    Label<DivContent> label();
+    Map<DivContent> map();
+    Mark<DivContent> mark();
+    Math<DivContent> math();
+    Noscript<DivContent> noscript();
+    Object<DivContent> object();
+    Ol<DivContent> ol();
+    P<DivContent> p();
+    Pre<DivContent> pre();
+    Q<DivContent> q();
+    Ruby<DivContent> ruby();
+    S<DivContent> s();
+    Samp<DivContent> samp();
+    Script<DivContent> script();
+    Small<DivContent> small();
+    Span<DivContent> span();
+    Span<DivContent> hbox();
+    Strong<DivContent> strong();
+    Sub<DivContent> sub();
+    Sup<DivContent> sup();
+    Svg<DivContent> svg();
+    Template<DivContent> template();
+    Time<DivContent> time();
+    U<DivContent> u();
+    Ul<DivContent> ul();
+    Var<DivContent> var();
+    Video<DivContent> video();
+    Wbr<DivContent> wbr();
+    H1<DivContent> h1();
+    H2<DivContent> h2();
+    H3<DivContent> h3();
+    H4<DivContent> h4();
+    H5<DivContent> h5();
+    H6<DivContent> h6();
+    Article<DivContent> article();
+    Aside<DivContent> aside();
+    Nav<DivContent> nav();
+    Section<DivContent> section();
+    Button<DivContent> button();
+    Input<DivContent> input();
+    Keygen<DivContent> keygen();
+    Meter<DivContent> meter();
+    Output<DivContent> output();
+    Progress<DivContent> progress();
+    Select<DivContent> select();
+    Textarea<DivContent> textarea();
+/* */
+}

@@ -13,34 +13,43 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    attributeNameConverter=AttributeNameConverter.class,
-    aliases=
+package pro.projo.generation.dtd;
+
+import pro.projo.generation.dtd.model.ChildElement;
+import pro.projo.generation.dtd.model.ContentModel;
+import pro.projo.generation.dtd.model.Occurrence;
+
+public class TypedChildElement implements ChildElement
+{
+    private String alias;
+    private ChildElement element;
+
+    public TypedChildElement(ChildElement element, String alias)
     {
-        @Alias({"head", "metadata"}),
-        @Alias({"body", "content"}),
-        @Alias({"div", "vbox"}),
-        @Alias({"span", "hbox"})
-    },
-    options=@Options
-    (
-        fileExtension=".kava",
-        outputLocation=SOURCE_OUTPUT
-    )
-)
-package pro.projo.generation.interfaces.test.html.options.keywords;
+        this.element = element;
+        this.alias = alias;
+    }
 
-import pro.projo.interfaces.annotation.Alias;
-import pro.projo.interfaces.annotation.Dtd;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
-import static javax.tools.StandardLocation.SOURCE_OUTPUT;
+    public String typeName()
+    {
+        return element.name();
+    }
 
-/**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
-*
-* @author Mirko Raner
-**/
+    @Override
+    public String name()
+    {
+        return alias;
+    }
+
+    @Override
+    public ContentModel contentModel()
+    {
+        return element.contentModel();
+    }
+
+    @Override
+    public Occurrence ocurrence()
+    {
+        return element.ocurrence();
+    }
+}
