@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.processing.Messager;
@@ -47,14 +47,18 @@ import pro.projo.generation.dtd.model.ModelGroup;
 import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.DefaultConfiguration;
 import pro.projo.generation.utilities.DefaultNameComparator;
+import pro.projo.generation.utilities.Reduction;
 import pro.projo.generation.utilities.TypeMirrorUtilities;
+import pro.projo.interfaces.annotation.Alias;
 import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
+import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static javax.tools.Diagnostic.Kind.ERROR;
 
 /**
@@ -74,6 +78,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final TypeElement baseInterfaceEmpty;
     private final TypeElement baseInterfaceText;
     private final TypeElement mixedContentInterface;
+    private final Map<String, List<String>> aliases;
     private final Options options;
     private final Format elementTypeName;
     private final Format contentTypeName;
@@ -91,6 +96,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         mixedContentInterface = getTypeElement(dtd::mixedContentInterface);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
+        aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
         options = dtd.options();
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         AttributeNameConverter attributeNameConverter = null;
@@ -259,7 +265,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         return configuration;
     }
 
-    public Configuration childElement(Configuration configuration, ChildElement childElement, String contentTypeArgument)
+    public Configuration childElement(Configuration configuration, TypedChildElement childElement, String contentTypeArgument)
     {
         Map<String, Object> parameters = configuration.parameters();
         String contentType = (String)parameters.get("InterfaceTemplate");
@@ -269,7 +275,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String methodName = childElement.name();
         if (!methodNames.contains(methodName))
         {
-            String typeName = elementTypeName.format(new Object[] {typeName(childElement.name())});
+            String typeName = elementTypeName.format(new Object[] {typeName(childElement.typeName())});
             String method = typeName + "<" + (contentTypeArgument != null? contentTypeArgument:contentType) + "> " + methodName + "()";
             // TODO: next four lines also duplicated
             String[] methods = (String[])parameters.get("methods");
@@ -352,10 +358,15 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("InterfaceTemplate", contentType + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
+        Function<String, Stream<String>> aliased = name -> aliases.getOrDefault(name, asList(name)).stream();
+        Stream<TypedChildElement> typedChildren = children.flatMap
+        (
+            child -> aliased.apply(child.name()).map(it -> new TypedChildElement(child, it))
+        );
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
-        BiFunction<Configuration, ? super DtdElement, Configuration> reducer =
-            (conf, child) -> childElement(conf, (ChildElement)child, contentTypeArgument != null? contentTypeArgument:contentType);
-        return children.reduce(configuration, reducer, (a, b) -> a);
+        String typeArgument = contentTypeArgument != null? contentTypeArgument:contentType;
+        Reduction<Configuration, TypedChildElement> reducer = (conf, child) -> childElement(conf, child, typeArgument);
+        return typedChildren.reduce(configuration, reducer, (a, b) -> a);
     }
 
     /**
