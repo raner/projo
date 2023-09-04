@@ -111,4 +111,9 @@ public @interface Dtd
     * @return aliases for elements (if any)
     **/
     Alias[] aliases() default {};
+
+    /**
+     * @return custom attributes for elements (if any)
+     **/
+    Attribute[] attributes() default {};
 }
