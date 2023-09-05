@@ -32,6 +32,7 @@ import pro.projo.generation.interfaces.InterfaceTemplateProcessor;
 import pro.projo.generation.utilities.AbstractTypeConverterTest;
 import pro.projo.generation.utilities.Name;
 import pro.projo.interfaces.annotation.Alias;
+import pro.projo.interfaces.annotation.Attribute;
 import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
@@ -151,6 +152,12 @@ public class DtdTestBase extends AbstractTypeConverterTest
             public Alias[] aliases()
             {
                 return new Alias[] {};
+            }
+            
+            @Override
+            public Attribute[] attributes()
+            {
+              return new Attribute[] {};
             }
         };
         return processor.getDtdConfiguration(packageElement, singletonList(dtd));

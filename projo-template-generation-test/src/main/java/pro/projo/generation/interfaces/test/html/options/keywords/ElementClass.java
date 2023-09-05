@@ -13,39 +13,9 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    attributeNameConverter=AttributeNameConverter.class,
-    aliases=
-    {
-        @Alias({"head", "metadata"}),
-        @Alias({"body", "content"}),
-        @Alias({"div", "vbox"}),
-        @Alias({"span", "hbox"})
-    },
-    attributes=
-    {
-        @Attribute(name="class", type=ElementClass.class)
-    },
-    options=@Options
-    (
-        fileExtension=".kava",
-        outputLocation=SOURCE_OUTPUT
-    )
-)
 package pro.projo.generation.interfaces.test.html.options.keywords;
 
-import pro.projo.interfaces.annotation.Alias;
-import pro.projo.interfaces.annotation.Attribute;
-import pro.projo.interfaces.annotation.Dtd;
-import pro.projo.interfaces.annotation.Options;
-import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
-import static javax.tools.StandardLocation.SOURCE_OUTPUT;
-
-/**
-* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
-*
-* @author Mirko Raner
-**/
+public interface ElementClass
+{
+    String name();
+}
