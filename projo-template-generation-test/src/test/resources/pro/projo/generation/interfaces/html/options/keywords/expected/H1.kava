@@ -29,7 +29,7 @@ public interface H1<PARENT>
 {
 /* */
     H1<PARENT> accesskey(String accesskey);
-    H1<PARENT> class(String class);
+    H1<PARENT> class(ElementClass class);
     H1<PARENT> contenteditable(String contenteditable);
     H1<PARENT> dir(String dir);
     H1<PARENT> hidden(String hidden);

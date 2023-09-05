@@ -79,6 +79,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final TypeElement baseInterfaceText;
     private final TypeElement mixedContentInterface;
     private final Map<String, List<String>> aliases;
+    private final Map<String, TypeElement> attributes;
     private final Options options;
     private final Format elementTypeName;
     private final Format contentTypeName;
@@ -97,6 +98,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
+        attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(), value -> getTypeElement(value::type)));
         options = dtd.options();
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         AttributeNameConverter attributeNameConverter = null;
@@ -257,7 +259,9 @@ public class DtdElementCollector implements TypeMirrorUtilities
         // TODO: next line duplicated from above
         String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
         String methodName = attributeNameConverter.convertAttributeName(attributeName);
-        String method = typeName + "<PARENT> " + methodName + "(String " + methodName + ")";
+        TypeElement parameterType = attributes.get(methodName);
+        String parameterTypeName = parameterType != null? parameterType.getSimpleName().toString():"String";
+        String method = typeName + "<PARENT> " + methodName + "(" + parameterTypeName + " " + methodName + ")";
         String[] methods = (String[])configuration.parameters().get("methods");
         List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
         newMethods.add(method);
