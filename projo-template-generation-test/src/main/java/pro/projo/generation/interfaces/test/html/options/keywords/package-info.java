@@ -26,6 +26,7 @@
     },
     attributes=
     {
+        @Attribute(name="pattern", type=Pattern.class),
         @Attribute(name="class", type=ElementClass.class)
     },
     options=@Options
@@ -36,6 +37,7 @@
 )
 package pro.projo.generation.interfaces.test.html.options.keywords;
 
+import java.util.regex.Pattern;
 import pro.projo.interfaces.annotation.Alias;
 import pro.projo.interfaces.annotation.Attribute;
 import pro.projo.interfaces.annotation.Dtd;
