@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test.html.options.keywords;
 /* */
+import java.io.File;
 import java.util.regex.Pattern;
 import javax.annotation.Generated;
 /* */
@@ -132,7 +133,7 @@ public interface Input<PARENT>
     Input<PARENT> autocomplete(String autocomplete);
     Input<PARENT> autofocus(String autofocus);
     Input<PARENT> checked(String checked);
-    Input<PARENT> dirname(String dirname);
+    Input<PARENT> dirname(File dirname);
     Input<PARENT> disabled(String disabled);
     Input<PARENT> form(String form);
     Input<PARENT> formaction(String formaction);

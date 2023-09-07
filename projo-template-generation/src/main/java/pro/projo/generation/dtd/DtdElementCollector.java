@@ -268,10 +268,17 @@ public class DtdElementCollector implements TypeMirrorUtilities
         if (parameterType != null && !packageName(parameterType).equals(packageName))
         {
             String[] imported = (String[])configuration.parameters().get("imports");
-            List<String> imports = new ArrayList<>(asList(imported != null? imported:new String[] {}));
-            String name = parameterType.getQualifiedName().toString();
-            imports.add(0, name);
-            configuration.parameters().put("imports", imports.toArray(new String[] {}));
+            Stream<String> stream = Stream.of(imported != null? imported:new String[] {});
+            Set<String> imports = new HashSet<>(stream.collect(toList()));
+            imports.add(parameterType.getQualifiedName().toString());
+            // TODO: this will sort the entire array after each new import
+            // TODO: consolidate with code in elementConfiguration(...)
+            configuration.parameters().put("imports",
+                imports.stream()
+                    .map(pro.projo.generation.utilities.Name::new)
+                    .sorted(importOrder)
+                    .map(Name::toString)
+                    .toArray(String[]::new));
         }
         return configuration;
     }

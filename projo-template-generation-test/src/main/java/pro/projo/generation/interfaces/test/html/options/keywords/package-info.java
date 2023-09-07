@@ -27,6 +27,9 @@
     attributes=
     {
         @Attribute(name="pattern", type=Pattern.class),
+        @Attribute(name="dirname", type=File.class),
+        @Attribute(name="rows", type=BigInteger.class),
+        @Attribute(name="cols", type=BigInteger.class),
         @Attribute(name="class", type=ElementClass.class)
     },
     options=@Options
@@ -37,6 +40,8 @@
 )
 package pro.projo.generation.interfaces.test.html.options.keywords;
 
+import java.io.File;
+import java.math.BigInteger;
 import java.util.regex.Pattern;
 import pro.projo.interfaces.annotation.Alias;
 import pro.projo.interfaces.annotation.Attribute;

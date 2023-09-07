@@ -1,0 +1,152 @@
+//                                                                          //
+// Copyright 2019 - 2023 Mirko Raner                                        //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
+package pro.projo.generation.interfaces.test.html.options.keywords;
+/* */
+import java.io.File;
+import java.math.BigInteger;
+import javax.annotation.Generated;
+/* */
+/**
+*
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
+**/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface Textarea<PARENT>
+{
+/* */
+    Textarea<PARENT> accesskey(String accesskey);
+    Textarea<PARENT> class(ElementClass class);
+    Textarea<PARENT> contenteditable(String contenteditable);
+    Textarea<PARENT> dir(String dir);
+    Textarea<PARENT> hidden(String hidden);
+    Textarea<PARENT> id(String id);
+    Textarea<PARENT> lang(String lang);
+    Textarea<PARENT> spellcheck(String spellcheck);
+    Textarea<PARENT> style(String style);
+    Textarea<PARENT> tabindex(String tabindex);
+    Textarea<PARENT> title(String title);
+    Textarea<PARENT> translate(String translate);
+    Textarea<PARENT> onabort(String onabort);
+    Textarea<PARENT> onblur(String onblur);
+    Textarea<PARENT> oncancel(String oncancel);
+    Textarea<PARENT> oncanplay(String oncanplay);
+    Textarea<PARENT> oncanplaythrough(String oncanplaythrough);
+    Textarea<PARENT> onchange(String onchange);
+    Textarea<PARENT> onclick(String onclick);
+    Textarea<PARENT> oncuechange(String oncuechange);
+    Textarea<PARENT> ondblclick(String ondblclick);
+    Textarea<PARENT> ondurationchange(String ondurationchange);
+    Textarea<PARENT> onemptied(String onemptied);
+    Textarea<PARENT> onended(String onended);
+    Textarea<PARENT> onerror(String onerror);
+    Textarea<PARENT> onfocus(String onfocus);
+    Textarea<PARENT> oninput(String oninput);
+    Textarea<PARENT> oninvalid(String oninvalid);
+    Textarea<PARENT> onkeypress(String onkeypress);
+    Textarea<PARENT> onkeydown(String onkeydown);
+    Textarea<PARENT> onkeyup(String onkeyup);
+    Textarea<PARENT> onload(String onload);
+    Textarea<PARENT> onloadeddata(String onloadeddata);
+    Textarea<PARENT> onloadedmetadata(String onloadedmetadata);
+    Textarea<PARENT> onloadstart(String onloadstart);
+    Textarea<PARENT> onmouseenter(String onmouseenter);
+    Textarea<PARENT> onmouseleave(String onmouseleave);
+    Textarea<PARENT> onmousedown(String onmousedown);
+    Textarea<PARENT> onmouseup(String onmouseup);
+    Textarea<PARENT> onmouseover(String onmouseover);
+    Textarea<PARENT> onmousemove(String onmousemove);
+    Textarea<PARENT> onmouseout(String onmouseout);
+    Textarea<PARENT> onmousewheel(String onmousewheel);
+    Textarea<PARENT> onpause(String onpause);
+    Textarea<PARENT> onplay(String onplay);
+    Textarea<PARENT> onplaying(String onplaying);
+    Textarea<PARENT> onprogress(String onprogress);
+    Textarea<PARENT> onratechange(String onratechange);
+    Textarea<PARENT> onreset(String onreset);
+    Textarea<PARENT> onresize(String onresize);
+    Textarea<PARENT> onscroll(String onscroll);
+    Textarea<PARENT> onseeked(String onseeked);
+    Textarea<PARENT> onseeking(String onseeking);
+    Textarea<PARENT> onselect(String onselect);
+    Textarea<PARENT> onshow(String onshow);
+    Textarea<PARENT> onstalled(String onstalled);
+    Textarea<PARENT> onsubmit(String onsubmit);
+    Textarea<PARENT> onsuspend(String onsuspend);
+    Textarea<PARENT> ontimeupdate(String ontimeupdate);
+    Textarea<PARENT> ontoggle(String ontoggle);
+    Textarea<PARENT> onvolumechange(String onvolumechange);
+    Textarea<PARENT> onwaiting(String onwaiting);
+    Textarea<PARENT> ariaAtomic(String ariaAtomic);
+    Textarea<PARENT> ariaBusy(String ariaBusy);
+    Textarea<PARENT> ariaControls(String ariaControls);
+    Textarea<PARENT> ariaDescribedby(String ariaDescribedby);
+    Textarea<PARENT> ariaDisabled(String ariaDisabled);
+    Textarea<PARENT> ariaDropeffect(String ariaDropeffect);
+    Textarea<PARENT> ariaFlowto(String ariaFlowto);
+    Textarea<PARENT> ariaGrabbed(String ariaGrabbed);
+    Textarea<PARENT> ariaHaspopup(String ariaHaspopup);
+    Textarea<PARENT> ariaHidden(String ariaHidden);
+    Textarea<PARENT> ariaInvalid(String ariaInvalid);
+    Textarea<PARENT> ariaLabel(String ariaLabel);
+    Textarea<PARENT> ariaLabelledby(String ariaLabelledby);
+    Textarea<PARENT> ariaLive(String ariaLive);
+    Textarea<PARENT> ariaOwns(String ariaOwns);
+    Textarea<PARENT> ariaRelevant(String ariaRelevant);
+    Textarea<PARENT> dataAction(String dataAction);
+    Textarea<PARENT> dataCount(String dataCount);
+    Textarea<PARENT> dataChrome(String dataChrome);
+    Textarea<PARENT> dataHref(String dataHref);
+    Textarea<PARENT> dataLayout(String dataLayout);
+    Textarea<PARENT> dataLinkColor(String dataLinkColor);
+    Textarea<PARENT> dataParent(String dataParent);
+    Textarea<PARENT> dataShowCount(String dataShowCount);
+    Textarea<PARENT> dataShowFaces(String dataShowFaces);
+    Textarea<PARENT> dataShare(String dataShare);
+    Textarea<PARENT> dataSitekey(String dataSitekey);
+    Textarea<PARENT> dataTarget(String dataTarget);
+    Textarea<PARENT> dataToggle(String dataToggle);
+    Textarea<PARENT> dataText(String dataText);
+    Textarea<PARENT> dataUrl(String dataUrl);
+    Textarea<PARENT> dataVia(String dataVia);
+    Textarea<PARENT> dataWidgetId(String dataWidgetId);
+    Textarea<PARENT> itemscope(String itemscope);
+    Textarea<PARENT> itemtype(String itemtype);
+    Textarea<PARENT> itemprop(String itemprop);
+    Textarea<PARENT> autocomplete(String autocomplete);
+    Textarea<PARENT> autofocus(String autofocus);
+    Textarea<PARENT> cols(BigInteger cols);
+    Textarea<PARENT> dirname(File dirname);
+    Textarea<PARENT> disabled(String disabled);
+    Textarea<PARENT> form(String form);
+    Textarea<PARENT> inputmode(String inputmode);
+    Textarea<PARENT> maxlength(String maxlength);
+    Textarea<PARENT> minlength(String minlength);
+    Textarea<PARENT> name(String name);
+    Textarea<PARENT> placeholder(String placeholder);
+    Textarea<PARENT> readonly(String readonly);
+    Textarea<PARENT> required(String required);
+    Textarea<PARENT> rows(BigInteger rows);
+    Textarea<PARENT> wrap(String wrap);
+    Textarea<PARENT> ariaActivedescendant(String ariaActivedescendant);
+    Textarea<PARENT> ariaAutocomplete(String ariaAutocomplete);
+    Textarea<PARENT> ariaMultiline(String ariaMultiline);
+    Textarea<PARENT> ariaReadonly(String ariaReadonly);
+    Textarea<PARENT> ariaRequired(String ariaRequired);
+/* */
+}
