@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2022 Mirko Raner                                        //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -57,6 +57,10 @@ public class Name implements javax.lang.model.element.Name
     @Override
     public int hashCode()
     {
+        // TODO: this does not align with the hashCode() implementation of
+        //       other types that implement Name and therefore causes inconsistencies
+        //       (e.g., duplication of Names in a Set)
+        //
         return name.hashCode();
     }
 

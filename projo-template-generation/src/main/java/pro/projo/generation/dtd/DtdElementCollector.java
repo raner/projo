@@ -149,8 +149,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String extend = isObject? "":(" extends " + superType.getSimpleName());
         String contentType = contentTypeName.format(new Object[] {typeName(elementName)});
         String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + ">":">");
-        Name superPackageName = packageName(superType);
-        boolean superTypeSamePackage = superPackageName.equals(packageName);
+        boolean superTypeSamePackage = packageName(superType).equals(packageName);
         Name superTypeName = superType.getQualifiedName();
         Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
         if (requiredAttributes.isEmpty())
@@ -266,6 +265,21 @@ public class DtdElementCollector implements TypeMirrorUtilities
         List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
         newMethods.add(method);
         configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
+        if (parameterType != null && !packageName(parameterType).equals(packageName))
+        {
+            String[] imported = (String[])configuration.parameters().get("imports");
+            Stream<String> stream = Stream.of(imported != null? imported:new String[] {});
+            Set<String> imports = new HashSet<>(stream.collect(toList()));
+            imports.add(parameterType.getQualifiedName().toString());
+            // TODO: this will sort the entire array after each new import
+            // TODO: consolidate with code in elementConfiguration(...)
+            configuration.parameters().put("imports",
+                imports.stream()
+                    .map(pro.projo.generation.utilities.Name::new)
+                    .sorted(importOrder)
+                    .map(Name::toString)
+                    .toArray(String[]::new));
+        }
         return configuration;
     }
 

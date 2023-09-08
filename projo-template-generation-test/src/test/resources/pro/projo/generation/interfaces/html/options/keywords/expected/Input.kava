@@ -1,0 +1,165 @@
+//                                                                          //
+// Copyright 2019 - 2023 Mirko Raner                                        //
+//                                                                          //
+// Licensed under the Apache License, Version 2.0 (the "License");          //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+//     http://www.apache.org/licenses/LICENSE-2.0                           //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// See the License for the specific language governing permissions and      //
+// limitations under the License.                                           //
+//                                                                          //
+package pro.projo.generation.interfaces.test.html.options.keywords;
+/* */
+import java.io.File;
+import java.util.regex.Pattern;
+import javax.annotation.Generated;
+/* */
+/**
+*
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
+**/
+/* */
+@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+/* */
+public interface Input<PARENT>
+{
+/* */
+    Input<PARENT> accesskey(String accesskey);
+    Input<PARENT> class(ElementClass class);
+    Input<PARENT> contenteditable(String contenteditable);
+    Input<PARENT> dir(String dir);
+    Input<PARENT> hidden(String hidden);
+    Input<PARENT> id(String id);
+    Input<PARENT> lang(String lang);
+    Input<PARENT> spellcheck(String spellcheck);
+    Input<PARENT> style(String style);
+    Input<PARENT> tabindex(String tabindex);
+    Input<PARENT> title(String title);
+    Input<PARENT> translate(String translate);
+    Input<PARENT> onabort(String onabort);
+    Input<PARENT> onblur(String onblur);
+    Input<PARENT> oncancel(String oncancel);
+    Input<PARENT> oncanplay(String oncanplay);
+    Input<PARENT> oncanplaythrough(String oncanplaythrough);
+    Input<PARENT> onchange(String onchange);
+    Input<PARENT> onclick(String onclick);
+    Input<PARENT> oncuechange(String oncuechange);
+    Input<PARENT> ondblclick(String ondblclick);
+    Input<PARENT> ondurationchange(String ondurationchange);
+    Input<PARENT> onemptied(String onemptied);
+    Input<PARENT> onended(String onended);
+    Input<PARENT> onerror(String onerror);
+    Input<PARENT> onfocus(String onfocus);
+    Input<PARENT> oninput(String oninput);
+    Input<PARENT> oninvalid(String oninvalid);
+    Input<PARENT> onkeypress(String onkeypress);
+    Input<PARENT> onkeydown(String onkeydown);
+    Input<PARENT> onkeyup(String onkeyup);
+    Input<PARENT> onload(String onload);
+    Input<PARENT> onloadeddata(String onloadeddata);
+    Input<PARENT> onloadedmetadata(String onloadedmetadata);
+    Input<PARENT> onloadstart(String onloadstart);
+    Input<PARENT> onmouseenter(String onmouseenter);
+    Input<PARENT> onmouseleave(String onmouseleave);
+    Input<PARENT> onmousedown(String onmousedown);
+    Input<PARENT> onmouseup(String onmouseup);
+    Input<PARENT> onmouseover(String onmouseover);
+    Input<PARENT> onmousemove(String onmousemove);
+    Input<PARENT> onmouseout(String onmouseout);
+    Input<PARENT> onmousewheel(String onmousewheel);
+    Input<PARENT> onpause(String onpause);
+    Input<PARENT> onplay(String onplay);
+    Input<PARENT> onplaying(String onplaying);
+    Input<PARENT> onprogress(String onprogress);
+    Input<PARENT> onratechange(String onratechange);
+    Input<PARENT> onreset(String onreset);
+    Input<PARENT> onresize(String onresize);
+    Input<PARENT> onscroll(String onscroll);
+    Input<PARENT> onseeked(String onseeked);
+    Input<PARENT> onseeking(String onseeking);
+    Input<PARENT> onselect(String onselect);
+    Input<PARENT> onshow(String onshow);
+    Input<PARENT> onstalled(String onstalled);
+    Input<PARENT> onsubmit(String onsubmit);
+    Input<PARENT> onsuspend(String onsuspend);
+    Input<PARENT> ontimeupdate(String ontimeupdate);
+    Input<PARENT> ontoggle(String ontoggle);
+    Input<PARENT> onvolumechange(String onvolumechange);
+    Input<PARENT> onwaiting(String onwaiting);
+    Input<PARENT> ariaAtomic(String ariaAtomic);
+    Input<PARENT> ariaBusy(String ariaBusy);
+    Input<PARENT> ariaControls(String ariaControls);
+    Input<PARENT> ariaDescribedby(String ariaDescribedby);
+    Input<PARENT> ariaDisabled(String ariaDisabled);
+    Input<PARENT> ariaDropeffect(String ariaDropeffect);
+    Input<PARENT> ariaFlowto(String ariaFlowto);
+    Input<PARENT> ariaGrabbed(String ariaGrabbed);
+    Input<PARENT> ariaHaspopup(String ariaHaspopup);
+    Input<PARENT> ariaHidden(String ariaHidden);
+    Input<PARENT> ariaInvalid(String ariaInvalid);
+    Input<PARENT> ariaLabel(String ariaLabel);
+    Input<PARENT> ariaLabelledby(String ariaLabelledby);
+    Input<PARENT> ariaLive(String ariaLive);
+    Input<PARENT> ariaOwns(String ariaOwns);
+    Input<PARENT> ariaRelevant(String ariaRelevant);
+    Input<PARENT> dataAction(String dataAction);
+    Input<PARENT> dataCount(String dataCount);
+    Input<PARENT> dataChrome(String dataChrome);
+    Input<PARENT> dataHref(String dataHref);
+    Input<PARENT> dataLayout(String dataLayout);
+    Input<PARENT> dataLinkColor(String dataLinkColor);
+    Input<PARENT> dataParent(String dataParent);
+    Input<PARENT> dataShowCount(String dataShowCount);
+    Input<PARENT> dataShowFaces(String dataShowFaces);
+    Input<PARENT> dataShare(String dataShare);
+    Input<PARENT> dataSitekey(String dataSitekey);
+    Input<PARENT> dataTarget(String dataTarget);
+    Input<PARENT> dataToggle(String dataToggle);
+    Input<PARENT> dataText(String dataText);
+    Input<PARENT> dataUrl(String dataUrl);
+    Input<PARENT> dataVia(String dataVia);
+    Input<PARENT> dataWidgetId(String dataWidgetId);
+    Input<PARENT> itemscope(String itemscope);
+    Input<PARENT> itemtype(String itemtype);
+    Input<PARENT> itemprop(String itemprop);
+    Input<PARENT> accept(String accept);
+    Input<PARENT> alt(String alt);
+    Input<PARENT> autocomplete(String autocomplete);
+    Input<PARENT> autofocus(String autofocus);
+    Input<PARENT> checked(String checked);
+    Input<PARENT> dirname(File dirname);
+    Input<PARENT> disabled(String disabled);
+    Input<PARENT> form(String form);
+    Input<PARENT> formaction(String formaction);
+    Input<PARENT> formenctype(String formenctype);
+    Input<PARENT> formmethod(String formmethod);
+    Input<PARENT> formnovalidate(String formnovalidate);
+    Input<PARENT> formtarget(String formtarget);
+    Input<PARENT> height(String height);
+    Input<PARENT> inputmode(String inputmode);
+    Input<PARENT> list(String list);
+    Input<PARENT> max(String max);
+    Input<PARENT> maxlength(String maxlength);
+    Input<PARENT> min(String min);
+    Input<PARENT> minlength(String minlength);
+    Input<PARENT> multiple(String multiple);
+    Input<PARENT> name(String name);
+    Input<PARENT> pattern(Pattern pattern);
+    Input<PARENT> placeholder(String placeholder);
+    Input<PARENT> readonly(String readonly);
+    Input<PARENT> required(String required);
+    Input<PARENT> size(String size);
+    Input<PARENT> src(String src);
+    Input<PARENT> step(String step);
+    Input<PARENT> type(String type);
+    Input<PARENT> value(String value);
+    Input<PARENT> width(String width);
+    Input<PARENT> role(String role);
+/* */
+}
