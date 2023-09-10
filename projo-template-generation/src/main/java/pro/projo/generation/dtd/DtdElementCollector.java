@@ -151,9 +151,9 @@ public class DtdElementCollector implements TypeMirrorUtilities
         String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + ">":">");
         boolean superTypeSamePackage = packageName(superType).equals(packageName);
         Name superTypeName = superType.getQualifiedName();
-        Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
         if (requiredAttributes.isEmpty())
         {
+            Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
             String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
             Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
             configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
@@ -164,7 +164,6 @@ public class DtdElementCollector implements TypeMirrorUtilities
             // For required attributes, multiple element interfaces need to be created
             // (specifically, 2^n interfaces, where n is the number of required attributes)
             //
-            List<Name> imports = imported.collect(toList());
             Stream<List<Attribute>> combinations = powerList(requiredAttributes);
             List<Attribute> optionalAttributes = contentModel.attributes()
                 .filter(attribute -> attribute.use() != AttributeUse.REQUIRED)
@@ -174,9 +173,11 @@ public class DtdElementCollector implements TypeMirrorUtilities
                 String presentAttributes = attributes.stream().map(Attribute::name).map(this::typeName).collect(joining());
                 List<Attribute> missingRequired = new ArrayList<>(requiredAttributes);
                 missingRequired.removeAll(attributes);
+                boolean attributesComplete = attributes.size() == requiredAttributes.size();
                 String typeName = elementTypeName.format(new Object[] {typeName(elementName) + presentAttributes});
-                String extension = attributes.size() == requiredAttributes.size()? extend + (isObject? "":typeParameters):"";
-                Configuration configuration = elementConfiguration(typeName, imports.stream(), extension);
+                String extension = attributesComplete? extend + (isObject? "":typeParameters):"";
+                Stream<Name> imports = !attributesComplete || superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
+                Configuration configuration = elementConfiguration(typeName, imports, extension);
                 ContentModel returnTypeContentModel = contentModel(typeName(elementName) + presentAttributes);
                 return missingRequired.stream().reduce
                 (
