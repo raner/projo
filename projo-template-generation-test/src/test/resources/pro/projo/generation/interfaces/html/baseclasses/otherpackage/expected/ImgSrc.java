@@ -16,7 +16,6 @@
 package pro.projo.generation.interfaces.test.html.baseclasses.otherpackage;
 /* */
 import javax.annotation.Generated;
-import pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement;
 /* */
 /**
 *
@@ -26,7 +25,7 @@ import pro.projo.generation.interfaces.test.html.baseclasses.EmptyElement;
 /* */
 @Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
 /* */
-public interface ImgSrc<PARENT> extends EmptyElement<PARENT>
+public interface ImgSrc<PARENT>
 {
 /* */
     ImgSrc<PARENT> accesskey(String accesskey);
