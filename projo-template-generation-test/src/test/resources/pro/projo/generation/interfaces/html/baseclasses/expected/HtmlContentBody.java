@@ -15,7 +15,6 @@
 //                                                                          //
 package pro.projo.generation.interfaces.test.html.baseclasses;
 /* */
-import javax.annotation.Generated;
 /* */
 /**
 *
@@ -23,7 +22,7 @@ import javax.annotation.Generated;
 *
 **/
 /* */
-@Generated("pro.projo.generation.interfaces.InterfaceTemplateProcessor")
+
 /* */
 public interface HtmlContentBody extends HtmlContent
 {

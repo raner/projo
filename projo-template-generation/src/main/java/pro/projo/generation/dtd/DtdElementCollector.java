@@ -60,6 +60,7 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static javax.tools.Diagnostic.Kind.ERROR;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
 
 /**
 * The {@link DtdElementCollector} is a type that collects information from
@@ -81,6 +82,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final Map<String, List<String>> aliases;
     private final Map<String, TypeElement> attributes;
     private final Options options;
+    private final boolean addAnnotations;
     private final Format elementTypeName;
     private final Format contentTypeName;
     private final Elements elements;
@@ -100,6 +102,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
         attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(), value -> getTypeElement(value::type)));
         options = dtd.options();
+        addAnnotations = options.addAnnotations() != FALSE; 
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
         AttributeNameConverter attributeNameConverter = null;
         try
@@ -153,7 +156,8 @@ public class DtdElementCollector implements TypeMirrorUtilities
         Name superTypeName = superType.getQualifiedName();
         if (requiredAttributes.isEmpty())
         {
-            Stream<Name> imported = superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
+            Stream<Name> generated = addAnnotations? Stream.of(this.generated):Stream.empty();
+            Stream<Name> imported = superTypeSamePackage? generated:Stream.concat(generated, Stream.of(superTypeName));
             String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
             Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
             configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
@@ -176,7 +180,8 @@ public class DtdElementCollector implements TypeMirrorUtilities
                 boolean attributesComplete = attributes.size() == requiredAttributes.size();
                 String typeName = elementTypeName.format(new Object[] {typeName(elementName) + presentAttributes});
                 String extension = attributesComplete? extend + (isObject? "":typeParameters):"";
-                Stream<Name> imports = !attributesComplete || superTypeSamePackage? Stream.of(generated):Stream.of(generated, superTypeName);
+                Stream<Name> generated = addAnnotations? Stream.of(this.generated):Stream.empty();
+                Stream<Name> imports = !attributesComplete || superTypeSamePackage? generated:Stream.concat(generated, Stream.of(superTypeName));
                 Configuration configuration = elementConfiguration(typeName, imports, extension);
                 ContentModel returnTypeContentModel = contentModel(typeName(elementName) + presentAttributes);
                 return missingRequired.stream().reduce
@@ -245,7 +250,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("package", packageName.toString());
         parameters.put("imports", imports);
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
-        parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
+        parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
         parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extendSpec);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
@@ -366,14 +371,17 @@ public class DtdElementCollector implements TypeMirrorUtilities
         Stream<ChildElement> children, String extend, String... imports)
     {
         List<String> importStatements = new ArrayList<>();
-        importStatements.add(generated.toString());
+        if (addAnnotations)
+        {
+            importStatements.add(generated.toString());
+        }
         importStatements.addAll(Arrays.asList(imports));
         Map<String, Object> parameters = new HashMap<>();
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
         parameters.put("imports", importStatements.toArray(new String[] {}));
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
-        parameters.put("generatedBy", "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")");
+        parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
         parameters.put("InterfaceTemplate", contentType + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
