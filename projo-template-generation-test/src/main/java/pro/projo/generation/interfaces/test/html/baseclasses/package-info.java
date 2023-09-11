@@ -19,11 +19,14 @@
     mixedContentInterface=MixedContent.class,
     baseInterface=Element.class,
     baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class
+    baseInterfaceText=TextElement.class,
+    options=@Options(addAnnotations=FALSE)
 )
 package pro.projo.generation.interfaces.test.html.baseclasses;
 
 import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.Options;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
 
 /**
 * The {@code pro.projo.generation.interfaces.test.html} package contains test cases
