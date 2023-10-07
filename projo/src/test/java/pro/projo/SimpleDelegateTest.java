@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2021 Mirko Raner                                               //
+// Copyright 2021 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -96,6 +96,22 @@ public class SimpleDelegateTest
         {
             return true;
         }
+    }
+
+    public static interface PreparameterizedTypeWithName extends InstrumentedType
+    {
+      pro.projo.doubles.Factory<PreparameterizedTypeWithName, InstrumentedType, String> FACTORY =
+          Projo.creates(PreparameterizedTypeWithName.class).with
+          (
+              PreparameterizedTypeWithName::type,
+              PreparameterizedTypeWithName::name
+          );
+
+      @Delegate
+      InstrumentedType type();
+
+      // This method adds a new attribute
+      String name();
     }
 
     public static interface MergeableInitial<TYPE> extends Initial<TYPE>
@@ -373,6 +389,15 @@ public class SimpleDelegateTest
         TypeList.Generic typeVariables = new TypeList.Generic.Explicit(typeVariable("T").build());
         PreparameterizedType type = PreparameterizedType.FACTORY.create(originalType, typeVariables);
         assertEquals(originalType.withEnclosingType(type(SimpleDelegateTest.class)), type.withEnclosingType(type(SimpleDelegateTest.class)));
+    }
+
+    @Test
+    public void noIntermediateNeededForDelegate() throws Exception
+    {
+      InstrumentedType originalType = (InstrumentedType)new ByteBuddy().subclass(Object.class).make().getTypeDescription();
+      PreparameterizedTypeWithName type = PreparameterizedTypeWithName.FACTORY.create(originalType, "ObjectAlternative");
+      assertEquals(originalType.withEnclosingType(type(SimpleDelegateTest.class)), type.withEnclosingType(type(SimpleDelegateTest.class)));
+      assertEquals("ObjectAlternative", type.name());
     }
 
     private MethodDescription.Latent latent(TypeDefinition declaringType, TypeDefinition returnType, String internalName,
