@@ -13,38 +13,27 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
+@Dtd
+(
+    path="html5/html5.dtd",
+    mixedContentInterface=MixedContent.class,
+    baseInterface=Element.class,
+    baseInterfaceEmpty=EmptyElement.class,
+    baseInterfaceText=TextElement.class,
+    options=@Options(addAnnotations=FALSE),
+    attributes={@Attribute(name="onclick", type=Transition.class, typeArguments={"MODEL"})}
+)
+package pro.projo.generation.interfaces.test.html.model;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import pro.projo.interfaces.annotation.Dtd;
+import pro.projo.interfaces.annotation.Options;
+import static pro.projo.interfaces.annotation.Ternary.FALSE;
+
+import pro.projo.interfaces.annotation.Attribute;
 
 /**
-* The {@link Attribute} annotation defines a custom type for a {@link Dtd}
-* element attribute. An {@link Attribute} annotation acts globally, e.g.
-* {@code @Attribute(name="class", type=Class.class)} will assign the type
-* {@code Class} to <i>every</i> attribute called {@code class}, regardless
-* of which DTD element it belongs to.
+* The {@code pro.projo.generation.interfaces.test.html} package contains test cases
+* for the {@link Dtd} annotation, based on a DTD for HTML5.
 *
 * @author Mirko Raner
 **/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-public @interface Attribute
-{
-    /**
-    * @return the attribute name
-    **/
-    String name();
-
-    /**
-    * @return the attribute type
-    **/
-    Class<?> type();
-
-    /**
-    * @return additional type arguments (if any)
-    **/
-    String[] typeArguments() default {};
-}
