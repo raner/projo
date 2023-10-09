@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2023 Mirko Raner                                               //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,26 +13,20 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Dtd
-(
-    path="html5/html5.dtd",
-    mixedContentInterface=MixedContent.class,
-    baseInterface=Element.class,
-    baseInterfaceEmpty=EmptyElement.class,
-    baseInterfaceText=TextElement.class,
-    options=@Options(addAnnotations=FALSE),
-    attributes={@Attribute(name="onclick", type=Transition.class, typeArguments={"MODEL"})}
-)
 package pro.projo.generation.interfaces.test.html.model;
-
-import pro.projo.interfaces.annotation.Attribute;
-import pro.projo.interfaces.annotation.Dtd;
-import pro.projo.interfaces.annotation.Options;
-import static pro.projo.interfaces.annotation.Ternary.FALSE;
-
+/* */
+/* */
 /**
-* The {@code pro.projo.generation.interfaces.test.html.model} package contains test cases
-* for the {@link Dtd} annotation, based on a DTD for HTML5.
 *
-* @author Mirko Raner
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
 **/
+/* */
+
+/* */
+public interface HtmlContentHead<MODEL> extends HtmlContent<MODEL>
+{
+/* */
+    Head<HtmlContentBody<MODEL>, MODEL> head();
+/* */
+}

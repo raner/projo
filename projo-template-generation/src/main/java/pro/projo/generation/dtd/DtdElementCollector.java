@@ -338,6 +338,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private Stream<Configuration> createContentTypes(ContentModel contentModel)
     {
         String contentType = contentTypeName.format(new Object[] {typeName(contentModel.name())});
+        String additionalTypeVariables = mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">";
         Stream<ChildElement> children = contentModel.nonAttributes()
             .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
             .filter(ChildElement.class::isInstance)
@@ -364,7 +365,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     contentType + typeName(childList.get(index).name()),
                     contentType + (index+1 < childList.size()? typeName(childList.get(index+1).name()):""),
                     Stream.of(childList.get(index)),
-                    (mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">") + " extends " + contentType + (mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">"),
+                    additionalTypeVariables + " extends " + contentType + additionalTypeVariables,
                     emptyList(),
                     mixedContentVariables
                 )
@@ -379,8 +380,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             if (contentModel.type() == ContentModelType.MIXED
             && !mixedContentInterface.getQualifiedName().toString().equals(Object.class.getName()))
             {
-                String parameters = mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">";
-                extend = parameters + " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + parameters + mixedContentVariables + ">";
+                extend = additionalTypeVariables + " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + additionalTypeVariables + mixedContentVariables + ">";
                 String mixedContentTypeName = mixedContentInterface.getQualifiedName().toString();
                 String mixedContentPackage = mixedContentTypeName.substring(0, mixedContentTypeName.lastIndexOf('.'));
                 if (!mixedContentPackage.equals(packageName.toString()))
@@ -402,7 +402,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             importStatements.add(generated.toString());
         }
         importStatements.addAll(imports);
-        if (/*extend.isEmpty() &&*/ !extraTypeVariables.isEmpty())
+        if (!extraTypeVariables.isEmpty())
         {
           contentTypeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + "<" + extraTypeVariables.substring(2) + ">";
         }
@@ -416,7 +416,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("imports", importStatements.toArray(new String[] {}));
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
-        parameters.put("InterfaceTemplate", contentType + /*(contentTypeArgument == null || extraTypeVariables.isEmpty()? "":"<" + extraTypeVariables.substring(2) + ">") +*/ extend);
+        parameters.put("InterfaceTemplate", contentType + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Function<String, Stream<String>> aliased = name -> aliases.getOrDefault(name, asList(name)).stream();
