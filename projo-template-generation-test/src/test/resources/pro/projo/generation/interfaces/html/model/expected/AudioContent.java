@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2023 Mirko Raner                                               //
+// Copyright 2019 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,38 +13,30 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
+package pro.projo.generation.interfaces.test.html.model;
+/* */
+/* */
 /**
-* The {@link Attribute} annotation defines a custom type for a {@link Dtd}
-* element attribute. An {@link Attribute} annotation acts globally, e.g.
-* {@code @Attribute(name="class", type=Class.class)} will assign the type
-* {@code Class} to <i>every</i> attribute called {@code class}, regardless
-* of which DTD element it belongs to.
 *
-* @author Mirko Raner
+* THIS IS A GENERATED INTERFACE - DO NOT EDIT!
+*
 **/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-public @interface Attribute
+/* */
+
+/* */
+public interface AudioContent<MODEL> extends MixedContent<AudioContent<MODEL>, MODEL>
 {
-    /**
-    * @return the attribute name
-    **/
-    String name();
-
-    /**
-    * @return the attribute type
-    **/
-    Class<?> type();
-
-    /**
-    * @return additional type arguments (if any)
-    **/
-    String[] typeArguments() default {};
+/* */
+    Track<AudioContent<MODEL>, MODEL> track();
+    Source<AudioContent<MODEL>, MODEL> source();
+    Audio<AudioContent<MODEL>, MODEL> audio();
+    Canvas<AudioContent<MODEL>, MODEL> canvas();
+    Embed<AudioContent<MODEL>, MODEL> embed();
+    Iframe<AudioContent<MODEL>, MODEL> iframe();
+    Img<AudioContent<MODEL>, MODEL> img();
+    Math<AudioContent<MODEL>, MODEL> math();
+    Object<AudioContent<MODEL>, MODEL> object();
+    Svg<AudioContent<MODEL>, MODEL> svg();
+    Video<AudioContent<MODEL>, MODEL> video();
+/* */
 }

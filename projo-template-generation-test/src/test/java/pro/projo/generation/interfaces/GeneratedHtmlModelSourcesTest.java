@@ -13,38 +13,37 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.interfaces.annotation;
+package pro.projo.generation.interfaces;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.io.File;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.stream.Stream;
+import org.junit.runners.Parameterized.Parameters;
+import static java.util.stream.Collectors.toList;
 
 /**
-* The {@link Attribute} annotation defines a custom type for a {@link Dtd}
-* element attribute. An {@link Attribute} annotation acts globally, e.g.
-* {@code @Attribute(name="class", type=Class.class)} will assign the type
-* {@code Class} to <i>every</i> attribute called {@code class}, regardless
-* of which DTD element it belongs to.
+* {@link GeneratedHtmlModelSourcesTest} is a parameterized test that checks that all files
+* in {@code src/test/resources/pro/projo/generation/interfaces/html/model/expected} match their
+* corresponding generated files.
 *
 * @author Mirko Raner
 **/
-@Target(PACKAGE)
-@Retention(RUNTIME)
-public @interface Attribute
+public class GeneratedHtmlModelSourcesTest extends AbstractGeneratedSourcesTest
 {
-    /**
-    * @return the attribute name
-    **/
-    String name();
+    static Format generated = new MessageFormat("target/generated-sources/annotations/pro/projo/generation/interfaces/test/html/model/{0}");
+    static Format comparison = new MessageFormat("src/test/resources/pro/projo/generation/interfaces/html/model/expected/{0}");
 
-    /**
-    * @return the attribute type
-    **/
-    Class<?> type();
+    public GeneratedHtmlModelSourcesTest()
+    {
+        super(comparison, generated);
+    }
 
-    /**
-    * @return additional type arguments (if any)
-    **/
-    String[] typeArguments() default {};
+    @Parameters(name="{0}")
+    public static Collection<Object[]> testSources()
+    {
+        File expected = new File(comparison.format(new Object[] {""}));
+        return Stream.of(expected.list()).map(file -> new Object[] {file}).collect(toList());
+    }
 }

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -54,7 +56,9 @@ import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
+import static java.lang.String.join;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -79,8 +83,12 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final TypeElement baseInterfaceEmpty;
     private final TypeElement baseInterfaceText;
     private final TypeElement mixedContentInterface;
+    private final String baseVariables;
+    private final String baseVariablesEmpty;
+    private final String baseVariablesText;
+    private final String mixedContentVariables;
     private final Map<String, List<String>> aliases;
-    private final Map<String, TypeElement> attributes;
+    private final Map<String, Entry<TypeElement, String>> attributes;
     private final Options options;
     private final boolean addAnnotations;
     private final Format elementTypeName;
@@ -97,10 +105,17 @@ public class DtdElementCollector implements TypeMirrorUtilities
         baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
         baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
         mixedContentInterface = getTypeElement(dtd::mixedContentInterface);
+        baseVariables = additionalTypeVariables(baseInterface, 3);
+        baseVariablesEmpty = additionalTypeVariables(baseInterfaceEmpty, 1);
+        baseVariablesText = additionalTypeVariables(baseInterfaceText, 1);
+        mixedContentVariables = additionalTypeVariables(mixedContentInterface, 1);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
-        attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(), value -> getTypeElement(value::type)));
+        attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(),
+            value -> new SimpleEntry<>(
+                getTypeElement(value::type),
+                value.typeArguments().length == 0? "":"<" + join(", ", value.typeArguments()) + ">")));
         options = dtd.options();
         addAnnotations = options.addAnnotations() != FALSE; 
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
@@ -148,10 +163,16 @@ public class DtdElementCollector implements TypeMirrorUtilities
         boolean currentContentModelHasChildren = contentModel.nonAttributes().count() > 0;
         TypeElement superType = contentModel.type() == ContentModelType.EMPTY? baseInterfaceEmpty:
             currentContentModelHasChildren? baseInterface:baseInterfaceText;
+        String extraVariables = contentModel.type() == ContentModelType.EMPTY? baseVariablesEmpty:
+          currentContentModelHasChildren? baseVariables:baseVariablesText;
         boolean isObject = superType.getQualifiedName().toString().equals(Object.class.getName());
         String extend = isObject? "":(" extends " + superType.getSimpleName());
         String contentType = contentTypeName.format(new Object[] {typeName(elementName)});
-        String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + ">":">");
+        if (!extraVariables.isEmpty())
+        {
+          contentType += "<" + extraVariables.substring(2) + ">";
+        }
+        String typeParameters = "<PARENT" + (currentContentModelHasChildren? ", " + contentType + ", " + contentType + extraVariables + ">":extraVariables + ">");
         boolean superTypeSamePackage = packageName(superType).equals(packageName);
         Name superTypeName = superType.getQualifiedName();
         if (requiredAttributes.isEmpty())
@@ -159,8 +180,8 @@ public class DtdElementCollector implements TypeMirrorUtilities
             Stream<Name> generated = addAnnotations? Stream.of(this.generated):Stream.empty();
             Stream<Name> imported = superTypeSamePackage? generated:Stream.concat(generated, Stream.of(superTypeName));
             String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
-            Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters));
-            configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr), (a, b) -> a);
+            Configuration configuration = elementConfiguration(typeName, imported, extend + (isObject? "":typeParameters), extraVariables);
+            configuration = contentModel.attributes().reduce(configuration, (conf, attr) -> attributeDecl(conf, contentModel, attr, extraVariables), (a, b) -> a);
             return Stream.of(configuration);
         }
         else
@@ -182,21 +203,22 @@ public class DtdElementCollector implements TypeMirrorUtilities
                 String extension = attributesComplete? extend + (isObject? "":typeParameters):"";
                 Stream<Name> generated = addAnnotations? Stream.of(this.generated):Stream.empty();
                 Stream<Name> imports = !attributesComplete || superTypeSamePackage? generated:Stream.concat(generated, Stream.of(superTypeName));
-                Configuration configuration = elementConfiguration(typeName, imports, extension);
+                Configuration configuration = elementConfiguration(typeName, imports, extension, extraVariables);
                 ContentModel returnTypeContentModel = contentModel(typeName(elementName) + presentAttributes);
                 return missingRequired.stream().reduce
                 (
                     optionalAttributes.stream().reduce
                     (
                         configuration,
-                        (conf, attr) -> attributeDecl(conf, returnTypeContentModel, attr),
+                        (conf, attr) -> attributeDecl(conf, returnTypeContentModel, attr, extraVariables),
                         (a, b) -> a
                     ),
                     (conf, attr) -> attributeDecl
                     (
                         conf,
                         missingAttributeReturnType(elementName, requiredAttributes, attributes, attr),
-                        attr
+                        attr,
+                        extraVariables
                     ),
                     (a, b) -> a
                 );
@@ -238,7 +260,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         };
     }
 
-    public Configuration elementConfiguration(String typeName, Stream<Name> imported, String extendSpec)
+    public Configuration elementConfiguration(String typeName, Stream<Name> imported, String extendSpec, String extraVariables)
     {
         String[] imports = imported
             .sorted(importOrder)
@@ -251,32 +273,33 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("imports", imports);
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
-        parameters.put("InterfaceTemplate", typeName + "<PARENT>" + extendSpec);
+        parameters.put("InterfaceTemplate", typeName + "<PARENT" + extraVariables + ">" + extendSpec);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + typeName;
         return new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
     }
 
-    public Configuration attributeDecl(Configuration configuration, ContentModel contentModel, Attribute attribute)
+    public Configuration attributeDecl(Configuration configuration, ContentModel contentModel, Attribute attribute, String extraVariables)
     {
         String attributeName = attribute.name();
         String elementName = contentModel.name();
         // TODO: next line duplicated from above
         String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
         String methodName = attributeNameConverter.convertAttributeName(attributeName);
-        TypeElement parameterType = attributes.get(methodName);
-        String parameterTypeName = parameterType != null? parameterType.getSimpleName().toString():"String";
-        String method = typeName + "<PARENT> " + methodName + "(" + parameterTypeName + " " + methodName + ")";
+        Entry<TypeElement, String> parameterTypeAndArguments = attributes.get(methodName);
+        String parameterTypeName = parameterTypeAndArguments != null? parameterTypeAndArguments.getKey().getSimpleName().toString():"String";
+        String parameterTypeArguments = parameterTypeAndArguments != null? parameterTypeAndArguments.getValue():"";
+        String method = typeName + "<PARENT" + extraVariables + "> " + methodName + "(" + parameterTypeName + parameterTypeArguments + " " + methodName + ")";
         String[] methods = (String[])configuration.parameters().get("methods");
         List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
         newMethods.add(method);
         configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
-        if (parameterType != null && !packageName(parameterType).equals(packageName))
+        if (parameterTypeAndArguments != null && !packageName(parameterTypeAndArguments.getKey()).equals(packageName))
         {
             String[] imported = (String[])configuration.parameters().get("imports");
             Stream<String> stream = Stream.of(imported != null? imported:new String[] {});
             Set<String> imports = new HashSet<>(stream.collect(toList()));
-            imports.add(parameterType.getQualifiedName().toString());
+            imports.add(parameterTypeAndArguments.getKey().getQualifiedName().toString());
             // TODO: this will sort the entire array after each new import
             // TODO: consolidate with code in elementConfiguration(...)
             configuration.parameters().put("imports",
@@ -315,6 +338,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private Stream<Configuration> createContentTypes(ContentModel contentModel)
     {
         String contentType = contentTypeName.format(new Object[] {typeName(contentModel.name())});
+        String additionalTypeVariables = mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">";
         Stream<ChildElement> children = contentModel.nonAttributes()
             .flatMap(it -> Stream.concat(Stream.of(it), it.children().stream()))
             .filter(ChildElement.class::isInstance)
@@ -333,7 +357,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             // - the last interface's content method parameter points to the base interface
             // - the element interface uses content<0> as in type and the base interface as out type
             //
-            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty(), ""));
+            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty(), "", emptyList(), mixedContentVariables));
             Stream<Configuration> sequence = IntStream.range(0, childList.size()).mapToObj
             (
                 index -> createContentType
@@ -341,7 +365,9 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     contentType + typeName(childList.get(index).name()),
                     contentType + (index+1 < childList.size()? typeName(childList.get(index+1).name()):""),
                     Stream.of(childList.get(index)),
-                    " extends " + contentType
+                    additionalTypeVariables + " extends " + contentType + additionalTypeVariables,
+                    emptyList(),
+                    mixedContentVariables
                 )
             );
             return Stream.concat(base, sequence);
@@ -354,7 +380,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             if (contentModel.type() == ContentModelType.MIXED
             && !mixedContentInterface.getQualifiedName().toString().equals(Object.class.getName()))
             {
-                extend = " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + ">";
+                extend = additionalTypeVariables + " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + additionalTypeVariables + mixedContentVariables + ">";
                 String mixedContentTypeName = mixedContentInterface.getQualifiedName().toString();
                 String mixedContentPackage = mixedContentTypeName.substring(0, mixedContentTypeName.lastIndexOf('.'));
                 if (!mixedContentPackage.equals(packageName.toString()))
@@ -362,20 +388,28 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     imports = new String[] {mixedContentTypeName};
                 }
             }
-            return Stream.of(createContentType(contentType, null, childList.stream(), extend, imports));
+            return Stream.of(createContentType(contentType, null, childList.stream(), extend, asList(imports), mixedContentVariables));
         }
         return Stream.empty();
     }
 
     private Configuration createContentType(String contentType, String contentTypeArgument,
-        Stream<ChildElement> children, String extend, String... imports)
+        Stream<ChildElement> children, String extend, List<String> imports, String extraTypeVariables)
     {
         List<String> importStatements = new ArrayList<>();
         if (addAnnotations)
         {
             importStatements.add(generated.toString());
         }
-        importStatements.addAll(Arrays.asList(imports));
+        importStatements.addAll(imports);
+        if (!extraTypeVariables.isEmpty())
+        {
+          contentTypeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + "<" + extraTypeVariables.substring(2) + ">";
+        }
+        if (extend.isEmpty() && !extraTypeVariables.isEmpty())
+        {
+          extend += "<" + extraTypeVariables.substring(2) + ">";
+        }
         Map<String, Object> parameters = new HashMap<>();
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
@@ -391,7 +425,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             child -> aliased.apply(child.name()).map(it -> new TypedChildElement(child, it))
         );
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
-        String typeArgument = contentTypeArgument != null? contentTypeArgument:contentType;
+        String typeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + extraTypeVariables;
         Reduction<Configuration, TypedChildElement> reducer = (conf, child) -> childElement(conf, child, typeArgument);
         return typedChildren.reduce(configuration, reducer, (a, b) -> a);
     }
@@ -404,6 +438,16 @@ public class DtdElementCollector implements TypeMirrorUtilities
         return range(0, 1 << list.size())
             .mapToObj(pattern -> range(0, list.size()).filter(bit -> (pattern & (1 << bit)) != 0).toArray())
             .map(indexArray -> IntStream.of(indexArray).mapToObj(list::get).collect(toList()));
+    }
+
+    private String additionalTypeVariables(TypeElement element, int baseCount)
+    {
+        return element
+            .getTypeParameters()
+            .stream()
+            .skip(baseCount)
+            .map(it -> it.getSimpleName().toString())
+            .collect(joining(", ", element.getTypeParameters().size() > baseCount? ", ":"", ""));
     }
 
     private String typeName(String elementName)
