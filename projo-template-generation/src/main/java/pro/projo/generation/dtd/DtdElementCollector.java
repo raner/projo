@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -54,6 +56,7 @@ import pro.projo.interfaces.annotation.Dtd;
 import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
+import static java.lang.String.join;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
@@ -85,7 +88,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final String baseVariablesText;
     private final String mixedContentVariables;
     private final Map<String, List<String>> aliases;
-    private final Map<String, TypeElement> attributes;
+    private final Map<String, Entry<TypeElement, String>> attributes;
     private final Options options;
     private final boolean addAnnotations;
     private final Format elementTypeName;
@@ -109,7 +112,10 @@ public class DtdElementCollector implements TypeMirrorUtilities
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
-        attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(), value -> getTypeElement(value::type)));
+        attributes = Stream.of(dtd.attributes()).collect(toMap(key -> key.name(),
+            value -> new SimpleEntry<>(
+                getTypeElement(value::type),
+                value.typeArguments().length == 0? "":"<" + join(", ", value.typeArguments()) + ">")));
         options = dtd.options();
         addAnnotations = options.addAnnotations() != FALSE; 
         generated = new pro.projo.generation.utilities.Name("javax.annotation.Generated");
@@ -280,19 +286,20 @@ public class DtdElementCollector implements TypeMirrorUtilities
         // TODO: next line duplicated from above
         String typeName = elementTypeName.format(new Object[] {typeName(elementName)});
         String methodName = attributeNameConverter.convertAttributeName(attributeName);
-        TypeElement parameterType = attributes.get(methodName);
-        String parameterTypeName = parameterType != null? parameterType.getSimpleName().toString():"String";
-        String method = typeName + "<PARENT" + extraVariables + "> " + methodName + "(" + parameterTypeName + " " + methodName + ")";
+        Entry<TypeElement, String> parameterTypeAndArguments = attributes.get(methodName);
+        String parameterTypeName = parameterTypeAndArguments != null? parameterTypeAndArguments.getKey().getSimpleName().toString():"String";
+        String parameterTypeArguments = parameterTypeAndArguments != null? parameterTypeAndArguments.getValue():"";
+        String method = typeName + "<PARENT" + extraVariables + "> " + methodName + "(" + parameterTypeName + parameterTypeArguments + " " + methodName + ")";
         String[] methods = (String[])configuration.parameters().get("methods");
         List<String> newMethods = new ArrayList<>(Arrays.asList(methods));
         newMethods.add(method);
         configuration.parameters().put("methods", newMethods.toArray(new String[] {}));
-        if (parameterType != null && !packageName(parameterType).equals(packageName))
+        if (parameterTypeAndArguments != null && !packageName(parameterTypeAndArguments.getKey()).equals(packageName))
         {
             String[] imported = (String[])configuration.parameters().get("imports");
             Stream<String> stream = Stream.of(imported != null? imported:new String[] {});
             Set<String> imports = new HashSet<>(stream.collect(toList()));
-            imports.add(parameterType.getQualifiedName().toString());
+            imports.add(parameterTypeAndArguments.getKey().getQualifiedName().toString());
             // TODO: this will sort the entire array after each new import
             // TODO: consolidate with code in elementConfiguration(...)
             configuration.parameters().put("imports",
@@ -357,7 +364,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     contentType + typeName(childList.get(index).name()),
                     contentType + (index+1 < childList.size()? typeName(childList.get(index+1).name()):""),
                     Stream.of(childList.get(index)),
-                    " extends " + contentType,
+                    (mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">") + " extends " + contentType + (mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">"),
                     emptyList(),
                     mixedContentVariables
                 )
@@ -373,7 +380,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             && !mixedContentInterface.getQualifiedName().toString().equals(Object.class.getName()))
             {
                 String parameters = mixedContentVariables.isEmpty()? "":"<" + mixedContentVariables.substring(2) + ">";
-                extend = parameters + " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + mixedContentVariables + ">";
+                extend = parameters + " extends " + mixedContentInterface.getSimpleName() + "<" + contentType + parameters + mixedContentVariables + ">";
                 String mixedContentTypeName = mixedContentInterface.getQualifiedName().toString();
                 String mixedContentPackage = mixedContentTypeName.substring(0, mixedContentTypeName.lastIndexOf('.'));
                 if (!mixedContentPackage.equals(packageName.toString()))
@@ -395,9 +402,13 @@ public class DtdElementCollector implements TypeMirrorUtilities
             importStatements.add(generated.toString());
         }
         importStatements.addAll(imports);
-        if (extend.isEmpty() && !extraTypeVariables.isEmpty())
+        if (/*extend.isEmpty() &&*/ !extraTypeVariables.isEmpty())
         {
           contentTypeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + "<" + extraTypeVariables.substring(2) + ">";
+        }
+        if (extend.isEmpty() && !extraTypeVariables.isEmpty())
+        {
+          extend += "<" + extraTypeVariables.substring(2) + ">";
         }
         Map<String, Object> parameters = new HashMap<>();
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
@@ -405,7 +416,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
         parameters.put("imports", importStatements.toArray(new String[] {}));
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
-        parameters.put("InterfaceTemplate", contentType + (contentTypeArgument == null || extraTypeVariables.isEmpty()? "":"<" + extraTypeVariables.substring(2) + ">") + extend);
+        parameters.put("InterfaceTemplate", contentType + /*(contentTypeArgument == null || extraTypeVariables.isEmpty()? "":"<" + extraTypeVariables.substring(2) + ">") +*/ extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Function<String, Stream<String>> aliased = name -> aliases.getOrDefault(name, asList(name)).stream();

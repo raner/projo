@@ -24,7 +24,7 @@ package pro.projo.generation.interfaces.test.html.model;
 /* */
 
 /* */
-public interface Button<PARENT, MODEL> extends Element<PARENT, ButtonContent, ButtonContent, MODEL>
+public interface Button<PARENT, MODEL> extends Element<PARENT, ButtonContent<MODEL>, ButtonContent<MODEL>, MODEL>
 {
 /* */
     Button<PARENT, MODEL> accesskey(String accesskey);
