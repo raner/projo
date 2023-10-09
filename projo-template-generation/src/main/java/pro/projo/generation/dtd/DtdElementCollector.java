@@ -55,6 +55,7 @@ import pro.projo.interfaces.annotation.Options;
 import pro.projo.interfaces.annotation.utilities.AttributeNameConverter;
 import pro.projo.template.annotation.Configuration;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -348,7 +349,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             // - the last interface's content method parameter points to the base interface
             // - the element interface uses content<0> as in type and the base interface as out type
             //
-            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty(), ""));
+            Stream<Configuration> base = Stream.of(createContentType(contentType, null, Stream.empty(), "", emptyList(), mixedContentVariables));
             Stream<Configuration> sequence = IntStream.range(0, childList.size()).mapToObj
             (
                 index -> createContentType
@@ -356,7 +357,9 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     contentType + typeName(childList.get(index).name()),
                     contentType + (index+1 < childList.size()? typeName(childList.get(index+1).name()):""),
                     Stream.of(childList.get(index)),
-                    " extends " + contentType
+                    " extends " + contentType,
+                    emptyList(),
+                    mixedContentVariables
                 )
             );
             return Stream.concat(base, sequence);
@@ -378,27 +381,31 @@ public class DtdElementCollector implements TypeMirrorUtilities
                     imports = new String[] {mixedContentTypeName};
                 }
             }
-            return Stream.of(createContentType(contentType, null, childList.stream(), extend, imports));
+            return Stream.of(createContentType(contentType, null, childList.stream(), extend, asList(imports), mixedContentVariables));
         }
         return Stream.empty();
     }
 
     private Configuration createContentType(String contentType, String contentTypeArgument,
-        Stream<ChildElement> children, String extend, String... imports)
+        Stream<ChildElement> children, String extend, List<String> imports, String extraTypeVariables)
     {
         List<String> importStatements = new ArrayList<>();
         if (addAnnotations)
         {
             importStatements.add(generated.toString());
         }
-        importStatements.addAll(Arrays.asList(imports));
+        importStatements.addAll(imports);
+        if (extend.isEmpty() && !extraTypeVariables.isEmpty())
+        {
+          contentTypeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + "<" + extraTypeVariables.substring(2) + ">";
+        }
         Map<String, Object> parameters = new HashMap<>();
         // TODO: consolidate import code with code in InterfaceTemplateProcessor.getInterfaceConfiguration
         parameters.put("package", packageName.toString());
         parameters.put("imports", importStatements.toArray(new String[] {}));
         parameters.put("javadoc", "THIS IS A GENERATED INTERFACE - DO NOT EDIT!");
         parameters.put("generatedBy", addAnnotations? "@Generated(\"" + InterfaceTemplateProcessor.class.getName() + "\")":"");
-        parameters.put("InterfaceTemplate", contentType + extend);
+        parameters.put("InterfaceTemplate", contentType + (contentTypeArgument == null || extraTypeVariables.isEmpty()? "":"<" + extraTypeVariables.substring(2) + ">") + extend);
         parameters.put("methods", new String[] {});
         String fullyQualifiedClassName = packageName.toString() + "." + contentType;
         Function<String, Stream<String>> aliased = name -> aliases.getOrDefault(name, asList(name)).stream();
@@ -407,7 +414,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
             child -> aliased.apply(child.name()).map(it -> new TypedChildElement(child, it))
         );
         Configuration configuration = new DefaultConfiguration(fullyQualifiedClassName, parameters, options);
-        String typeArgument = contentTypeArgument != null? contentTypeArgument:contentType;
+        String typeArgument = (contentTypeArgument != null? contentTypeArgument:contentType) + extraTypeVariables;
         Reduction<Configuration, TypedChildElement> reducer = (conf, child) -> childElement(conf, child, typeArgument);
         return typedChildren.reduce(configuration, reducer, (a, b) -> a);
     }
