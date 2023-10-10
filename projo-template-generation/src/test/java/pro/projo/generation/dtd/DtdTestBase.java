@@ -159,6 +159,12 @@ public class DtdTestBase extends AbstractTypeConverterTest
             {
               return new Attribute[] {};
             }
+
+            @Override
+            public int implicitTypeParameters()
+            {
+              return 0;
+            }
         };
         return processor.getDtdConfiguration(packageElement, singletonList(dtd));
     }

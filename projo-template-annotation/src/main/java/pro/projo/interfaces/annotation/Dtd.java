@@ -113,7 +113,17 @@ public @interface Dtd
     Alias[] aliases() default {};
 
     /**
-     * @return custom attributes for elements (if any)
-     **/
+    * @return custom attributes for elements (if any)
+    **/
     Attribute[] attributes() default {};
+
+    /**
+    * Indicates the number of implicit type parameters that are present in
+    * the base interfaces. This could be due to implicit type parameters
+    * inherited from enclosing classes, or additional type parameters generated
+    * by some (non-Java) JVM languages. Default is 0.
+    *
+    * @return number of implicit type parameters (if any)
+    **/
+    int implicitTypeParameters() default 0;
 }
