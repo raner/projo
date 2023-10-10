@@ -87,6 +87,7 @@ public class DtdElementCollector implements TypeMirrorUtilities
     private final String baseVariablesEmpty;
     private final String baseVariablesText;
     private final String mixedContentVariables;
+    private final int implicitTypeParameters;
     private final Map<String, List<String>> aliases;
     private final Map<String, Entry<TypeElement, String>> attributes;
     private final Options options;
@@ -105,10 +106,11 @@ public class DtdElementCollector implements TypeMirrorUtilities
         baseInterfaceEmpty = getTypeElement(dtd::baseInterfaceEmpty);
         baseInterfaceText = getTypeElement(dtd::baseInterfaceText);
         mixedContentInterface = getTypeElement(dtd::mixedContentInterface);
-        baseVariables = additionalTypeVariables(baseInterface, 3);
-        baseVariablesEmpty = additionalTypeVariables(baseInterfaceEmpty, 1);
-        baseVariablesText = additionalTypeVariables(baseInterfaceText, 1);
-        mixedContentVariables = additionalTypeVariables(mixedContentInterface, 1);
+        implicitTypeParameters = dtd.implicitTypeParameters();
+        baseVariables = additionalTypeVariables(baseInterface, implicitTypeParameters+3);
+        baseVariablesEmpty = additionalTypeVariables(baseInterfaceEmpty, implicitTypeParameters+1);
+        baseVariablesText = additionalTypeVariables(baseInterfaceText, implicitTypeParameters+1);
+        mixedContentVariables = additionalTypeVariables(mixedContentInterface, implicitTypeParameters+1);
         elementTypeName = new MessageFormat(dtd.elementNameFormat());
         contentTypeName = new MessageFormat(dtd.contentNameFormat());
         aliases = Stream.of(dtd.aliases()).map(Alias::value).collect(toMap(key -> key[0], value -> asList(value)));
