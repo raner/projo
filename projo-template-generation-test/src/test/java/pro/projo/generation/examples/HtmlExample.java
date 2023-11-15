@@ -15,6 +15,18 @@
 //                                                                          //
 package pro.projo.generation.examples;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
+
+import pro.projo.generation.interfaces.test.html.baseclasses.Body;
+import pro.projo.generation.interfaces.test.html.baseclasses.Head;
+import pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent;
+import pro.projo.generation.interfaces.test.html.baseclasses.HtmlContentBody;
 import pro.projo.generation.interfaces.test.html.baseclasses.HtmlContentHead;
 
 /**
@@ -27,8 +39,9 @@ import pro.projo.generation.interfaces.test.html.baseclasses.HtmlContentHead;
 **/
 public class HtmlExample
 {
-    public void example(HtmlContentHead html)
+    public HtmlContent example(HtmlContentHead html)
     {
+        return
         html.
             head().$($ -> $.title().$(() -> "Title")).
             body().$
@@ -66,5 +79,134 @@ public class HtmlExample
                     b().$($8 -> $8.$("No script installed"))
                 )
             );
+    }
+
+    public static void main(String[] arguments)
+    {
+//        ClassLoader classLoader = HtmlExample.class.getClassLoader();
+//        Class<?>[] interfaces =
+//        {
+//            Body.class,
+//            Head.class,
+//            HtmlContent.class,
+//            HtmlContentBody.class,
+//            HtmlContentHead.class
+//        };
+        StringBuilder content = new StringBuilder();
+//        InvocationHandler handler = (Object proxy, Method method, Object[] args) ->
+//        {
+//          content.append("[" + method.getName() + "]");
+//          return proxy;
+//        };
+        HtmlContentHead collector = create(HtmlContentHead.class, content);
+        new HtmlExample().example(collector);
+        System.err.println("Content: " + content);
+    }
+    
+    static <TYPE> TYPE create(Class<TYPE> type, StringBuilder collector, Type... typeArguments)
+    {
+        ClassLoader classLoader = HtmlExample.class.getClassLoader();
+        InvocationHandler handler = (Object proxy, Method method, Object[] args) ->
+        {
+            System.err.println("declaring type:" + method.getDeclaringClass());
+            System.err.println("declaring type parameters:" + Arrays.asList(method.getDeclaringClass().getTypeParameters()));
+            System.err.println("method:" + method);
+            System.err.println("RT:" + method.getGenericReturnType());
+            
+            Type returnType = method.getGenericReturnType();
+            if (returnType instanceof TypeVariable)
+            {
+                // Follow the interfaces from the nominal type until reaching the
+                // declaring type, and carry type variables along:
+                //
+//                Type[] interfaces = type.getGenericInterfaces();
+                // TODO: there can be multiple interfaces
+//                if (interfaces.length > 0)
+//                {
+//                    Type firstInterface = interfaces[0];
+//                    System.err.println("firstInterface:" + firstInterface);
+//                }
+                // 1. The variable we're trying to resolve is called PARENT
+                String variableName = ((TypeVariable<?>)returnType).getName();
+                
+                // 2. The method that returns it is declared by type Element
+                //
+                Class<?> declaringType = method.getDeclaringClass();
+                TypeVariable<?>[] declaringTypesTypeParameters = declaringType.getTypeParameters();
+                //
+                // 3. In Element's declaration this type variable is at index 0 (of 3)
+                //
+                int variableIndexInDeclaringType = -1;
+                for (int index = 0; index < declaringTypesTypeParameters.length; index++)
+                {
+                    if (declaringTypesTypeParameters[index].getName().equals(variableName))
+                    {
+                        variableIndexInDeclaringType = index;
+                        break;
+                    }
+                }
+                // 4. The nominal type, Head, passes its own type variable,
+                //    coincidentally also called PARENT and at index 0, into index 0
+                //    of Element's type variables
+                //    => which index in Head does variable index 0 of Element have?
+                //
+                System.err.println("nominal type:" + type + Arrays.asList(typeArguments));
+                System.err.println("nominal type parameters:" + Arrays.asList(type.getTypeParameters()));
+                Type[] interfaces = type.getGenericInterfaces();
+                // TODO: there can be multiple interfaces
+                if (interfaces.length > 0 && interfaces[0] instanceof ParameterizedType)
+                {
+                    ParameterizedType firstInterface = (ParameterizedType)interfaces[0];
+                    System.err.println("firstInterface:" + firstInterface);
+                    Type matchingType = firstInterface.getActualTypeArguments()[variableIndexInDeclaringType];
+                    if (matchingType instanceof TypeVariable)
+                    {
+                        String typeVariableName = ((TypeVariable<?>)matchingType).getName();
+                        
+                        // At what index in the type's declaration is the type variable called
+                        // `typeVariableName`?
+                        //
+                        int nominalIndex = -1;
+                        TypeVariable<?>[] nominalTypeParameters = type.getTypeParameters();
+                        for (int index = 0; index < nominalTypeParameters.length; index++)
+                        {
+                            if (nominalTypeParameters[index].getName().equals(typeVariableName))
+                            {
+                                nominalIndex = index;
+                            }
+                        }
+                        //Type genericReturn = (Type)method.getGenericReturnType();
+                        //System.err.println("Generic return type: " + genericReturn);
+                        returnType = typeArguments[nominalIndex];
+                        System.err.println("Resolved return type: " + returnType);
+                    }
+                    else
+                    {
+                        // Variable is already bound in the type's definition:
+                        //
+                    }
+                }
+                //
+                // 5. The type variable at index 0 of Head is bound to HtmlContentBody
+                //    in the declaration of the head() method of HtmlContentHead
+                //
+                // 
+            }
+            Type[] arguments = {};
+            if (returnType instanceof ParameterizedType)
+            {
+                arguments = ((ParameterizedType)returnType).getActualTypeArguments();
+            }
+            collector.append("[" + method.getName() + "]");
+            if (returnType instanceof ParameterizedType)
+            {
+                returnType = ((ParameterizedType)returnType).getRawType();
+            }
+            return create((Class<?>)returnType, collector, arguments);
+        };
+        Class<?>[] interfaces = {type};
+        @SuppressWarnings("unchecked")
+        TYPE result = (TYPE)Proxy.newProxyInstance(classLoader, interfaces, handler);
+        return result;
     }
 }
