@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2023 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -66,8 +66,8 @@ public class ProjoManifestIT extends ManifestTest
             "pro.projo",
             "pro.projo.$template",
             "pro.projo.annotations",
-            "pro.projo.internal; x-internal:=true",
-            "pro.projo.internal.proxy; x-internal:=true",
+            "pro.projo.internal",
+            "pro.projo.internal.proxy",
             "pro.projo.decuples",
             "pro.projo.doubles",
             "pro.projo.duodecuples",
