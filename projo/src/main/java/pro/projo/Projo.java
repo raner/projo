@@ -667,7 +667,7 @@ public abstract class Projo
         }
         catch (ClassNotFoundException classNotFound)
         {
-            throw new NoClassDefFoundError(classNotFound.getMessage());
+            return null;
         }
     }
 
