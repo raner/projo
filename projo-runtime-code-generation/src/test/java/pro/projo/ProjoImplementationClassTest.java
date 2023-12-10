@@ -19,6 +19,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import org.junit.Test;
 import pro.projo.test.implementations.Injection;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -68,5 +69,26 @@ public class ProjoImplementationClassTest
         loadedClass = Projo.getImplementationClass(Injection.class, classLoader);
         Class<?> returnType = loadedClass.getDeclaredMethod("object").getReturnType();
         assertEquals(classLoader, returnType.getClassLoader());
+    }
+    
+    @Test
+    public void getImplementationClassTestMethodClassLoaderShouldBeSameInterface() throws Exception
+    {
+        URL[] url = {getClass().getClassLoader().getResource("precompiled/")};
+        ClassLoader savedContext = Thread.currentThread().getContextClassLoader();
+        try (URLClassLoader typeClassLoader = new URLClassLoader(url))
+        {
+            URLClassLoader contextClassLoader = new URLClassLoader(url);
+            Class<?> classInterface = typeClassLoader.loadClass("interfaces.Interface");
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+            Class<?> implementation = Projo.getImplementationClass(classInterface);
+            ClassLoader[] expected = {typeClassLoader, typeClassLoader};
+            ClassLoader[] actual = {classInterface.getClassLoader(), implementation.getClassLoader()};
+            assertArrayEquals(expected, actual);
+        }
+        finally
+        {
+            Thread.currentThread().setContextClassLoader(savedContext);
+        }
     }
 }

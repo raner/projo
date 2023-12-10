@@ -87,7 +87,7 @@ public class RuntimeCodeGenerationProjo extends Projo
                         {
                             Class<?> implementation = isProxiedInterface(type)?
                                 projoHandler.getProxyImplementationOf(type, true, defaultPackage):
-                                projoHandler.getImplementationOf(type, defaultPackage, null);
+                                projoHandler.getImplementationOf(type, defaultPackage, type.getClassLoader());
                             @SuppressWarnings("unchecked")
                             _Artifact_ instance = (_Artifact_)implementation.getConstructor().newInstance();
                             return instance;

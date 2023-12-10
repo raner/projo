@@ -565,7 +565,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private ClassLoader classLoader(Class<?> type, boolean defaultPackage, ClassLoader classLoader)
     {
-        if (classLoader != null)
+        if (classLoader != null && !defaultPackage)
         {
             return classLoader;
         }
