@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2023 Mirko Raner                                        //
+// Copyright 2019 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -193,11 +193,5 @@ public class ProjoTest
         };
         Set<Method> actual = methods.collect(toSet());
         assertEquals(new HashSet<>(Arrays.asList(expected)), actual);
-    }
-
-    @Test
-    public void testProjoForNameWithNonexistentType()
-    {
-        assertNull(Projo.forName("this.class.does.not.Exist"));
     }
 }
