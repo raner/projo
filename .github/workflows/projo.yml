@@ -16,7 +16,13 @@
 
 name: build
 
-on: push
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request:
+    branches:
+      - 'dependabot/**'
 
 jobs:
   build:
