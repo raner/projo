@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 - 2022 Mirko Raner                                        //
+// Copyright 2018 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -31,7 +31,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.FileObject;
-import javax.tools.JavaFileObject;
+import pro.projo.interfaces.annotation.Options;
 import pro.projo.template.annotation.Configuration;
 import pro.projo.template.annotation.Template;
 import static java.io.File.separatorChar;
@@ -86,7 +86,17 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
                 TypeElement typeElement = elements.getTypeElement(className);
                 try
                 {
-                    JavaFileObject sourceFile = filer.createSourceFile(className, typeElement);
+                    Options options = configuration.options();
+                    String fileExtension = configuration.options().fileExtension();
+                    FileObject sourceFile = fileExtension.equals(".java")?
+                        filer.createSourceFile(className, typeElement):
+                        filer.createResource
+                        (
+                            options.outputLocation(),
+                            packageName(configuration),
+                            fileName(configuration),
+                            typeElement
+                        );
                     try (PrintWriter writer = new PrintWriter(sourceFile.openWriter(), true))
                     {
                         try (Reader reader = templateFile.openReader(true))
@@ -105,6 +115,20 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
             }
         }
         return true;
+    }
+
+    private String packageName(Configuration configuration)
+    {
+        String name = configuration.fullyQualifiedClassName();
+        int index = name.lastIndexOf('.');
+        return name.substring(0, index);
+    }
+
+    private String fileName(Configuration configuration)
+    {
+        String name = configuration.fullyQualifiedClassName();
+        int index = name.lastIndexOf('.');
+        return name.substring(index+1) + configuration.options().fileExtension();
     }
 
     private FileObject getTemplateFile(Element element)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--                                                                          -->
-<!-- Copyright 2018 - 2023 Mirko Raner                                        -->
+<!-- Copyright 2018 - 2024 Mirko Raner                                        -->
 <!--                                                                          -->
 <!-- Licensed under the Apache License, Version 2.0 (the "License");          -->
 <!-- you may not use this file except in compliance with the License.         -->
@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.5.3</version>
+  <version>1.5.4-SNAPSHOT</version>
  </parent>
  <artifactId>projo-template-generation-test</artifactId>
  <name>Projo Template Generation Tests</name>
