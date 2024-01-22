@@ -91,6 +91,26 @@
     </configuration>
    </plugin>
    <plugin>
+    <artifactId>maven-resources-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>copy-annotations</id>
+      <phase>process-classes</phase>
+      <goals>
+       <goal>copy-resources</goal>
+      </goals>
+      <configuration>
+       <outputDirectory>target/classes</outputDirectory>
+       <resources>
+        <resource>
+         <directory>target/generated-sources/annotations</directory>
+        </resource>
+       </resources>
+      </configuration>
+     </execution>
+    </executions>
+   </plugin>
+   <plugin>
     <!-- This module contains only tests; no need to build a JAR file -->
     <artifactId>maven-jar-plugin</artifactId>
     <executions>

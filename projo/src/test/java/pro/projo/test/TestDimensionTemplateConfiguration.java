@@ -47,7 +47,7 @@ public class TestDimensionTemplateConfiguration extends ArrayList<Configuration>
             @Override
             public String fullyQualifiedClassName()
             {
-                return "pro.projo.generation.template." + subpackage() + ".Dimension" + suffix();
+                return targetPackage() + ".Dimension" + suffix();
             }
 
             @Override
@@ -104,9 +104,14 @@ public class TestDimensionTemplateConfiguration extends ArrayList<Configuration>
         return Configuration.defaults();
     }
 
+    protected String targetPackage()
+    {
+        return "pro.projo.generation.template.test.dimensions";
+    }
+
     protected String subpackage()
     {
-        return "test.dimensions";
+      return "test.dimensions";
     }
 
     String typeParameters()
