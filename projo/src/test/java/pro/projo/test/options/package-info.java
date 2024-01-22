@@ -13,10 +13,11 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-@Options(fileExtension=".kava")
+@Options(fileExtension=".kava", outputLocation=CLASS_OUTPUT)
 package pro.projo.test.options;
 
 import pro.projo.interfaces.annotation.Options;
+import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
 /**
 * This {@code package-info} file serves the only purpose of providing easy access
