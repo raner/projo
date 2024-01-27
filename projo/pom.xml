@@ -26,7 +26,7 @@
  <parent>
   <artifactId>projo-parent</artifactId>
   <groupId>pro.projo</groupId>
-  <version>1.5.4</version>
+  <version>1.6.0-SNAPSHOT</version>
  </parent>
 
  <dependencies>
