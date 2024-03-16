@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2023 Mirko Raner                                        //
+// Copyright 2017 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -125,8 +125,6 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     **/
     private Map<Class<_Artifact_>, Class<? extends _Artifact_>> implementationClassCache =
         new ConcurrentHashMap<>();
-
-    private final String injected = "javax.inject.Inject";
 
     private final static String SUFFIX = "$Projo";
 
@@ -320,7 +318,7 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         String methodName = annotations.get(Overrides.class).map(Overrides::value).orElse(method.getName());
         String propertyName = matcher.propertyName(methodName);
         UnaryOperator<Builder<_Artifact_>> addFieldForGetter;
-        Optional<Annotation> inject = annotations.get(injected);
+        Optional<Annotation> inject = annotations.getInject();
         Class<?> returnType = method.getReturnType();
         TypeDescription.Generic type = isGetter? getFieldType(annotations, returnType, classLoader):VOID.asGenericType();
         addFieldForGetter = isGetter? localBuilder -> annotate(inject, localBuilder.defineField(propertyName, type, PRIVATE)):identity();
@@ -369,9 +367,10 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     Implementation getAccessor(Method method, AnnotationList annotations, Type returnType, String property, List<String> additionalImplements, ClassLoader classLoader)
     {
-        if (annotations.contains(injected))
+        Optional<Annotation> inject;
+        if ((inject = annotations.getInject()).isPresent())
         {
-            return get(property, returnType, classLoader);
+            return get(property, returnType, inject.get(), classLoader);
         }
         if (annotations.contains(Cached.class))
         {
@@ -463,9 +462,9 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         }
     }
 
-    private Implementation get(String field, Type type, ClassLoader classLoader)
+    private Implementation get(String field, Type type, Annotation inject, ClassLoader classLoader)
     {
-        Class<?> provider = Projo.forName("javax.inject.Provider", classLoader);
+        Class<?> provider = Projo.forName(provider(inject), classLoader);
         Generic genericProvider = Generic.Builder.parameterizedType(provider, type).build();
         MethodDescription get = latent(genericProvider.asErasure(), OBJECT.asGenericType(), "get");
         return MethodCall.invoke(get).onField(field).withAssigner(DEFAULT, DYNAMIC);
@@ -501,13 +500,14 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     **/
     Generic getFieldType(AnnotationList annotations, Class<?> originalReturnType, ClassLoader classLoader)
     {
-        if (!annotations.contains(injected) && !annotations.contains(Cached.class))
+        if (!annotations.containsInject() && !annotations.contains(Cached.class))
         {
             return Generic.Builder.rawType(originalReturnType).build();
         }
         else
         {
-            Class<?> container = annotations.contains(injected)? Projo.forName("javax.inject.Provider", classLoader):Cache.class;
+            Optional<Class<?>> optionalContainer = annotations.getInject().map(inject -> Projo.forName(provider(inject), classLoader));
+            Class<?> container = optionalContainer.orElse(Cache.class);
             Type wrappedType = MethodType.methodType(originalReturnType).wrap().returnType();
             Optional<Returns> returns = annotations.get(Returns.class);
             if (returns.isPresent())
@@ -533,6 +533,17 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
                 return Generic.Builder.parameterizedType(container, wrappedType).build();
             }
         }
+    }
+
+    /**
+    * Returns the corresponding provider annotation name for an inject annotation.
+    *
+    * @param inject the {@code @Inject} annotation
+    * @return the fully qualified name of the corresponding {@code @Provider}
+    **/
+    private String provider(Annotation inject)
+    {
+        return inject.annotationType().getPackage().getName() + ".Provider";
     }
 
     private <_ValuableBuilder_ extends Valuable<_Artifact_> & Builder<_Artifact_>>

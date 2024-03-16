@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo;
+package pro.projo.jakarta;
 
 import java.awt.Point;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -27,9 +27,10 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
+import pro.projo.Projo;
 import pro.projo.annotations.Property;
 import pro.projo.test.implementations.IntegerProcessor;
-import pro.projo.test.implementations.PointProcessor;
+import pro.projo.test.implementations.jakarta.PointProcessor;
 import pro.projo.test.interfaces.Processor;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;

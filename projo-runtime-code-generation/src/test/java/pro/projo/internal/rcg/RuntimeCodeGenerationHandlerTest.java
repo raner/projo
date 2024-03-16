@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2023 Mirko Raner                                        //
+// Copyright 2017 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.internal.rcg;
 
+import java.lang.reflect.Method;
 import javax.inject.Inject;
 import org.junit.Test;
 import net.bytebuddy.description.type.TypeDescription.Generic;
@@ -76,6 +77,17 @@ public class RuntimeCodeGenerationHandlerTest
         Inject inject = getClass().getDeclaredMethod("testFieldTypeForInjectedMethod").getAnnotation(Inject.class);
         Generic fieldType = handler.getFieldType(new AnnotationList(inject), String.class, classLoader);
         assertEquals("javax.inject.Provider<java.lang.String>", fieldType.toString());
+    }
+
+    @Test
+    @jakarta.inject.Inject
+    public void testFieldTypeForInjectedMethodJakarta() throws Exception
+    {
+      RuntimeCodeGenerationHandler<?> handler = new RuntimeCodeGenerationHandler<>();
+      Method declaredMethod = getClass().getDeclaredMethod("testFieldTypeForInjectedMethodJakarta");
+      jakarta.inject.Inject inject = declaredMethod.getAnnotation(jakarta.inject.Inject.class);
+      Generic fieldType = handler.getFieldType(new AnnotationList(inject), String.class, classLoader);
+      assertEquals("jakarta.inject.Provider<java.lang.String>", fieldType.toString());
     }
 
     @Test

@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -112,6 +112,7 @@ public class ProjoNaturalTest
     {
         return new AbstractModule()
         {
+            @Override
             @SuppressWarnings("unchecked")
             protected void configure()
             {

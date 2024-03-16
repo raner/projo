@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 Mirko Raner                                               //
+// Copyright 2022 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -23,13 +23,17 @@ import java.util.Optional;
 
 /**
 * An {@link AnnotationList} provides easy access to the annotations of an
-* {@link AnnotatedElement}.
+* {@link AnnotatedElement}. It also provides convenience methods for handling
+* JSR-330 and Jakarta dependency injection annotations.
 *
 * @author Mirko Raner
 **/
 public class AnnotationList extends ArrayList<Annotation>
 {
     private final static long serialVersionUID = 7598992303415745213L;
+
+    private final static String javaxInject = "javax.inject.Inject";
+    private final static String jakartaInject = "jakarta.inject.Inject";
 
     public AnnotationList(AnnotatedElement element)
     {
@@ -49,6 +53,22 @@ public class AnnotationList extends ArrayList<Annotation>
     public boolean contains(String annotationName)
     {
         return stream().anyMatch(it -> it.annotationType().getName().equals(annotationName));
+    }
+
+    public boolean containsInject()
+    {
+        return stream().anyMatch(this::isInject);
+    }
+
+    public Optional<Annotation> getInject()
+    {
+      return stream().filter(this::isInject).findFirst();
+    }
+
+    public boolean isInject(Annotation annotation)
+    {
+        String name = annotation.annotationType().getName();
+        return name.equals(javaxInject) || name.equals(jakartaInject);
     }
 
     @SuppressWarnings("unchecked")
