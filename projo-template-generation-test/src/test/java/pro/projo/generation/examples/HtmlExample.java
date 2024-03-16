@@ -15,6 +15,7 @@
 //                                                                          //
 package pro.projo.generation.examples;
 
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -22,7 +23,10 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import pro.projo.generation.examples.impl.HtmlContentHeadImpl;
 import pro.projo.generation.interfaces.test.html.baseclasses.Body;
 import pro.projo.generation.interfaces.test.html.baseclasses.Head;
 import pro.projo.generation.interfaces.test.html.baseclasses.HtmlContent;
@@ -46,42 +50,52 @@ public class HtmlExample
             head().$($ -> $.title().$(() -> "Title")).
             body().$
             (
-                $ -> $.
-                img().src("image.jpg").alt("An image").$().
+                $ -> $
+                .
+                img().src("image.jpg").alt("An image").$()
+                .
                 div().class_("content").id("content-id").$
                 (
-                    $1 -> $1.
+                    $1 -> $1
+                    .
                     em().$
                     (
                         $2 -> $2.
                         img().src("image2.jpg").alt("Another image").$()
-                    ).
-                    $("Hello").em().$($3 -> $3.$("emphasized text")).$("more text").
-                    img().src("image3.png").alt("Third image").$()
-                ).
-                ul().$
-                (
-                    $4 -> $4.
-                    li().$
-                    (
-                        $5 -> $5.
-                        $("First Item")
-                    ).
-                    li().$
-                    (
-                        $6 -> $6.
-                        $("Second Item")
                     )
-                ).
-                noscript().$
-                (
-                    $7 -> $7.
-                    b().$($8 -> $8.$("No script installed"))
+//                    .
+//                    $("Hello").em().$($3 -> $3.$("emphasized text")).$("more text").
+//                    img().src("image3.png").alt("Third image").$()
                 )
+//                .
+//                ul().$
+//                (
+//                    $4 -> $4.
+//                    li().$
+//                    (
+//                        $5 -> $5.
+//                        $("First Item")
+//                    ).
+//                    li().$
+//                    (
+//                        $6 -> $6.
+//                        $("Second Item")
+//                    )
+//                ).
+//                noscript().$
+//                (
+//                    $7 -> $7.
+//                    b().$($8 -> $8.$("No script installed"))
+//                )
             );
     }
 
     public static void main(String[] arguments)
+    {
+      HtmlContentHead html = new HtmlContentHeadImpl();
+      System.err.println(new HtmlExample().example(html));
+    }
+    public static void main0(String[] arguments)
     {
 //        ClassLoader classLoader = HtmlExample.class.getClassLoader();
 //        Class<?>[] interfaces =
@@ -198,9 +212,26 @@ public class HtmlExample
                 arguments = ((ParameterizedType)returnType).getActualTypeArguments();
             }
             collector.append("[" + method.getName() + "]");
+            Type[] parameterTypes = method.getGenericParameterTypes();
+            if (parameterTypes.length == 1 && parameterTypes[0].getTypeName().startsWith("java.util.function.Function"))
+            {
+                System.err.println("===> " + parameterTypes[0].getTypeName());
+                Class<?> declaringClass = method.getDeclaringClass();
+                System.err.println("===> declared by " + declaringClass);
+                ParameterizedType parameterizedType = (ParameterizedType)parameterTypes[0];
+                TypeVariable<?> inType = (TypeVariable<?>)parameterizedType.getActualTypeArguments()[0];
+                System.err.println("===> inType " + inType);
+                Type resolved = resolve(inType, type);
+                Object object = create((Class<?>)resolved, collector);
+                ((Function)args[0]).apply(object);
+            }
             if (returnType instanceof ParameterizedType)
             {
                 returnType = ((ParameterizedType)returnType).getRawType();
+            }
+            if (returnType instanceof TypeVariable)
+            {
+                System.err.println(">>> typeVariable=" + returnType);
             }
             return create((Class<?>)returnType, collector, arguments);
         };
@@ -208,5 +239,20 @@ public class HtmlExample
         @SuppressWarnings("unchecked")
         TYPE result = (TYPE)Proxy.newProxyInstance(classLoader, interfaces, handler);
         return result;
+    }
+    
+    static Type resolve(TypeVariable<?> typeVariable, Class<?> context)
+    {
+        System.err.println("*** Resolving " + typeVariable + " in context " + context);
+        GenericDeclaration declaration = typeVariable.getGenericDeclaration();
+        System.err.println("*** declaration=" + declaration);
+        int index = Arrays.asList(declaration.getTypeParameters()).indexOf(typeVariable);
+        System.err.println("*** index=" + index);
+        Stream<Type> genericInterfaces = Stream.of(context.getGenericInterfaces());
+        Type matching = genericInterfaces.filter(type -> type.getTypeName().startsWith(((Type)declaration).getTypeName())).findFirst().get();
+        System.err.println("*** matching=" + matching);
+        Type resolvedType = ((ParameterizedType)matching).getActualTypeArguments()[index];
+        System.err.println("*** resolvedType=" + resolvedType);
+        return resolvedType;
     }
 }
