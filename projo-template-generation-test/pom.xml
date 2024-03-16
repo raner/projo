@@ -24,7 +24,7 @@
  <parent>
   <groupId>pro.projo</groupId>
   <artifactId>projo-parent</artifactId>
-  <version>1.5.4</version>
+  <version>1.5.5-SNAPSHOT</version>
  </parent>
  <artifactId>projo-template-generation-test</artifactId>
  <name>Projo Template Generation Tests</name>
