@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,12 +13,11 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo;
+package pro.projo.jakarta;
 
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import javax.inject.Inject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -28,6 +27,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import jakarta.inject.Inject;
+import pro.projo.Projo;
 import static org.junit.Assert.assertEquals;
 
 /**
