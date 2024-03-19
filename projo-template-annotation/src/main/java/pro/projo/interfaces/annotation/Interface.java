@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2018 - 2021 Mirko Raner                                        //
+// Copyright 2018 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -19,8 +19,10 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import javax.lang.model.element.Modifier;
+import pro.projo.interfaces.annotation.postprocessor.IdentityPostProcessor;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static javax.tools.StandardLocation.SOURCE_OUTPUT;
 import static pro.projo.interfaces.annotation.Ternary.EITHER;
 import static pro.projo.interfaces.annotation.Visibility.PUBLIC;
 import static pro.projo.interfaces.annotation.Visibility.PRIVATE;
@@ -79,7 +81,15 @@ public @interface Interface
     /**
     * @return additional code generation options for this interface
     **/
-    Options options() default @Options;
+    Options options() default @Options
+    (
+        fileExtension = ".java",
+        outputLocation = SOURCE_OUTPUT,
+        addAnnotations = EITHER,
+        skip = @Unmapped(false),
+        postProcessor = IdentityPostProcessor.class,
+        typeVariableTransformer = IdentityPostProcessor.class
+    );
 
     /**
     * @return indication whether only static ({@link Ternary#TRUE TRUE}), only non-static
