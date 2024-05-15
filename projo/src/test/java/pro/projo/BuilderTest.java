@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 - 2021 Mirko Raner                                        //
+// Copyright 2019 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -16,7 +16,10 @@
 package pro.projo;
 
 import org.junit.Test;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 public class BuilderTest
@@ -45,6 +48,33 @@ public class BuilderTest
         long begin();
         long end();
     }
+
+    static interface Quantity<VALUE extends Number>
+    {
+        VALUE value();
+    }
+
+    static interface RealQuantity extends Quantity<Double>
+    {
+        // No additional methods
+    }
+
+    static interface StringBoolean extends Entry<String, Boolean>
+    {
+        // No additional methods
+    }
+
+    @SuppressWarnings("rawtypes")
+	static interface Something<$ extends Something> {}
+
+    @SuppressWarnings("rawtypes")
+	static interface SIQuantity<$ extends SIQuantity, VALUE extends Number> extends Something<$>
+    {
+        VALUE value();
+    }
+
+    @SuppressWarnings("rawtypes")
+    static interface RealSIQuantity<$ extends RealSIQuantity> extends SIQuantity<$, Double> {}
 
     @Test
     public void testBuilderWithTwoProperties()
@@ -157,5 +187,61 @@ public class BuilderTest
         assertThrows(
             IllegalArgumentException.class,
             () -> Projo.builder(Interval.class).with(Interval::begin, -1).with(Interval::end, 1L).build());
+    }
+
+    @Test
+    public void testRealQuantityWithGenericType()
+    {
+        Number fortyTwo = Double.valueOf(42D);
+        RealQuantity quantity = Projo.builder(RealQuantity.class).with(Quantity::value, fortyTwo).build();
+        assertEquals(Double.valueOf(42D), quantity.value());
+    }
+
+    @Test
+    public void testRealQuantityWithGenericTypeButSpecificValue()
+    {
+        RealQuantity quantity = Projo.builder(RealQuantity.class).with(Quantity::value, Double.valueOf(42D)).build();
+        assertEquals(Double.valueOf(42D), quantity.value());
+    }
+
+    @Test
+    public void testRealQuantityWithSpecificType()
+    {
+        RealQuantity quantity = Projo.builder(RealQuantity.class).with(RealQuantity::value, Double.valueOf(42D)).build();
+        assertEquals(Double.valueOf(42D), quantity.value());
+    }
+
+    @Test
+    public void testRealSIQuantityWithGenericTypeButSpecificValue()
+    {
+        RealSIQuantity<?> quantity = Projo.builder(RealSIQuantity.class).with(SIQuantity::value, Double.valueOf(42D)).build();
+        assertEquals(Double.valueOf(42D), quantity.value());
+    }
+
+    @Test
+    public void testRealSIQuantityWithSpecificType()
+    {
+        RealSIQuantity<?> quantity = Projo.builder(RealSIQuantity.class).with(RealSIQuantity::value, Double.valueOf(42D)).build();
+        assertEquals(Double.valueOf(42D), quantity.value());
+    }
+
+    @Test
+    public void testMapEntry()
+    {
+        StringBoolean pair = Projo.builder(StringBoolean.class)
+            .with(StringBoolean::getKey, "answer")
+            .with(StringBoolean::getValue, true)
+            .build();
+        assertEquals(new SimpleEntry<String, Boolean>("answer", true), pair);
+    }
+
+    @Test
+    public void testMapEntryWithGenericMethods()
+    {
+        StringBoolean pair = Projo.builder(StringBoolean.class)
+            .with(Entry::getKey, "answer")
+            .with(Entry::getValue, true)
+            .build();
+        assertEquals(new SimpleEntry<String, Boolean>("answer", true), pair);
     }
 }
