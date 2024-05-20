@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2019 Mirko Raner                                               //
+// Copyright 2019 - 2024 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -172,6 +172,12 @@ public class Numbers<_From_ extends Number, _To_ extends Number>
             Function<? extends Number, ? extends Number> function = map.get(new SimpleEntry<>(number.getClass(), type));
             if (function == null)
             {
+                if (Number.class.equals(type))
+                {
+                    @SuppressWarnings("unchecked")
+                    _Numeric_ numeric = (_Numeric_)number;
+                    return numeric;
+                }
                 throw new IllegalArgumentException(number.getClass() + " cannot be cast to " + type);
             }
             @SuppressWarnings("unchecked")
