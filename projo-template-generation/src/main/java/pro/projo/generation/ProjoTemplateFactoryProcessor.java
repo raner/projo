@@ -152,9 +152,13 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
         {
             return getClass(type).getDeclaredConstructor().newInstance();
         }
-        catch (@SuppressWarnings("unused") Exception exception)
+        catch (Exception exception)
         {
-            return null;
+        	if (exception instanceof RuntimeException)
+        	{
+        		throw (RuntimeException)exception;
+        	}
+            throw new RuntimeException(exception);
         }
     }
 
