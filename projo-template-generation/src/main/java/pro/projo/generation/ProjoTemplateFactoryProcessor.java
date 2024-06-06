@@ -146,7 +146,7 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
         }
     }
 
-    private Collection<? extends Configuration> getConfiguration(TypeMirror type)
+    Collection<? extends Configuration> getConfiguration(TypeMirror type)
     {
         try
         {
@@ -154,15 +154,15 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
         }
         catch (Exception exception)
         {
-        	if (exception instanceof RuntimeException)
-        	{
-        		throw (RuntimeException)exception;
-        	}
+            if (exception instanceof RuntimeException)
+            {
+                throw (RuntimeException)exception;
+            }
             throw new RuntimeException(exception);
         }
     }
 
-    private Class<? extends Collection<? extends Configuration>> getClass(TypeMirror type)
+    Class<? extends Collection<? extends Configuration>> getClass(TypeMirror type)
     {
         try
         {
@@ -170,9 +170,9 @@ public class ProjoTemplateFactoryProcessor extends ProjoProcessor
             Class<? extends Collection<? extends Configuration>> configurationClass = (Class<? extends Collection<? extends Configuration>>)Class.forName(type.toString());
             return configurationClass;
         }
-        catch (@SuppressWarnings("unused") ClassNotFoundException classNotFound)
+        catch (ClassNotFoundException classNotFound)
         {
-            return null;
+            throw new RuntimeException(classNotFound);
         }
     }
 }
