@@ -119,6 +119,18 @@ public class BodyContentImpl extends Impl<BodyContentImpl> implements BodyConten
   }
 
   @Override
+  public Ul<BodyContent> ul()
+  {
+	return new UlImpl<BodyContent>(this, "<ul");
+  }
+
+  @Override
+  public Noscript<BodyContent> noscript()
+  {
+	return new NoscriptImpl<BodyContent>(this, "<noscript");
+  }
+
+  @Override
   public Main<BodyContent> main() {
     // TODO Auto-generated method stub
     return null;
@@ -341,12 +353,6 @@ public class BodyContentImpl extends Impl<BodyContentImpl> implements BodyConten
   }
 
   @Override
-  public Noscript<BodyContent> noscript() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public Object<BodyContent> object() {
     // TODO Auto-generated method stub
     return null;
@@ -450,12 +456,6 @@ public class BodyContentImpl extends Impl<BodyContentImpl> implements BodyConten
 
   @Override
   public U<BodyContent> u() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Ul<BodyContent> ul() {
     // TODO Auto-generated method stub
     return null;
   }

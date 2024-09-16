@@ -72,8 +72,8 @@ public class EmContentImpl extends Impl<EmContentImpl> implements EmContent
   @Override
   public EmContent $(String plainText)
   {
-    // TODO Auto-generated method stub
-    return null;
+System.err.println("***EmContentImpl.$(String) plainText=" + plainText);
+	    return new EmContentImpl(this.content + plainText);
   }
 
   @Override

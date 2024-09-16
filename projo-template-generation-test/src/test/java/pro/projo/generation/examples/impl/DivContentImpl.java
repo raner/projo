@@ -99,12 +99,14 @@ public class DivContentImpl extends Impl<DivContentImpl> implements DivContent
   @Override
   public DivContent $(String plainText) {
     // TODO Auto-generated method stub
-    return null;
+System.err.println("***DivContentImpl.$(String) plainText=" + plainText);
+    return new DivContentImpl(this.content + plainText);
   }
 
   @Override
   public DivContentImpl with(String content)
   {
+System.err.println("***DivContentImpl.with(String) content=" + content);
     return new DivContentImpl(this.content + content);
   }
 
@@ -112,6 +114,12 @@ public class DivContentImpl extends Impl<DivContentImpl> implements DivContent
   public Em<DivContent> em()
   {
     return new EmImpl<DivContent>(this, "<em");
+  }
+
+  @Override
+  public Img<DivContent> img()
+  {
+	return new ImgImpl<>(this, "<img");
   }
 
   @Override
@@ -296,12 +304,6 @@ public class DivContentImpl extends Impl<DivContentImpl> implements DivContent
 
   @Override
   public Iframe<DivContent> iframe() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Img<DivContent> img() {
     // TODO Auto-generated method stub
     return null;
   }

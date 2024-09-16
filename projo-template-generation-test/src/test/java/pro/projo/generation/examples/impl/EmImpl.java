@@ -628,7 +628,8 @@ public class EmImpl<PARENT> extends Impl<EmImpl<PARENT>> implements Em<PARENT>
   @Override
   public EmImpl<PARENT> with(String content) {
     // TODO Auto-generated method stub
-    return null;
+	  System.err.println("EEE");
+	return new EmImpl<>(parent, this.content + " " + content);
   }
 
 }

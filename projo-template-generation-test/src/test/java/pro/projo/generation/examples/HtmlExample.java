@@ -63,30 +63,32 @@ public class HtmlExample
                         $2 -> $2.
                         img().src("image2.jpg").alt("Another image").$()
                     )
-//                    .
-//                    $("Hello").em().$($3 -> $3.$("emphasized text")).$("more text").
-//                    img().src("image3.png").alt("Third image").$()
+                    .
+                    $("Hello").em().$($3 -> $3.$("emphasized text")).$("more text").
+                    img().src("image3.png").alt("Third image").$()
                 )
-//                .
-//                ul().$
-//                (
-//                    $4 -> $4.
-//                    li().$
-//                    (
-//                        $5 -> $5.
-//                        $("First Item")
-//                    ).
-//                    li().$
-//                    (
-//                        $6 -> $6.
-//                        $("Second Item")
-//                    )
-//                ).
-//                noscript().$
-//                (
-//                    $7 -> $7.
-//                    b().$($8 -> $8.$("No script installed"))
-//                )
+                .
+                ul().$
+                (
+                    $4 -> $4.
+                    li().$
+                    (
+                        $5 -> $5.
+                        $("First Item")
+                    )
+                    .
+                    li().$
+                    (
+                        $6 -> $6.
+                        $("Second Item")
+                    )
+                )
+                .
+                noscript().$
+                (
+                    $7 -> $7.
+                    b().$($8 -> $8.$("No script installed"))
+                )
             );
     }
 

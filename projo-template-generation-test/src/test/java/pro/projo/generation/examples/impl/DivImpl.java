@@ -25,6 +25,7 @@ public class DivImpl<PARENT> extends Impl<DivImpl<PARENT>> implements Div<PARENT
   @Override
   public PARENT $(Function<DivContent, DivContent> content)
   {
+System.err.println("*** div: content=" + content);
     DivContent div = content.apply(new DivContentImpl());
 System.err.println("*** div=" + div);
     return ((Impl<PARENT>)parent).with(this.content + ">" + ((Impl)div).content + "</div>");
@@ -34,7 +35,7 @@ System.err.println("*** div=" + div);
   public DivImpl<PARENT> with(String content) {
     // TODO Auto-generated method stub
     System.err.println("PPP");
-    return null;
+    return new DivImpl<>(parent, this.content + " " + content);
   }
 
   @Override
