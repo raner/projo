@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -15,20 +15,21 @@
 //                                                                          //
 package pro.projo.test.implementations;
 
-import java.math.BigInteger;
+import javax.inject.Inject;
+import pro.projo.annotations.Implements;
+import pro.projo.annotations.Returns;
+import pro.projo.test.interfaces.Provider;
 
-public class Utilities
+@Implements("pro.projo.test.interfaces.Decimals")
+public interface Decimals extends Provider<Object>
 {
-    public static boolean nullValueCalled;
+    @Inject
+    Utilities utilities();
 
-    public Natural natural(String value)
+    @Override
+    @Returns("java.lang.Object") // TODO: why is this necessary??
+    public default Object parse(Object literal)
     {
-        return Natural.factory.create(new BigInteger(value));
-    }
-
-    public Object nullValue()
-    {
-        nullValueCalled = true;
-        return null;
+        return utilities().nullValue();
     }
 }

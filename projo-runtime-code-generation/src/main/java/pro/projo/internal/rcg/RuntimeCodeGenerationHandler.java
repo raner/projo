@@ -51,12 +51,17 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.DynamicType.Builder.FieldDefinition.Valuable;
 import net.bytebuddy.dynamic.DynamicType.Builder.MethodDefinition.ImplementationDefinition;
 import net.bytebuddy.dynamic.DynamicType.Loaded;
+import net.bytebuddy.dynamic.scaffold.MethodGraph.Compiler;
+import net.bytebuddy.dynamic.scaffold.MethodGraph.Compiler.Default;
+import net.bytebuddy.dynamic.scaffold.MethodGraph.Compiler.Default.Harmonizer;
+import net.bytebuddy.dynamic.scaffold.MethodGraph.Compiler.Default.Merger;
 import net.bytebuddy.dynamic.scaffold.TypeValidation;
 import net.bytebuddy.implementation.DefaultMethodCall;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.Implementation;
 import net.bytebuddy.implementation.Implementation.Composable;
 import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaConstant;
 import pro.projo.Projo;
 import pro.projo.annotations.Cached;
@@ -76,6 +81,8 @@ import pro.projo.internal.rcg.runtime.ToStringObject;
 import pro.projo.internal.rcg.runtime.ToStringValueObject;
 import pro.projo.internal.rcg.runtime.ValueObject;
 import pro.projo.internal.rcg.utilities.GenericTypeResolver;
+import pro.projo.internal.rcg.utilities.GenericVisitor;
+import pro.projo.internal.rcg.utilities.RawGenericLoadedType;
 import pro.projo.internal.rcg.utilities.UncheckedMethodDescription;
 import pro.projo.utilities.AnnotationList;
 import pro.projo.utilities.MethodInfo;
@@ -496,7 +503,21 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
 
     private ByteBuddy codeGenerator()
     {
-        return new ByteBuddy(JAVA_V8).with(TypeValidation.DISABLED);
+        return codeGenerator(false);
+    }
+
+    private ByteBuddy codeGenerator(boolean requiresGenericVisitor)
+    {
+        Compiler compiler = !requiresGenericVisitor? Default.forJavaHierarchy():new Default<>
+        (
+            Harmonizer.ForJavaMethod.INSTANCE,
+            Merger.Directional.LEFT,
+            new GenericVisitor(),
+            ElementMatchers.any()
+        );
+        return new ByteBuddy(JAVA_V8)
+            .with(TypeValidation.DISABLED)
+            .with(compiler);
     }
 
     /**
@@ -607,9 +628,15 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
     private Builder<_Artifact_> create(Class<_Artifact_> type, List<String> additionalImplements, ClassLoader classLoader)
     {
         Stream<TypeDefinition> baseTypes = Stream.of(type(type), type(ProjoObject.class));
-        TypeDefinition[] interfaces = Stream.concat(baseTypes, additionalImplements.stream().map(it -> type(it, classLoader))).toArray(TypeDefinition[]::new);
+        Generic[] interfaces = Stream
+            .concat(baseTypes, additionalImplements.stream().map(it -> type(it, classLoader)))
+            .toArray(Generic[]::new);
+        Stream<String> annotationNames = Stream.of(interfaces)
+            .flatMap(it -> it.getDeclaredAnnotations().asTypeNames().stream());
+        boolean requiresGenericVisitor = GenericVisitor.isNecessaryFor(annotationNames);
         @SuppressWarnings("unchecked")
-        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator().subclass(baseclass(type)).implement(interfaces);
+        Builder<_Artifact_> builder = (Builder<_Artifact_>)codeGenerator(requiresGenericVisitor)
+            .subclass(baseclass(type)).implement(interfaces);
         return builder;
     }
 
@@ -633,12 +660,12 @@ public class RuntimeCodeGenerationHandler<_Artifact_> extends ProjoHandler<_Arti
         throw new UnsupportedOperationException(type + " (" + type.getClass() + ")");
     }
 
-    private TypeDefinition type(Class<?> type)
+    private Generic type(Class<?> type)
     {
-        return new TypeDescription.ForLoadedType(type);
+        return new RawGenericLoadedType(type);
     }
 
-    private TypeDefinition type(String typeName, ClassLoader classLoader)
+    private Generic type(String typeName, ClassLoader classLoader)
     {
         Matcher matcher = typeNamePattern.matcher(typeName);
         matcher.matches();

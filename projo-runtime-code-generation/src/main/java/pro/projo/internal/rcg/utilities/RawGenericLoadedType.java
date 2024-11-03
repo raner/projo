@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,22 +13,32 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.test.implementations;
+package pro.projo.internal.rcg.utilities;
 
-import java.math.BigInteger;
+import net.bytebuddy.description.type.TypeDescription.Generic;
 
-public class Utilities
+/**
+* {@link RawGenericLoadedType} is a customization of
+* {@link Generic.OfNonGenericType.ForLoadedType} that provides the following
+* additional features:
+* <ul>
+*  <li>it preserves annotations declared by the wrapped {@link Class}</li>
+*  <li>it provides access to the original wrapped {@link Class} object</li>
+* </ul>
+* @author Mirko Raner
+**/
+public class RawGenericLoadedType extends Generic.OfNonGenericType.ForLoadedType
 {
-    public static boolean nullValueCalled;
+    private final Class<?> type;
 
-    public Natural natural(String value)
+    public RawGenericLoadedType(Class<?> type)
     {
-        return Natural.factory.create(new BigInteger(value));
+        super(type, new AnnotationReader.Delegator.Simple(type));
+        this.type = type;
     }
 
-    public Object nullValue()
+    public Class<?> getType()
     {
-        nullValueCalled = true;
-        return null;
+        return type;
     }
 }
