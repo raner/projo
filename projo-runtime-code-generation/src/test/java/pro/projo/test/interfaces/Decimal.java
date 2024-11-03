@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,22 +13,27 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.test.implementations;
+package pro.projo.test.interfaces;
 
-import java.math.BigInteger;
+import javax.inject.Inject;
 
-public class Utilities
+import pro.projo.annotations.Property;
+import pro.projo.test.implementations.Ranges;
+
+public interface Decimal<$ extends Decimal<$>>
 {
-    public static boolean nullValueCalled;
+    Decimal<?> successor();
 
-    public Natural natural(String value)
-    {
-        return Natural.factory.create(new BigInteger(value));
-    }
+    Decimal<?> plus(Decimal<?> other);
 
-    public Object nullValue()
+    Decimal<?> times(Decimal<?> other);
+
+    boolean equals(Decimal<?> other);
+
+    @Inject
+    @Property
+    default Ranges ranges()
     {
-        nullValueCalled = true;
-        return null;
+        throw new NoSuchMethodError("ranges() should have been implemented");
     }
 }
