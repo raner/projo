@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2024 Mirko Raner                                        //
+// Copyright 2024 Mirko Raner                                               //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -13,22 +13,11 @@
 // See the License for the specific language governing permissions and      //
 // limitations under the License.                                           //
 //                                                                          //
-package pro.projo.test.implementations;
+package pro.projo.test.interfaces;
 
-import java.math.BigInteger;
+import pro.projo.annotations.RawInterfaces;
 
-public class Utilities
+@RawInterfaces
+public interface Decimals<$ extends Decimals<$>> extends Provider<Decimal<?>>
 {
-    public static boolean nullValueCalled;
-
-    public Natural natural(String value)
-    {
-        return Natural.factory.create(new BigInteger(value));
-    }
-
-    public Object nullValue()
-    {
-        nullValueCalled = true;
-        return null;
-    }
 }
