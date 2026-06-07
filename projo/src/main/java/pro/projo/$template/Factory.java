@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2017 - 2024 Mirko Raner                                        //
+// Copyright 2017 - 2026 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -32,8 +32,9 @@ import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
 * $additionalTypeParameterDocumentation
 *
 * @author Mirko Raner
-**/
-/*#*/@Template(input=ProjoFactoryTemplateConfiguration.class)/*#*/
+*
+*#*/
+@Template(input=ProjoFactoryTemplateConfiguration.class)/*#*/
 public interface Factory<_Artifact_, $AdditionalTypeParameters> extends pro.projo.Factory
 {
     /*#*/ interface $First {/**/} /*#*/
