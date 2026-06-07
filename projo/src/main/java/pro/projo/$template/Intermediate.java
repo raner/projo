@@ -16,8 +16,11 @@
 package pro.projo.$template;
 
 import java.util.function.Function;
+/* *#* The following import will only appear in generated files: *#/
+import javax.annotation.Generated;
+/* */
 import pro.projo.internal.Prototype;
-/*#*/
+/*#*/// These imports will be removed from generated files:
 import pro.projo.template.annotation.Template;
 import pro.projo.template.configuration.ProjoIntermediateTemplateConfiguration;
 /*#*/
@@ -35,6 +38,8 @@ import pro.projo.template.configuration.ProjoIntermediateTemplateConfiguration;
 *
 *#*/
 @Template(input=ProjoIntermediateTemplateConfiguration.class)/*#*/
+/* *#* The following will only appear in generated files: *#/
+@Generated("pro.projo.generation.ProjoTemplateFactoryProcessor") /* */
 public interface Intermediate<_Artifact_> extends Prototype<_Artifact_>
 {
     /*#*/ interface $First {/**/} /*#*/
