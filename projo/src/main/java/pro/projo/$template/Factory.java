@@ -14,7 +14,11 @@
 // limitations under the License.                                           //
 //                                                                          //
 package pro.projo.$template;
-/*#*/
+
+/* *#* The following import will only appear in generated files: *#/
+import javax.annotation.Generated;
+/* */
+/*#*/// These imports will be removed from generated files:
 import pro.projo.template.annotation.Template;
 import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
 /*#*/
@@ -35,6 +39,8 @@ import pro.projo.template.configuration.ProjoFactoryTemplateConfiguration;
 *
 *#*/
 @Template(input=ProjoFactoryTemplateConfiguration.class)/*#*/
+/* *#* The following will only appear in generated files: *#/
+@Generated("pro.projo.generation.ProjoTemplateFactoryProcessor") /* */
 public interface Factory<_Artifact_, $AdditionalTypeParameters> extends pro.projo.Factory
 {
     /*#*/ interface $First {/**/} /*#*/
