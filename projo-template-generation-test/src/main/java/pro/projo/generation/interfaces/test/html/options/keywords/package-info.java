@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2023 Mirko Raner                                               //
+// Copyright 2023 - 2026 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -31,6 +31,10 @@
         @Attribute(name="rows", type=BigInteger.class),
         @Attribute(name="cols", type=BigInteger.class),
         @Attribute(name="class", type=ElementClass.class)
+    },
+    attributeAliases=
+    {
+        @Alias({"cols", "columns"})
     },
     options=@Options
     (

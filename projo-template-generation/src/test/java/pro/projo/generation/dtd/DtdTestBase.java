@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2023 Mirko Raner                                        //
+// Copyright 2022 - 2026 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -158,6 +158,12 @@ public class DtdTestBase extends AbstractTypeConverterTest
             public Attribute[] attributes()
             {
               return new Attribute[] {};
+            }
+
+            @Override
+            public Alias[] attributeAliases()
+            {
+                return new Alias[] {};
             }
 
             @Override
