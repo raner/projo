@@ -1,5 +1,5 @@
 //                                                                          //
-// Copyright 2022 - 2023 Mirko Raner                                        //
+// Copyright 2022 - 2026 Mirko Raner                                        //
 //                                                                          //
 // Licensed under the Apache License, Version 2.0 (the "License");          //
 // you may not use this file except in compliance with the License.         //
@@ -111,6 +111,11 @@ public @interface Dtd
     * @return aliases for elements (if any)
     **/
     Alias[] aliases() default {};
+
+    /**
+     * @return aliases for attributes (if any)
+     **/
+    Alias[] attributeAliases() default {};
 
     /**
     * @return custom attributes for elements (if any)

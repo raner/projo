@@ -131,6 +131,7 @@ public interface Textarea<PARENT>
     Textarea<PARENT> autocomplete(String autocomplete);
     Textarea<PARENT> autofocus(String autofocus);
     Textarea<PARENT> cols(BigInteger cols);
+    Textarea<PARENT> columns(BigInteger cols);
     Textarea<PARENT> dirname(File dirname);
     Textarea<PARENT> disabled(String disabled);
     Textarea<PARENT> form(String form);
